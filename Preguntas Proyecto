@@ -1,0 +1,29 @@
+R2 Asignacion de hormigas:
+
+1. Datos que se neccesitan tener para poder asignar la hormiga:
+Suponemos:
+-Subsistema: (id integer o nombre compartido). 
+  ¿Debemos aceptar subsistemas que no conocemos?
+-Prioridad: integer
+  ¿Qué rango de prioridades vamos a aceptar?
+  ¿Comportamiento esperado fuera de rango?
+-Tiempo estimado?
+  ¿Necesitamos saber cuanto tiempo va a estar ocupada la hormiga o nos avisa el subsistema?
+  ¿Al pasar el tiempo se libera automáticamente?
+
+R3 Reasignación de hormigas:
+
+  ¿Cuál es el criterio que se tiene para reasignar?
+  Tenemos opciones:
+    -Prioridad
+    -Tiempo cuando comenzó la tarea
+    -Tiempo restante en la tarea
+
+  Manejo de crisis:
+    ¿Durante manejo de crisis cambia la prioridad de hormigas ya asignadas?
+
+Comunicación:
+  ¿Como hormiga reina nos llegan los mensajes de creacion del subsistema de comunicacion o directamente?
+
+Defensa:
+  ¿Pueden morir hormigas? Y si pueden morir que pasa?
