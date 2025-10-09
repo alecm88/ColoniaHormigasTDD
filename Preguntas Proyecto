@@ -1,15 +1,30 @@
+Visto en clase 8 Oct:
+
 R2 Asignacion de hormigas:
+
+Hay comida disponible para hacer hormigas. El stock inicial se establece en configuracion.
+Maximo de hormigas es configurable
+
+Hormigas:
+Tienen id, tiempo de vida (minutos, se establece en configuracion), estado, 10s de tiempo de espera
+Se dice a q hora se muere
+
+Para asignar a tarea el tiempo de vida debe ser igual o superior a la tarea
 
 1. Datos que se neccesitan tener para poder asignar la hormiga:
 Suponemos:
 -Subsistema: (id integer o nombre compartido). 
   ¿Debemos aceptar subsistemas que no conocemos?
+    Sí ocupamos saberlo. Si no lo conozco devuelvo nulo
+
 -Prioridad: integer
   ¿Qué rango de prioridades vamos a aceptar?
   ¿Comportamiento esperado fuera de rango?
+  No hay prioridad
 -Tiempo estimado?
   ¿Necesitamos saber cuanto tiempo va a estar ocupada la hormiga o nos avisa el subsistema?
   ¿Al pasar el tiempo se libera automáticamente?
+  No sabemos el tiempo de vivir
 
 R3 Reasignación de hormigas:
 
@@ -24,6 +39,26 @@ R3 Reasignación de hormigas:
 
 Comunicación:
   ¿Como hormiga reina nos llegan los mensajes de creacion del subsistema de comunicacion o directamente?
+    Nada mas nos comunicamos con comunicacion
 
 Defensa:
   ¿Pueden morir hormigas? Y si pueden morir que pasa?
+    Pueden morir. Depende del subsistema que pasa
+
+Estado:
+  Debo guardar el estado en disco? Que pasa si se cae el programa debe poder reanudar como is nada?
+    ¿Por el momento vamos a almacenar todo en memoria. No se debe guardar en disco.
+
+Entorno-> Genera amenazas/comida
+Defensa/Recoleccion -> Comunican con entorno para saber que hay
+Defensa/Recoleccion -> Comunica con Comunicacion 
+Hormiga Reina -> Comunicacion
+
+Requests:
+1. Dar hormiga
+2. Devolver hormiga: puede venir con comida/pueden volver muertas
+3. Pedir hormigas por emergencia->recoleccion devuelve->mandamos a defensa. Se espera el tiempo max antes de mandar
+
+Get:
+1. Estado hormiguero
+  Cuantas hormigas vivas/hormigas ocupadas/hormigas libres/comida disponible
