@@ -1,0 +1,50 @@
+CREACION DE HORMIGAS
+
+def test_ant_creation(self):
+        ant = Ant()
+        assert ant.id is not None
+tests\test_ant.py F                                                      [100%]
+
+================================== FAILURES ===================================
+__________________________ TestAnt.test_ant_creation __________________________
+
+self = <tests.test_ant.TestAnt object at 0x000001FCEB686540>
+
+    def test_ant_creation(self):
+        ant = Ant()
+>       assert ant.id is not None
+               ^^^^^^
+E       AttributeError: 'Ant' object has no attribute 'id'
+
+tests\test_ant.py:9: AttributeError
+=========================== short test summary info ===========================
+FAILED tests/test_ant.py::TestAnt::test_ant_creation - AttributeError: 'Ant' ...
+============================== 1 failed in 0.06s ==============================
+Finished running tests!
+
+Agregamos atributos a la hormiga. El id se genera aleatoriamente.
+
+tests\test_ant.py .                                                      [100%]
+
+============================== 1 passed in 0.02s ==============================
+
+La hormiga debe tener fecha de creacion.
+self = <tests.test_ant.TestAnt object at 0x00000227A0D60860>
+
+    def test_ant_creation(self):
+        ant = Ant()
+        assert ant.id is not None
+>       assert isinstance(ant.birth_time, datetime)
+E       assert False
+E        +  where False = isinstance(0, datetime)
+E        +    where 0 = <src.ant.Ant object at 0x00000227A0F27E90>.birth_time
+
+tests\test_ant.py:10: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/test_ant.py::TestAnt::test_ant_creation - assert False
+
+
+Definimos la fecha de creacion cuando creamos la hormiga
+
+============================== 1 passed in 0.02s ==============================
+Finished running tests!
