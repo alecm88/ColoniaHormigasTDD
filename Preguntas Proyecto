@@ -47,7 +47,7 @@ Defensa:
 
 Estado:
   Debo guardar el estado en disco? Que pasa si se cae el programa debe poder reanudar como is nada?
-    ¿Por el momento vamos a almacenar todo en memoria. No se debe guardar en disco.
+    Por el momento vamos a almacenar todo en memoria. No se debe guardar en disco.
 
 Entorno-> Genera amenazas/comida
 Defensa/Recoleccion -> Comunican con entorno para saber que hay
