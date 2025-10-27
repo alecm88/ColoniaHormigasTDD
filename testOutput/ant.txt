@@ -1,4 +1,9 @@
 CREACION DE HORMIGAS
+Vamos a comenzar con el TDD para las hormigas. Nuestros objetivos para esta sesión son:
+1. Poder crear una hormiga. La hormiga debe tener un id.
+2. Las hormigas tienen un tiempo de vida. Para esto debemos rastrear su fecha de creación
+3. La hormiga se puede asignar a un sistema. 
+4. Al volver puede morir o volver con comida.
 
 def test_ant_creation(self):
         ant = Ant()
