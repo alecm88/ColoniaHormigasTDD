@@ -1,0 +1,561 @@
+Vamos a realizar las pruebas para el hormiguero. Basado en los requerimientos tenemos varios puntos a cubrir:
+
+1. El hormiguero tiene una cantidad determinada de comida para hacer hormigas. Si no hay comida no se pueden hacer más hormigas.
+2. El hormiguero tiene un límite de hormigas vivas. Fuera de este límite no se pueden hacer más hormigas.
+3. Debemos poder comunicar el numero de hormigas vivas/ocupadas/disponibles y la comida disponible
+
+Nuestra primer prueba va a ser crear el hormiguero
+    def test_colony_creation_with_max_ants(self):
+        colony = Colony(max_ants=5)
+        assert colony.max_ants == 5
+
+================================== FAILURES ===================================
+________________ TestColony.test_colony_creation_with_max_ants ________________
+
+self = <tests.test_colony.TestColony object at 0x0000018384973950>
+
+    def test_colony_creation_with_max_ants(self):
+        colony = Colony(max_ants=5)
+>       assert colony.max_ants == 5
+               ^^^^^^^^^^^^^^^
+E       AttributeError: 'Colony' object has no attribute 'max_ants'
+
+tests\test_colony.py:10: AttributeError
+
+Comenzamos con un hormiguero que puede tener un limite de hormigas. Por ahora lo manejamos en codigo.
+  class Colony:
+    def __init__(self, max_ants: int = 100):
+        self.max_ants = max_ants
+  
+============================== 1 passed in 0.02s ==============================
+
+El hormiguero tb debe tener comida. Este atributo por el momento lo manejamos tb en codigo.
+  def test_colony_creation_with_max_ants(self):
+        colony = Colony(max_ants=5, food_stock=1000)
+        assert colony.max_ants == 5
+        assert colony.food_stock == 1000
+
+================================== FAILURES ===================================
+________________ TestColony.test_colony_creation_with_max_ants ________________
+
+self = <tests.test_colony.TestColony object at 0x0000024AF9D23950>
+
+    def test_colony_creation_with_max_ants(self):
+>       colony = Colony(max_ants=5, food_stock=1000)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: Colony.__init__() got an unexpected keyword argument 'food_stock'
+
+tests\test_colony.py:9: TypeError
+
+Procedemos a agregar los atributos al hormiguero.
+  def __init__(self, max_ants: int = 100, initial_food_stock: int = 1000):
+        self.max_ants = max_ants
+        self.food_stock = initial_food_stock
+
+============================== 1 passed in 0.04s ==============================
+
+Ahora vamos a ver si podemos hacer una hormiga. Todas las hormigas se van a guardar como miembros del hormiguero.
+  def test_create_ant_when_under_limit(self):
+        colony = Colony(max_ants=2)
+        ant = colony.create_ant()
+        assert ant is not None
+        assert len(colony.ants) == 1
+        assert ant.id in colony.ants
+
+================================== FAILURES ===================================
+_________________ TestColony.test_create_ant_when_under_limit _________________
+
+self = <tests.test_colony.TestColony object at 0x0000016A6D9B7050>
+
+    def test_create_ant_when_under_limit(self):
+        colony = Colony(max_ants=2)
+>       ant = colony.create_ant()
+              ^^^^^^^^^^^^^^^^^
+E       AttributeError: 'Colony' object has no attribute 'create_ant'
+
+tests\test_colony.py:16: AttributeError
+
+Vamos a hacer el metodo. De paso tenemos que agregar nuevos atributos al hormiguero para registrar las hormigas nuevas.
+      def __init__(self, max_ants: int = 100, initial_food_stock: int = 1000):
+        self.max_ants = max_ants
+        self.food_stock = initial_food_stock
+        self.ants: Dict[str, Ant] = {}
+
+    def create_ant(self) -> Optional[Ant]:
+            ant = Ant()
+            self.ants[ant.id] = ant
+            return ant
+
+============================== 1 passed in 0.03s ==============================
+
+Al crear las hormigas debemos revisar que tengamos comida disponible y consumirla. No sabemos cuanta comida toma crear una hormiga, agregamos el atributo hardcoded por el momento
+================================== FAILURES ===================================
+_________________ TestColony.test_create_ant_when_under_limit _________________
+
+self = <tests.test_colony.TestColony object at 0x0000021153027050>
+
+    def test_create_ant_when_under_limit(self):
+        colony = Colony(max_ants=2)
+        ant = colony.create_ant()
+        currentFood = colony.food_stock
+        assert ant is not None
+        assert len(colony.ants) == 1
+        assert ant.id in colony.ants
+>       assert colony.food_stock == (currentFood - colony.food_per_ant)
+                                                   ^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'Colony' object has no attribute 'food_per_ant'
+
+tests\test_colony.py:21: AttributeError
+
+Agregamos el atributo y actualizamos el metodo para usar la comida
+   def __init__(self, max_ants: int = 100, initial_food_stock: int = 1000):
+        self.max_ants = max_ants
+        self.food_stock = initial_food_stock
+        self.ants: Dict[str, Ant] = {}
+        self.food_per_ant = 10  # Food units required to create an ant
+
+    def create_ant(self) -> Optional[Ant]:
+        # Create ant and consume food
+        ant = Ant()
+        self.ants[ant.id] = ant
+        self.food_stock -= self.food_per_ant
+        return ant
+  ================================== FAILURES ===================================
+_________________ TestColony.test_create_ant_when_under_limit _________________
+
+self = <tests.test_colony.TestColony object at 0x000001BE8E8453D0>
+
+    def test_create_ant_when_under_limit(self):
+        colony = Colony(max_ants=2)
+        ant = colony.create_ant()
+        currentFood = colony.food_stock
+        assert ant is not None
+        assert len(colony.ants) == 1
+        assert ant.id in colony.ants
+>       assert colony.food_stock == (currentFood - colony.food_per_ant)
+E       assert 990 == (990 - 10)
+E        +  where 990 = <src.colony.Colony object at 0x000001BE8E8B5310>.food_stock
+E        +  and   10 = <src.colony.Colony object at 0x000001BE8E8B5310>.food_per_ant
+
+tests\test_colony.py:21: AssertionError
+
+Parece que tenemos un error con la prueba. Primero notamos que tomamos la comida actual hasta despues de crear la hormiga. Corregimos.
+  def test_create_ant_when_under_limit(self):
+        colony = Colony(max_ants=2)
+        currentFood = colony.food_stock
+        ant = colony.create_ant()
+        assert ant is not None
+        assert len(colony.ants) == 1
+        assert ant.id in colony.ants
+        assert colony.food_stock == (currentFood - colony.food_per_ant)
+  
+============================== 1 passed in 0.04s ==============================
+
+  Ok, estamos haciendo hormigas y consumiendo comida. Revisamos si podemos crear hormigas cuando no hay comida.
+      def test_create_ant_without_food(self):
+        colony = Colony(max_ants=2, initial_food_stock=0)
+        ant = colony.create_ant()
+        assert ant is None
+        assert len(colony.ants) == 0
+
+  ================================== FAILURES ===================================
+___________________ TestColony.test_create_ant_without_food ___________________
+
+self = <tests.test_colony.TestColony object at 0x000002402C34DBB0>
+
+    def test_create_ant_without_food(self):
+        colony = Colony(max_ants=2, initial_food_stock=0)
+        ant = colony.create_ant()
+>       assert ant is None
+E       assert <src.ant.Ant object at 0x000002402AAB79B0> is None
+
+tests\test_colony.py:26: AssertionError
+
+Actualizamos el metodo para que tome en cuenta la comida.
+  def create_ant(self) -> Optional[Ant]: 
+        # Check food availability
+        if self.food_stock < self.food_per_ant:
+            return None
+        # Create ant and consume food
+        ant = Ant()
+        self.ants[ant.id] = ant
+        self.food_stock -= self.food_per_ant
+        return ant
+  
+Tambien necesitamos una prueba para que no puedan existir mas hormigas que el limite
+      def test_cannot_create_ant_when_at_limit(self):
+        colony = Colony(max_ants=1)
+        colony.create_ant()
+        ant2 = colony.create_ant()
+        assert ant2 is None
+        assert len(colony.ants) == 1
+
+  ================================== FAILURES ===================================
+_______________ TestColony.test_cannot_create_ant_when_at_limit _______________
+
+self = <tests.test_colony.TestColony object at 0x00000215D7FBDB20>
+
+    def test_cannot_create_ant_when_at_limit(self):
+        colony = Colony(max_ants=1)
+        colony.create_ant()
+        ant2 = colony.create_ant()
+>       assert ant2 is None
+E       assert <src.ant.Ant object at 0x00000215D6616840> is None
+
+tests\test_colony.py:33: AssertionError
+
+Actualizamos el metodo para tomar en cuenta el limite del hormiguero.
+      def create_ant(self) -> Optional[Ant]: 
+        # Check food availability
+        if self.food_stock < self.food_per_ant:
+            return None
+    
+        # Check capacity
+        alive_count = len([ant for ant in self.ants.values() if ant.is_alive])
+        if alive_count >= self.max_ants:
+            return None
+
+        # Create ant and consume food
+        ant = Ant()
+        self.ants[ant.id] = ant
+        self.food_stock -= self.food_per_ant
+        return ant
+  
+============================== 1 passed in 0.02s ==============================
+
+Parece que nuestro hormiguero esta funcionando. Vamos a trabajar en la comunicacion. Vemos si podemos obtener el numero de hormigas vivas.
+  
+    def test_get_alive_ants(self):
+        colony = Colony(max_ants=3)
+        ant1 = colony.create_ant()
+        ant2 = colony.create_ant()
+        alive_ants = colony.get_alive_ants()
+        assert len(alive_ants) == 2
+  
+  ================================== FAILURES ===================================
+_______________________ TestColony.test_get_alive_ants ________________________
+
+self = <tests.test_colony.TestColony object at 0x000002B6B72CDEE0>
+
+    def test_get_alive_ants(self):
+        colony = Colony(max_ants=3)
+        ant1 = colony.create_ant()
+        ant2 = colony.create_ant()
+    
+        # Make one ant die
+        # colony.ants[ant1.id].birth_time = datetime.now() - timedelta(seconds=91)
+    
+>       alive_ants = colony.get_alive_ants()
+                     ^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'Colony' object has no attribute 'get_alive_ants'. Did you mean: 'get_free_ants'?
+
+tests\test_colony.py:66: AttributeError
+
+Creamos el metodo. Nos damos cuenta que cada hormiga ya cuenta con un atributo que nos indica si esta viva.
+    def get_alive_ants(self) -> List[Ant]:
+        """Get all living ants"""
+        return [ant for ant in self.ants.values() if ant.is_alive]
+
+============================== 1 passed in 0.04s ==============================
+
+  Ahora vamos a ver si durante la prueba podemos matar una hormiga. Tenemos varias formas de hacer esto.
+      def test_get_alive_ants(self):
+        colony = Colony(max_ants=3)
+        ant1 = colony.create_ant()
+        ant2 = colony.create_ant()
+        ant3 = colony.create_ant()
+
+        # Make one ant die
+        colony.ants[ant1.id].birth_time = datetime.now() - timedelta(seconds=91)
+        colony.ants[ant2.id].is_alive = False
+
+        alive_ants = colony.get_alive_ants()
+        assert len(alive_ants) == 1
+        assert alive_ants[0].id == ant3.id
+
+================================== FAILURES ===================================
+_______________________ TestColony.test_get_alive_ants ________________________
+
+self = <tests.test_colony.TestColony object at 0x0000023EFED9CDA0>
+
+    def test_get_alive_ants(self):
+        colony = Colony(max_ants=3)
+        ant1 = colony.create_ant()
+        ant2 = colony.create_ant()
+        ant3 = colony.create_ant()
+    
+        # Make one ant die
+        colony.ants[ant1.id].birth_time = datetime.now() - timedelta(seconds=91)
+>       colony.ants[ant2.id].is_alive = False
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: property 'is_alive' of 'Ant' object has no setter
+
+tests\test_colony.py:66: AttributeError
+
+Parece que no podemos matar a la hormiga desde el hormiguero. Pero sí podemos cambiarle el estado.
+      def test_get_alive_ants(self):
+        colony = Colony(max_ants=3)
+        ant1 = colony.create_ant()
+        ant2 = colony.create_ant()
+        ant3 = colony.create_ant()
+
+        # Make one ant die
+        colony.ants[ant1.id].birth_time = datetime.now() - timedelta(seconds=91)
+        colony.ants[ant2.id].state = "dead"
+
+        alive_ants = colony.get_alive_ants()
+        assert len(alive_ants) == 1
+        assert alive_ants[0].id == ant3.id
+
+  ================================== FAILURES ===================================
+_______________________ TestColony.test_get_alive_ants ________________________
+
+self = <tests.test_colony.TestColony object at 0x0000020E92D4CDA0>
+
+    def test_get_alive_ants(self):
+        colony = Colony(max_ants=3)
+        ant1 = colony.create_ant()
+        ant2 = colony.create_ant()
+        ant3 = colony.create_ant()
+    
+        # Make one ant die
+        colony.ants[ant1.id].birth_time = datetime.now() - timedelta(seconds=91)
+        colony.ants[ant2.id].state = "dead"
+    
+        alive_ants = colony.get_alive_ants()
+>       assert len(alive_ants) == 1
+E       assert 2 == 1
+E        +  where 2 = len([<src.ant.Ant object at 0x0000020E91467410>, <src.ant.Ant object at 0x0000020E91466D80>])
+
+tests\test_colony.py:69: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/test_colony.py::TestColony::test_get_alive_ants - assert 2 == 1
+============================== 1 failed in 0.09s ==============================
+
+Revisamos cual hormiga no esta marcada como muerta. Parece que estamos usando enums en la clase de hormiga que no juegan bien con el string. Intentamos otra forma.
+     def test_get_alive_ants(self):
+        colony = Colony(max_ants=3)
+        ant1 = colony.create_ant()
+        ant2 = colony.create_ant()
+        ant3 = colony.create_ant()
+
+        # Make one ant die
+        colony.ants[ant1.id].birth_time = datetime.now() - timedelta(seconds=91)
+        colony.ants[ant2.id].return_from_assignment(died_in_mission=True)
+
+        alive_ants = colony.get_alive_ants()
+        assert len(alive_ants) == 1
+        assert alive_ants[0].id == ant3.id
+
+============================== 1 passed in 0.04s ==============================
+
+  De paso notamos que una hormiga puede volver de una mision sin haber salido. Lo notamos como prueba para agregar al sistema de hormigas. Y tal vez sea bueno buscar la forma de matar hormigas para pruebas.
+
+Ahora que tenemos las hormigas vivas vamos a ver si podemos tener las hormigas libres y ocupadas.
+    def test_get_assigned_and_free_ants(self):
+        colony = Colony(max_ants=3)
+        ant1 = colony.create_ant()
+        ant2 = colony.create_ant()
+        ant3 = colony.create_ant()
+
+        # Send ant on a mission
+        colony.ants[ant1.id].assign_to_subsystem('Test')
+
+        assigned_ants = colony.get_assigned_ants()
+        free_ants = colony.get_free_ants()
+        assert len(assigned_ants) == 1
+        assert len(free_ants) == 2
+================================== FAILURES ===================================
+_________________ TestColony.test_get_assigned_and_free_ants __________________
+
+self = <tests.test_colony.TestColony object at 0x00000270744CE210>
+
+    def test_get_assigned_and_free_ants(self):
+        colony = Colony(max_ants=3)
+        ant1 = colony.create_ant()
+        ant2 = colony.create_ant()
+        ant3 = colony.create_ant()
+    
+        # Send ant on a mission
+        colony.ants[ant1.id].assign_to_subsystem('Test')
+    
+>       assigned_ants = colony.get_assigned_ants()
+                        ^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'Colony' object has no attribute 'get_assigned_ants'. Did you mean: 'get_alive_ants'?
+
+tests\test_colony.py:81: AttributeError
+=========================== short test summary info ===========================
+FAILED tests/test_colony.py::TestColony::test_get_assigned_and_free_ants - At...
+============================== 1 failed in 0.07s ==============================
+
+  Hacemos los metodos. Notamos que las hormigas tienen banderas para ver si estan disponibles.
+
+    def get_free_ants(self) -> List[Ant]:
+        """Get all free (unassigned) living ants"""
+        return [ant for ant in self.ants.values() if ant.is_available_for_assignment]
+
+    def get_assigned_ants(self) -> List[Ant]:
+        """Get all assigned ants"""
+        return [ant for ant in self.ants.values() if ant.state == AntState.ASSIGNED and ant.is_alive]
+
+============================== 1 passed in 0.03s ==============================
+  
+Nuestra siguiente prueba es conseguir toda la informacion del hormiguero. Para efectos de pruebas vamos a incluir hormigas muertas.
+    def test_get_colony_status(self):
+        colony = Colony(max_ants=5, initial_food_stock=100)
+        colony.create_ant()
+        colony.create_ant()
+        assignedAnt = colony.create_ant()
+        deadAnt = colony.create_ant()
+        
+        colony.ants[deadAnt.id].birth_time = datetime.now() - timedelta(seconds=91)
+        colony.ants[assignedAnt.id].assign_to_subsystem('Test')
+
+        status = colony.get_status()
+        expected_keys = {'total_ants', 'alive_ants', 'free_ants', 'assigned_ants', 'dead_ants', 'max_ants', 'food_stock'}
+        assert set(status.keys()) == expected_keys
+        assert status['total_ants'] == 4
+        assert status['alive_ants'] == 3
+        assert status['free_ants'] == 2
+        assert status['assigned_ants'] == 1
+        assert status['dead_ants'] == 1
+        assert status['max_ants'] == 5
+        assert status['food_stock'] == 60
+
+================================== FAILURES ===================================
+______________________ TestColony.test_get_colony_status ______________________
+
+self = <tests.test_colony.TestColony object at 0x0000027363D8D190>
+
+    def test_get_colony_status(self):
+        colony = Colony(max_ants=5, initial_food_stock=100)
+        colony.create_ant()
+        colony.create_ant()
+        assignedAnt = colony.create_ant()
+        deadAnt = colony.create_ant()
+    
+        colony.ants[deadAnt.id].birth_time = datetime.now() - timedelta(seconds=91)
+        colony.ants[assignedAnt.id].assign_to_subsystem('Test')
+    
+>       status = colony.get_status()
+                 ^^^^^^^^^^^^^^^^^
+E       AttributeError: 'Colony' object has no attribute 'get_status'
+
+tests\test_colony.py:96: AttributeError
+=========================== short test summary info ===========================
+FAILED tests/test_colony.py::TestColony::test_get_colony_status - AttributeEr...
+============================== 1 failed in 0.09s ==============================
+
+Procedemos a trabajar en el metodo
+ def get_status(self) -> Dict[str, Any]:
+        alive_ants = self.get_alive_ants()
+        free_ants = self.get_free_ants()
+        assigned_ants = self.get_assigned_ants()
+
+        return {
+            'total_ants': len(self.ants),
+            'alive_ants': len(alive_ants),
+            'free_ants': len(free_ants),
+            'assigned_ants': len(assigned_ants),
+            'dead_ants': len(self.ants) - len(alive_ants),
+            'max_ants': self.max_ants,
+            'food_stock': self.food_stock,
+        }
+
+============================== 1 passed in 0.04s ==============================
+
+Ahora vamos a ver si una vez que una hormiga muere libera el espacio para hacer mas hormigas.
+    def test_can_create_ant_after_death(self):
+        colony = Colony(max_ants=1)
+        ant = colony.create_ant()
+
+        # Make ant die
+        colony.ants[ant.id].birth_time = datetime.now() - timedelta(seconds=91)
+
+        # Should be able to create new ant now
+        new_ant = colony.create_ant()
+        assert new_ant is not None
+        assert len(colony.ants) == 1
+
+  ================================== FAILURES ===================================
+_________________ TestColony.test_can_create_ant_after_death __________________
+
+self = <tests.test_colony.TestColony object at 0x000001B89A60DD90>
+
+    def test_can_create_ant_after_death(self):
+        colony = Colony(max_ants=1)
+        ant = colony.create_ant()
+    
+        # Make ant die
+        colony.ants[ant.id].birth_time = datetime.now() - timedelta(seconds=91)
+    
+        # Should be able to create new ant now
+        new_ant = colony.create_ant()
+        assert new_ant is not None
+>       assert len(colony.ants) == 1
+E       AssertionError: assert 2 == 1
+E        +  where 2 = len({'0e46849e-8ff9-4bb9-a20b-d8eb5c29c354': <src.ant.Ant object at 0x000001B898D86240>, '3abee0bc-c7d9-46c9-a511-9477e21fc359': <src.ant.Ant object at 0x000001B898DE4C20>})
+E        +    where {'0e46849e-8ff9-4bb9-a20b-d8eb5c29c354': <src.ant.Ant object at 0x000001B898D86240>, '3abee0bc-c7d9-46c9-a511-9477e21fc359': <src.ant.Ant object at 0x000001B898DE4C20>} = <src.colony.Colony object at 0x000001B898D87D10>.ants
+
+tests\test_colony.py:55: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/test_colony.py::TestColony::test_can_create_ant_after_death - As...
+============================== 1 failed in 0.07s ==============================
+
+  Parece que podemos hacer la hormiga. Pero la colonia dice que tiene 2 hormigas. Probablemente estamos contando las hormigas muertas.
+  Por el momento podemos tener una funcion de limpieza que se corra antes de hacer hormigas. Hacemos la prueba primero
+    def test_cleanup_dead_ants(self):
+        colony = Colony(max_ants=3)
+        ant = colony.create_ant()
+        # Make ant die by setting old birth time
+        colony.ants[ant.id].birth_time = datetime.now() - timedelta(seconds=91)
+
+        colony.cleanup_dead_ants()
+        assert len(colony.ants) == 0
+  ================================== FAILURES ===================================
+______________________ TestColony.test_cleanup_dead_ants ______________________
+
+self = <tests.test_colony.TestColony object at 0x0000014FDBB1DC70>
+
+    def test_cleanup_dead_ants(self):
+        colony = Colony(max_ants=3)
+>       ant = colony.create_ant()
+              ^^^^^^^^^^^^^^^^^^^
+
+tests\test_colony.py:38: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <src.colony.Colony object at 0x0000014FDA257CE0>
+
+    def create_ant(self) -> Optional[Ant]:
+>       self.cleanup_dead_ants()
+        ^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'Colony' object has no attribute 'cleanup_dead_ants'
+
+src\colony.py:25: AttributeError
+
+Hacemos la funcion
+    def cleanup_dead_ants(self) -> int:
+        """Remove dead ants from the colony"""
+        dead_ant_ids = [ant_id for ant_id, ant in self.ants.items() if not ant.is_alive]
+        for ant_id in dead_ant_ids:
+            del self.ants[ant_id]
+        return len(dead_ant_ids)
+  
+============================== 1 passed in 0.02s ==============================
+
+  Y corremos de nuevo la prueba de hacer hormigas despues de matar una
+Running pytest with args: ['-p', 'vscode_pytest', '--rootdir=\\ColoniaHormigasTDD', '\\ColoniaHormigasTDD\\tests\\test_colony.py::TestColony::test_can_create_ant_after_death']
+============================== 1 passed in 0.02s ==============================
+
+  Corremos todas las pruebas hasta el momento:
+collected 9 items
+
+tests\test_colony.py .........                                           [100%]
+
+============================== 9 passed in 0.03s ==============================
+Finished running tests!
+
+  
+
+  
