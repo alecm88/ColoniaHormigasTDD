@@ -56,7 +56,7 @@ class Ant:
         self.assignment_time = datetime.now()
         return True
 
-    def return_from_assignment(self, died_in_mission: bool = False, returned_with_food: bool = False):
+    def return_from_assignment(self, died_in_mission: bool = False, returned_with_food: int = 0):
         """Return ant from assignment, potentially with food or as dead"""
         if died_in_mission:
             self.state = AntState.DEAD

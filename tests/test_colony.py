@@ -20,11 +20,12 @@ class TestColony:
         assert ant.id in colony.ants
         assert colony.food_stock == (currentFood - colony.food_per_ant)
 
-    def test_create_ant_without_food(self):
-        colony = Colony(max_ants=2, initial_food_stock=0)
+    def test_cannot_create_ant_without_food(self):
+        colony = Colony(max_ants=2, initial_food_stock=5)
         ant = colony.create_ant()
         assert ant is None
         assert len(colony.ants) == 0
+        assert colony.food_stock == 5  # Unchanged
 
     def test_cannot_create_ant_when_at_limit(self):
         colony = Colony(max_ants=1)
