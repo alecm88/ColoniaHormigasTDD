@@ -269,3 +269,179 @@ FAILED tests/test_api.py::TestAntsAPI::test_create_ant_success - assert 404 =...
 Procedemos a crear el endpoint
 
 ============================== 1 passed in 1.69s ==============================
+
+Ahora vamos a pedir informacion de la hormiga
+
+def test_get_ant_by_id(self, client):
+        # Create an ant
+        create_response = client.post("/ants")
+        ant_id = create_response.json()["id"]
+
+        # Get the ant by ID
+        response = client.get(f"/ants/{ant_id}")
+        assert response.status_code == 200
+        data = response.json()
+        assert data["id"] == ant_id
+        assert data["is_alive"] is True
+
+================================== FAILURES ===================================
+_______________________ TestAntsAPI.test_get_ant_by_id ________________________
+
+self = <tests.test_api.TestAntsAPI object at 0x00000233D6D54320>
+client = <starlette.testclient.TestClient object at 0x00000233D6D54800>
+
+    def test_get_ant_by_id(self, client):
+        # Create an ant
+        create_response = client.post("/ants")
+        ant_id = create_response.json()["id"]
+    
+        # Get the ant by ID
+        response = client.get(f"/ants/{ant_id}")
+>       assert response.status_code == 200
+E       assert 404 == 200
+E        +  where 404 = <Response [404 Not Found]>.status_code
+
+tests\test_api.py:101: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/test_api.py::TestAntsAPI::test_get_ant_by_id - assert 404 == 200
+============================== 1 failed in 0.76s ==============================
+
+Agregamos el endpoint.
+
+============================== 1 passed in 0.54s ==============================
+
+Agregamos caso para id inexistente
+def test_get_nonexistent_ant(self, client):
+        response = client.get("/ants/nonexistent-id")
+        assert response.status_code == 404
+        assert "not found or dead" in response.json()["detail"]
+
+============================== 1 passed in 0.53s ==============================
+
+Ya lo habíamos contemplado.
+
+Probamos crear una hormiga si no tenemos capacidad
+    def test_create_ant_at_capacity_fails(self, client):
+        # Configure colony to max 1 ant
+        client.put("/colony/config?max_ants=1")
+
+        # Create first ant (should succeed)
+        response1 = client.post("/ants")
+        assert response1.status_code == 200
+
+        # Try to create second ant (should fail)
+        response2 = client.post("/ants")
+        assert response2.status_code == 409
+        assert "maximum capacity" in response2.json()["detail"]
+
+================================== FAILURES ===================================
+________________ TestAntsAPI.test_create_ant_at_capacity_fails ________________
+
+self = <tests.test_api.TestAntsAPI object at 0x000001B3C3AE4D10>
+client = <starlette.testclient.TestClient object at 0x000001B3C3AE4DD0>
+
+    def test_create_ant_at_capacity_fails(self, client):
+        # Configure colony to max 1 ant
+        client.put("/colony/config?max_ants=1")
+    
+        # Create first ant (should succeed)
+        response1 = client.post("/ants")
+        assert response1.status_code == 200
+    
+        # Try to create second ant (should fail)
+        response2 = client.post("/ants")
+>       assert response2.status_code == 409
+E       assert 200 == 409
+E        +  where 200 = <Response [200 OK]>.status_code
+
+tests\test_api.py:78: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/test_api.py::TestAntsAPI::test_create_ant_at_capacity_fails - as...
+============================== 1 failed in 0.66s ==============================
+
+Vamos a manejar un sistema de configuracion para apoyar las pruebas.
+
+            raise HTTPException(
+>               status_code=status.HTTP_409_CONFLICT,
+                            ^^^^^^^^^^^^^^^^^^^^^^^^
+                detail="Cannot create ant: colony is at maximum capacity"
+            )
+E           AttributeError: 'dict' object has no attribute 'HTTP_409_CONFLICT'
+
+src\main.py:480: AttributeError
+=========================== short test summary info ===========================
+FAILED tests/test_api.py::TestAntsAPI::test_create_ant_at_capacity_fails - At...
+============================== 1 failed in 0.89s ==============================
+
+Revisando. Parece que estabamos usando el nombre de un atributo reservado (Status)
+
+============================== 1 passed in 0.55s ==============================
+
+Hacemos lo mismo si nos falta comida
+
+    def test_create_ant_at_capacity_fails(self, client):
+        # Configure colony to little food
+        client.put("/colony/config?food_stock=10")
+
+        # Create first ant (should succeed)
+        response1 = client.post("/ants")
+        assert response1.status_code == 200
+
+        # Try to create second ant (should fail)
+        response2 = client.post("/ants")
+        assert response2.status_code == 409
+        assert "Sin recursos" in response2.json()["detail"]
+
+============================== 1 passed in 0.57s ==============================
+
+Ya lo habiamos contemplado.
+
+Puede que tambien queramos obtener todas las hormigas
+  def test_get_all_ants(self, client):
+        # Create two ants
+        client.post("/ants")
+        client.post("/ants")
+
+        response = client.get("/ants")
+        assert response.status_code == 200
+        data = response.json()
+        assert len(data) == 2
+        for ant in data:
+            assert "id" in ant
+            assert ant["is_alive"] is True
+
+================================== FAILURES ===================================
+________________________ TestAntsAPI.test_get_all_ants ________________________
+
+self = <tests.test_api.TestAntsAPI object at 0x00000268C7741C10>
+client = <starlette.testclient.TestClient object at 0x00000268C7742300>
+
+    def test_get_all_ants(self, client):
+        # Create two ants
+        client.post("/ants")
+        client.post("/ants")
+    
+        response = client.get("/ants")
+>       assert response.status_code == 200
+E       assert 405 == 200
+E        +  where 405 = <Response [405 Method Not Allowed]>.status_code
+
+tests\test_api.py:100: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/test_api.py::TestAntsAPI::test_get_all_ants - assert 405 == 200
+============================== 1 failed in 0.64s ==============================
+
+Agregamos el endpoint.
+
+============================== warnings summary ===============================
+src\main.py:168
+  c:\Users\alecm\PhpstormProjects\ColoniaHormigasTDD\src\main.py:168: DeprecationWarning: `regex` has been deprecated, please use `pattern` instead
+    state: str = Query(
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+======================== 1 passed, 1 warning in 0.55s =========================
+
+Parece que tenemos un warning. Revisamos si lo podemos actualizar.
+
+============================== 1 passed in 0.55s ==============================
+
