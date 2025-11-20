@@ -445,3 +445,26 @@ Parece que tenemos un warning. Revisamos si lo podemos actualizar.
 
 ============================== 1 passed in 0.55s ==============================
 
+
+Al correr todos los tests juntos estamos teniendo temas. Parece que algun valor de la colonia no se esta limpiando correctamente entre pruebas.
+_______________________ TestAntsAPI.test_get_ant_by_id ________________________
+
+self = <tests.test_api.TestAntsAPI object at 0x0000015855ADB9E0>
+client = <starlette.testclient.TestClient object at 0x0000015855B12810>
+
+    def test_get_ant_by_id(self, client):
+        # Create an ant
+        create_response = client.post("/ants")
+>       ant_id = create_response.json()["id"]
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       KeyError: 'id'
+
+tests\test_api.py:110: KeyError
+=========================== short test summary info ===========================
+FAILED tests/test_api.py::TestAntsAPI::test_get_all_ants - assert 0 == 2
+FAILED tests/test_api.py::TestAntsAPI::test_get_ant_by_id - KeyError: 'id'
+========================= 2 failed, 5 passed in 0.81s =========================
+
+Parece que la colonia se estaba quedando sin comida.
+
+============================== 7 passed in 0.58s ==============================
