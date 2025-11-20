@@ -114,7 +114,12 @@ Content-Type: application/json
 
 ### 📖 Documentación API Interactiva
 
-Una vez ejecutando el servidor, puedes acceder a la documentación completa de la API:
+**Ejecuta el servidor primero:**
+```bash
+uvicorn src.main:app --reload --host 0.0.0.0 --port 8000
+```
+
+Luego puedes acceder a la documentación completa de la API:
 
 - **Swagger UI**: [http://localhost:8000/docs](http://localhost:8000/docs) - Interfaz interactiva para probar endpoints
 - **ReDoc**: [http://localhost:8000/redoc](http://localhost:8000/redoc) - Documentación alternativa estilo ReDoc
@@ -126,6 +131,27 @@ La documentación incluye:
 - ✅ Validación automática de parámetros
 - ✅ Códigos de respuesta y mensajes de error
 - ✅ Interfaz de pruebas integrada para todos los equipos
+
+### ⚠️ Guía Rápida para Equipos
+
+**Valores de subsistemas (case-sensitive):**
+```json
+{
+  "subsystem_name": "defense"      // ✅ Correcto
+  "subsystem_name": "Defense"      // ❌ Error 422
+  "subsystem_name": "communication" // ✅ Correcto
+  "subsystem_name": "collection"    // ✅ Correcto
+}
+```
+
+**URLs correctas:**
+- ✅ `http://localhost:8000/ants/request`
+- ❌ `http://localhost/ants/request` (falta puerto)
+
+**Configuraciones importantes:**
+- **CORS habilitado**: Funciona desde Swagger UI y herramientas externas
+- **Validación estricta**: Todos los parámetros son validados automáticamente
+- **Documentación en vivo**: Swagger UI se actualiza automáticamente
 
 ## Installation & Usage
 
@@ -204,11 +230,13 @@ make clean
 curl -X POST http://localhost:8000/ants/request \
   -H "Content-Type: application/json" \
   -d '{
-    "subsystem_name": "Defense",
+    "subsystem_name": "defense",
     "priority": 1,
-    "estimated_duration_seconds": 120
+    "estimated_duration_seconds": 30
   }'
 ```
+
+⚠️ **Importante**: Usar `"defense"` (minúscula), no `"Defense"`
 
 Respuesta exitosa:
 ```json
@@ -255,11 +283,13 @@ Respuesta:
 curl -X POST http://localhost:8000/ants/emergency \
   -H "Content-Type: application/json" \
   -d '{
-    "requesting_subsystem": "Defense",
+    "requesting_subsystem": "defense",
     "number_needed": 3,
     "max_wait_seconds": 30
   }'
 ```
+
+⚠️ **Importante**: Usar `"defense"` (minúscula), no `"Defense"`
 
 ### Estado Comprehensive del Hormiguero
 ```bash
