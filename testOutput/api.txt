@@ -1,0 +1,447 @@
+Vamos a comenzar a probar el API.
+
+Para el API queremos lograr los siguientes requisitos:
+1. Montar un API
+2. Inicializar una colonia junto al API
+3. Pedir hormigas
+4. Pedir informacion de la colonia
+5. Pedir informacion de una hormiga por id
+
+Para el manejo del API vamos a tenerlo inicializado durante las pruebas.
+@pytest.fixture
+def client():
+    return TestClient(app)
+
+Para la primera prueba revisamos obtener una respuesta positiva. Podemos incluir un mensaje de bienvenida.
+    def test_root_endpoint(self, client):
+        response = client.get("/")
+        assert response.status_code == 200
+        assert response.json() == {"message": "Sistema de Hormiga Reina"}
+
+=================================== ERRORS ====================================
+______________ ERROR at setup of TestAntsAPI.test_root_endpoint _______________
+
+    @pytest.fixture
+    def client():
+>       return TestClient(app)
+               ^^^^^^^^^^
+E       NameError: name 'TestClient' is not defined
+
+tests\test_api.py:10: NameError
+=========================== short test summary info ===========================
+ERROR tests/test_api.py::TestAntsAPI::test_root_endpoint - NameError: name 'T...
+============================== 1 error in 0.49s ===============================
+
+
+Para el API vamos a utilizar el sistema de fastTemplate. Por ahora nos vamos a enfocar en iniciar el API con informacion del sistema.
+
+================================== FAILURES ===================================
+_______________________ TestAntsAPI.test_root_endpoint ________________________
+
+self = <tests.test_api.TestAntsAPI object at 0x00000196FE5C4FB0>
+client = <starlette.testclient.TestClient object at 0x00000196800E4440>
+
+    def test_root_endpoint(self, client):
+        response = client.get("/")
+>       assert response.status_code == 200
+E       assert 404 == 200
+E        +  where 404 = <Response [404 Not Found]>.status_code
+
+tests\test_api.py:23: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/test_api.py::TestAntsAPI::test_root_endpoint - assert 404 == 200
+============================== 1 failed in 0.68s ==============================
+
+En la primera definicion parece que no estamos recibiendo respuesta. Parece que no hemos definido el endpoint inicial.
+
+================================== FAILURES ===================================
+_______________________ TestAntsAPI.test_root_endpoint ________________________
+
+self = <tests.test_api.TestAntsAPI object at 0x00000201BB4141D0>
+client = <starlette.testclient.TestClient object at 0x00000201BB414320>
+
+    def test_root_endpoint(self, client):
+        response = client.get("/")
+        assert response.status_code == 200
+>       assert response.json() == {"message": "Sistema de Hormiga Reina"}
+E       AssertionError: assert {'message': '...ion': '1.0.0'} == {'message': '...ormiga Reina'}
+E         
+E         Omitting 1 identical items, use -vv to show
+E         Left contains 1 more item:
+E         {'version': '1.0.0'}
+E         Use -v to get more diff
+
+tests\test_api.py:24: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/test_api.py::TestAntsAPI::test_root_endpoint - AssertionError: a...
+============================== 1 failed in 0.61s ==============================
+
+Le habiamos agregado ademas la version. Por ahora solo mostramos el mensaje inicial.
+
+============================== 1 passed in 0.53s ==============================
+
+Ahora queremos tener la colonia
+    def test_get_colony_status(self, client):
+        response = client.get("/colony/status")
+        assert response.status_code == 200
+        data = response.json()
+
+        expected_keys = {'total_ants', 'alive_ants', 'free_ants', 'assigned_ants', 'dead_ants', 'max_ants', 'food_stock'}
+        assert set(data.keys()) == expected_keys
+        assert data['total_ants'] == 0
+        assert data['alive_ants'] == 0
+        assert data['free_ants'] == 0
+        assert data['assigned_ants'] == 0
+        assert data['dead_ants'] == 0
+        assert data['max_ants'] == 100
+        assert data['food_stock'] == 1000
+
+    def test_get_colony_status(self, client):
+        response = client.get("/colony/status")
+>       assert response.status_code == 200
+E       assert 404 == 200
+E        +  where 404 = <Response [404 Not Found]>.status_code
+
+tests\test_api.py:28: AssertionError
+
+
+Procedemos a definir los endpoints e inicializar la colonia.
+
+
+================================== FAILURES ===================================
+_____________________ TestAntsAPI.test_get_colony_status ______________________
+
+self = <tests.test_api.TestAntsAPI object at 0x0000017354C85F40>
+client = <starlette.testclient.TestClient object at 0x0000017354C861E0>
+
+    def test_get_colony_status(self, client):
+>       response = client.get("/colony/status")
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+================================== FAILURES ===================================
+_____________________ TestAntsAPI.test_get_colony_status ______________________
+
+self = <tests.test_api.TestAntsAPI object at 0x000001CD023B56D0>
+client = <starlette.testclient.TestClient object at 0x000001CD023B5DC0>
+
+    def test_get_colony_status(self, client):
+>       response = client.get("/colony/status")
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_api.py:27: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+.venv\Lib\site-packages\starlette\testclient.py:479: in get
+    return super().get(
+.venv\Lib\site-packages\httpx\_client.py:1053: in get
+    return self.request(
+.venv\Lib\site-packages\starlette\testclient.py:451: in request
+    return super().request(
+.venv\Lib\site-packages\httpx\_client.py:825: in request
+    return self.send(request, auth=auth, follow_redirects=follow_redirects)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv\Lib\site-packages\httpx\_client.py:914: in send
+    response = self._send_handling_auth(
+.venv\Lib\site-packages\httpx\_client.py:942: in _send_handling_auth
+    response = self._send_handling_redirects(
+.venv\Lib\site-packages\httpx\_client.py:979: in _send_handling_redirects
+    response = self._send_single_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv\Lib\site-packages\httpx\_client.py:1014: in _send_single_request
+    response = transport.handle_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv\Lib\site-packages\starlette\testclient.py:354: in handle_request
+    raise exc
+.venv\Lib\site-packages\starlette\testclient.py:351: in handle_request
+    portal.call(self.app, scope, receive, send)
+.venv\Lib\site-packages\anyio\from_thread.py:321: in call
+    return cast(T_Retval, self.start_task_soon(func, *args).result())
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+C:\Python312\Lib\concurrent\futures\_base.py:456: in result
+    return self.__get_result()
+           ^^^^^^^^^^^^^^^^^^^
+C:\Python312\Lib\concurrent\futures\_base.py:401: in __get_result
+    raise self._exception
+.venv\Lib\site-packages\anyio\from_thread.py:252: in _call_func
+    retval = await retval_or_awaitable
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv\Lib\site-packages\fastapi\applications.py:1134: in __call__
+    await super().__call__(scope, receive, send)
+.venv\Lib\site-packages\starlette\applications.py:113: in __call__
+    await self.middleware_stack(scope, receive, send)
+.venv\Lib\site-packages\starlette\middleware\errors.py:186: in __call__
+    raise exc
+.venv\Lib\site-packages\starlette\middleware\errors.py:164: in __call__
+    await self.app(scope, receive, _send)
+.venv\Lib\site-packages\starlette\middleware\exceptions.py:63: in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+.venv\Lib\site-packages\starlette\_exception_handler.py:53: in wrapped_app
+    raise exc
+.venv\Lib\site-packages\starlette\_exception_handler.py:42: in wrapped_app
+    await app(scope, receive, sender)
+.venv\Lib\site-packages\fastapi\middleware\asyncexitstack.py:18: in __call__
+    await self.app(scope, receive, send)
+.venv\Lib\site-packages\starlette\routing.py:716: in __call__
+    await self.middleware_stack(scope, receive, send)
+.venv\Lib\site-packages\starlette\routing.py:736: in app
+    await route.handle(scope, receive, send)
+.venv\Lib\site-packages\starlette\routing.py:290: in handle
+    await self.app(scope, receive, send)
+.venv\Lib\site-packages\fastapi\routing.py:125: in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+.venv\Lib\site-packages\starlette\_exception_handler.py:53: in wrapped_app
+    raise exc
+.venv\Lib\site-packages\starlette\_exception_handler.py:42: in wrapped_app
+    await app(scope, receive, sender)
+.venv\Lib\site-packages\fastapi\routing.py:111: in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+.venv\Lib\site-packages\fastapi\routing.py:413: in app
+    content = await serialize_response(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+    async def serialize_response(
+        *,
+        field: Optional[ModelField] = None,
+        response_content: Any,
+        include: Optional[IncEx] = None,
+        exclude: Optional[IncEx] = None,
+        by_alias: bool = True,
+        exclude_unset: bool = False,
+        exclude_defaults: bool = False,
+        exclude_none: bool = False,
+        is_coroutine: bool = True,
+    ) -> Any:
+        if field:
+            errors = []
+            if not hasattr(field, "serialize"):
+                # pydantic v1
+                response_content = _prepare_response_content(
+                    response_content,
+                    exclude_unset=exclude_unset,
+                    exclude_defaults=exclude_defaults,
+                    exclude_none=exclude_none,
+                )
+            if is_coroutine:
+                value, errors_ = field.validate(response_content, {}, loc=("response",))
+            else:
+                value, errors_ = await run_in_threadpool(
+                    field.validate, response_content, {}, loc=("response",)
+                )
+            if isinstance(errors_, list):
+                errors.extend(errors_)
+            elif errors_:
+                errors.append(errors_)
+            if errors:
+>               raise ResponseValidationError(
+                    errors=_normalize_errors(errors), body=response_content
+                )
+E               fastapi.exceptions.ResponseValidationError: 1 validation errors:
+E                 {'type': 'missing', 'loc': ('response', 'can_create_more'), 'msg': 'Field required', 'input': {'total_ants': 0, 'alive_ants': 0, 'free_ants': 0, 'assigned_ants': 0, 'dead_ants': 0, 'max_ants': 100, 'food_stock': 1000}}
+
+.venv\Lib\site-packages\fastapi\routing.py:254: ResponseValidationError
+=========================== short test summary info ===========================
+FAILED tests/test_api.py::TestAntsAPI::test_get_colony_status - fastapi.excep...
+============================== 1 failed in 1.82s ==============================
+
+Parece que cuando definimos el modelo, estabamos usando campos de otra funcion de status.
+
+============================== 1 passed in 1.23s ==============================
+
+Procedemos a crear hormigas
+
+================================== FAILURES ===================================
+_____________________ TestAntsAPI.test_create_ant_success _____________________
+
+self = <tests.test_api.TestAntsAPI object at 0x00000150593C6060>
+client = <starlette.testclient.TestClient object at 0x00000150593C61E0>
+
+    def test_create_ant_success(self, client):
+        response = client.post("/ants")
+>       assert response.status_code == 200
+E       assert 404 == 200
+E        +  where 404 = <Response [404 Not Found]>.status_code
+
+tests\test_api.py:43: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/test_api.py::TestAntsAPI::test_create_ant_success - assert 404 =...
+============================== 1 failed in 1.40s ==============================
+
+Procedemos a crear el endpoint
+
+============================== 1 passed in 1.69s ==============================
+
+Ahora vamos a pedir informacion de la hormiga
+
+def test_get_ant_by_id(self, client):
+        # Create an ant
+        create_response = client.post("/ants")
+        ant_id = create_response.json()["id"]
+
+        # Get the ant by ID
+        response = client.get(f"/ants/{ant_id}")
+        assert response.status_code == 200
+        data = response.json()
+        assert data["id"] == ant_id
+        assert data["is_alive"] is True
+
+================================== FAILURES ===================================
+_______________________ TestAntsAPI.test_get_ant_by_id ________________________
+
+self = <tests.test_api.TestAntsAPI object at 0x00000233D6D54320>
+client = <starlette.testclient.TestClient object at 0x00000233D6D54800>
+
+    def test_get_ant_by_id(self, client):
+        # Create an ant
+        create_response = client.post("/ants")
+        ant_id = create_response.json()["id"]
+    
+        # Get the ant by ID
+        response = client.get(f"/ants/{ant_id}")
+>       assert response.status_code == 200
+E       assert 404 == 200
+E        +  where 404 = <Response [404 Not Found]>.status_code
+
+tests\test_api.py:101: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/test_api.py::TestAntsAPI::test_get_ant_by_id - assert 404 == 200
+============================== 1 failed in 0.76s ==============================
+
+Agregamos el endpoint.
+
+============================== 1 passed in 0.54s ==============================
+
+Agregamos caso para id inexistente
+def test_get_nonexistent_ant(self, client):
+        response = client.get("/ants/nonexistent-id")
+        assert response.status_code == 404
+        assert "not found or dead" in response.json()["detail"]
+
+============================== 1 passed in 0.53s ==============================
+
+Ya lo habíamos contemplado.
+
+Probamos crear una hormiga si no tenemos capacidad
+    def test_create_ant_at_capacity_fails(self, client):
+        # Configure colony to max 1 ant
+        client.put("/colony/config?max_ants=1")
+
+        # Create first ant (should succeed)
+        response1 = client.post("/ants")
+        assert response1.status_code == 200
+
+        # Try to create second ant (should fail)
+        response2 = client.post("/ants")
+        assert response2.status_code == 409
+        assert "maximum capacity" in response2.json()["detail"]
+
+================================== FAILURES ===================================
+________________ TestAntsAPI.test_create_ant_at_capacity_fails ________________
+
+self = <tests.test_api.TestAntsAPI object at 0x000001B3C3AE4D10>
+client = <starlette.testclient.TestClient object at 0x000001B3C3AE4DD0>
+
+    def test_create_ant_at_capacity_fails(self, client):
+        # Configure colony to max 1 ant
+        client.put("/colony/config?max_ants=1")
+    
+        # Create first ant (should succeed)
+        response1 = client.post("/ants")
+        assert response1.status_code == 200
+    
+        # Try to create second ant (should fail)
+        response2 = client.post("/ants")
+>       assert response2.status_code == 409
+E       assert 200 == 409
+E        +  where 200 = <Response [200 OK]>.status_code
+
+tests\test_api.py:78: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/test_api.py::TestAntsAPI::test_create_ant_at_capacity_fails - as...
+============================== 1 failed in 0.66s ==============================
+
+Vamos a manejar un sistema de configuracion para apoyar las pruebas.
+
+            raise HTTPException(
+>               status_code=status.HTTP_409_CONFLICT,
+                            ^^^^^^^^^^^^^^^^^^^^^^^^
+                detail="Cannot create ant: colony is at maximum capacity"
+            )
+E           AttributeError: 'dict' object has no attribute 'HTTP_409_CONFLICT'
+
+src\main.py:480: AttributeError
+=========================== short test summary info ===========================
+FAILED tests/test_api.py::TestAntsAPI::test_create_ant_at_capacity_fails - At...
+============================== 1 failed in 0.89s ==============================
+
+Revisando. Parece que estabamos usando el nombre de un atributo reservado (Status)
+
+============================== 1 passed in 0.55s ==============================
+
+Hacemos lo mismo si nos falta comida
+
+    def test_create_ant_at_capacity_fails(self, client):
+        # Configure colony to little food
+        client.put("/colony/config?food_stock=10")
+
+        # Create first ant (should succeed)
+        response1 = client.post("/ants")
+        assert response1.status_code == 200
+
+        # Try to create second ant (should fail)
+        response2 = client.post("/ants")
+        assert response2.status_code == 409
+        assert "Sin recursos" in response2.json()["detail"]
+
+============================== 1 passed in 0.57s ==============================
+
+Ya lo habiamos contemplado.
+
+Puede que tambien queramos obtener todas las hormigas
+  def test_get_all_ants(self, client):
+        # Create two ants
+        client.post("/ants")
+        client.post("/ants")
+
+        response = client.get("/ants")
+        assert response.status_code == 200
+        data = response.json()
+        assert len(data) == 2
+        for ant in data:
+            assert "id" in ant
+            assert ant["is_alive"] is True
+
+================================== FAILURES ===================================
+________________________ TestAntsAPI.test_get_all_ants ________________________
+
+self = <tests.test_api.TestAntsAPI object at 0x00000268C7741C10>
+client = <starlette.testclient.TestClient object at 0x00000268C7742300>
+
+    def test_get_all_ants(self, client):
+        # Create two ants
+        client.post("/ants")
+        client.post("/ants")
+    
+        response = client.get("/ants")
+>       assert response.status_code == 200
+E       assert 405 == 200
+E        +  where 405 = <Response [405 Method Not Allowed]>.status_code
+
+tests\test_api.py:100: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/test_api.py::TestAntsAPI::test_get_all_ants - assert 405 == 200
+============================== 1 failed in 0.64s ==============================
+
+Agregamos el endpoint.
+
+============================== warnings summary ===============================
+src\main.py:168
+  c:\Users\alecm\PhpstormProjects\ColoniaHormigasTDD\src\main.py:168: DeprecationWarning: `regex` has been deprecated, please use `pattern` instead
+    state: str = Query(
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+======================== 1 passed, 1 warning in 0.55s =========================
+
+Parece que tenemos un warning. Revisamos si lo podemos actualizar.
+
+============================== 1 passed in 0.55s ==============================
+

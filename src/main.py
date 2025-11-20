@@ -1,5 +1,6 @@
 from fastapi import FastAPI, HTTPException, Query, status
 from fastapi.responses import RedirectResponse
+from fastapi.middleware.cors import CORSMiddleware
 from typing import List
 from src.colony import Colony
 from src.models import (
@@ -93,8 +94,8 @@ para otros subsistemas del ecosistema de la colonia:
             "description": "Servidor de desarrollo"
         },
         {
-            "url": "http://localhost:80",
-            "description": "Servidor de producción (con nginx)"
+            "url": "http://localhost",
+            "description": "Servidor local alternativo"
         }
     ]
 )
