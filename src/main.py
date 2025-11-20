@@ -11,6 +11,10 @@ from src.models import (
     ConfigurationResponse, FoodResponse, CleanupResponse, RootResponse, ErrorResponse
 )
 
+
+# Global colony instance - configuración según requisitos académicos
+colony = Colony(max_ants=100, initial_food_stock=1000, ant_lifespan_minutes=1.5)
+
 # OpenAPI metadata
 tags_metadata = [
     {
@@ -77,8 +81,7 @@ para otros subsistemas del ecosistema de la colonia:
     """,
     openapi_tags=tags_metadata,
     contact={
-        "name": "Grupo 3 - Subsistema Hormiga Reina",
-        "email": "grupo3@universidad.edu",
+        "name": "Grupo 3 - Subsistema Hormiga Reina"
     },
     license_info={
         "name": "Académico",
@@ -96,253 +99,49 @@ para otros subsistemas del ecosistema de la colonia:
     ]
 )
 
-# Global colony instance - configuración según requisitos académicos
-colony = Colony(max_ants=100, initial_food_stock=1000, ant_lifespan_minutes=1.5)
+# # === 📊 ENDPOINTS DE CONSULTA Y ESTADO ===
 
-
-@app.get("/", include_in_schema=False)
-async def redirect_to_docs():
-    """Redirige automáticamente a la documentación Swagger"""
-    return RedirectResponse(url="/docs")
-
+@app.get("/")
+async def root():
+    return {
+        "message": "Sistema de Hormiga Reina"
+    }
 
 @app.get(
-    "/info",
-    response_model=RootResponse,
-    tags=["🏠 Sistema"],
-    summary="🏠 Información del Subsistema",
+    "/colony/status",
+    response_model=ColonyStatus,
+    tags=["🔧 Utilidades"],
+    summary="📊 Estado Básico (Compatibilidad)",
     description="""
-    Endpoint informativo que devuelve datos básicos del **Subsistema de Hormiga Reina**.
+    **Endpoint de compatibilidad** que retorna estado básico de la colonia.
 
-    Útil para verificar:
-    - ✅ Conectividad con la API
-    - ✅ Versión del subsistema
-    - ✅ Subsistemas externos disponibles
-    - ✅ Estado general del servicio
+    Mantiene **retrocompatibilidad** con versiones anteriores del API.
+    Para información detallada, usar `/colony/status/comprehensive`.
     """
 )
-async def get_system_info():
-    return {
-        "message": "Queen Ant Subsystem - Ant Colony Management System",
-        "version": "2.0.0",
-        "subsystem": "Queen Ant (Hormiga Reina)",
-        "available_subsystems": ["communication", "collection", "defense"]
-    }
+async def get_basic_colony_status():
+    return colony.get_status()
 
+# @app.get(
+#     "/colony/status/comprehensive",
+#     response_model=ComprehensiveColonyStatus,
+#     tags=["📊 Estado y Consultas"],
+#     summary="📈 Estado Detallado del Hormiguero",
+#     description="""
+#     **Endpoint principal** para consultar el estado comprehensive de la colonia.
 
-# === 🐜 ENDPOINTS PRINCIPALES PARA GESTIÓN DE HORMIGAS ===
+#     ### 📊 Información Incluida:
+#     - 🐜 **Estadísticas de hormigas**: totales, vivas, libres, asignadas, muertas
+#     - 🍯 **Recursos**: stock actual de comida y capacidad de creación
+#     - 🏗️ **Capacidad**: máximo configurado y disponibilidad
+#     - 🚨 **Estado operacional**: modo emergencia, distribución por subsistema
+#     - ⏰ **Configuración**: tiempo de vida de hormigas
 
-@app.post(
-    "/ants/request",
-    response_model=AntAssignmentResponse,
-    status_code=status.HTTP_200_OK,
-    tags=["🐜 Gestión de Hormigas"],
-    summary="🎯 R1: Solicitar Hormiga para Subsistema",
-    description="""
-    ## 📋 Requisito Académico R1: Dar Hormiga
-
-    **Funcionalidad principal** para asignar hormigas a subsistemas solicitantes.
-
-    ### 🔍 Validaciones Implementadas:
-    - ✅ **Subsistema conocido**: Solo acepta Defense, Communication, Collection
-    - ✅ **Recursos suficientes**: Verifica stock de comida y capacidad
-    - ✅ **Vida restante**: La hormiga debe poder completar la tarea
-    - ✅ **Prioridades**: Respeta jerarquía Defense > Communication > Collection
-
-    ### 🏗️ Comportamiento:
-    1. Busca hormiga libre con vida suficiente
-    2. Si no encuentra, intenta crear nueva hormiga
-    3. Si no puede crear, rechaza la solicitud
-    4. Asigna hormiga al subsistema solicitante
-
-    ### 📊 Códigos de Respuesta:
-    - **200**: Asignación exitosa
-    - **400**: Subsistema desconocido
-    - **409**: Sin recursos/capacidad suficiente
-    """,
-    responses={
-        200: {"description": "Hormiga asignada exitosamente", "model": AntAssignmentResponse},
-        400: {"description": "Subsistema desconocido", "model": ErrorResponse},
-        409: {"description": "Sin recursos o capacidad suficiente", "model": ErrorResponse},
-    }
-)
-async def request_ant(request: AntRequest):
-    """
-    R1: Dar hormiga - Solicitar una hormiga para asignación a un subsistema
-    Valida subsistema conocido, prioridad, y capacidad de la hormiga para la tarea
-    """
-    ant = colony.request_ant(
-        subsystem_name=request.subsystem_name,
-        priority=request.priority,
-        estimated_duration_seconds=request.estimated_duration_seconds
-    )
-
-    if ant is None:
-        # Determinar motivo del rechazo
-        if request.subsystem_name.lower() not in ["communication", "collection", "defense"]:
-            raise HTTPException(
-                status_code=400,
-                detail=f"Unknown subsystem: {request.subsystem_name}. Valid options: communication, collection, defense"
-            )
-
-        status = colony.get_comprehensive_status()
-        if status['food_stock'] < colony.food_per_ant:
-            raise HTTPException(
-                status_code=409,
-                detail="Insufficient food stock to create new ants"
-            )
-
-        if not status['can_create_more']:
-            raise HTTPException(
-                status_code=409,
-                detail="No available ants and cannot create more (capacity reached)"
-            )
-
-        raise HTTPException(
-            status_code=409,
-            detail="No ants available with sufficient remaining life for this task"
-        )
-
-    return {
-        "message": f"Ant assigned to {request.subsystem_name}",
-        "ant": ant.to_dict(),
-        "assignment_successful": True
-    }
-
-
-@app.post(
-    "/ants/return",
-    response_model=AntReturnResponse,
-    status_code=status.HTTP_200_OK,
-    tags=["🐜 Gestión de Hormigas"],
-    summary="🔄 R2: Devolver Hormiga de Misión",
-    description="""
-    ## 📋 Requisito Académico R2: Devolver Hormiga
-
-    **Endpoint para el retorno** de hormigas que completaron (o no) sus misiones asignadas.
-
-    ### 🎯 Casos de Uso:
-    - ✅ **Misión exitosa**: Hormiga regresa sana, posiblemente con comida
-    - ✅ **Misión exitosa con comida**: +20 unidades al stock de la colonia
-    - ❌ **Muerte en misión**: Hormiga marcada como muerta
-    - 🔄 **Reasignación**: Hormiga libre queda disponible para nuevas misiones
-
-    ### 🏗️ Comportamiento:
-    1. Localiza la hormiga por ID
-    2. Si regresa con comida, incrementa stock (+20 unidades)
-    3. Si murió, marca como DEAD
-    4. Si sobrevivió, marca como FREE
-    5. Limpia asignación y tiempo de asignación
-
-    ### 📊 Códigos de Respuesta:
-    - **200**: Retorno procesado exitosamente
-    - **404**: Hormiga no encontrada
-    """,
-    responses={
-        200: {"description": "Retorno procesado exitosamente", "model": AntReturnResponse},
-        404: {"description": "Hormiga no encontrada", "model": ErrorResponse},
-    }
-)
-async def return_ant(return_data: AntReturn):
-    success = colony.return_ant(
-        ant_id=return_data.ant_id,
-        returned_with_food=return_data.returned_with_food,
-        died_in_mission=return_data.died_in_mission
-    )
-
-    if not success:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Ant with ID {return_data.ant_id} not found"
-        )
-
-    status_msg = "returned"
-    if return_data.died_in_mission:
-        status_msg = "died in mission"
-    elif return_data.returned_with_food:
-        status_msg = "returned with food"
-
-    return {
-        "message": f"Ant {return_data.ant_id} {status_msg}",
-        "food_gained": return_data.returned_with_food and not return_data.died_in_mission,
-        "ant_died": return_data.died_in_mission
-    }
-
-
-@app.post(
-    "/ants/emergency",
-    response_model=List[EmergencyAntResponse],
-    status_code=status.HTTP_200_OK,
-    tags=["🐜 Gestión de Hormigas"],
-    summary="🚨 R3: Solicitar Hormigas de Emergencia",
-    description="""
-    ## 📋 Requisito Académico R3: Emergencia y Reasignación
-
-    **Endpoint crítico** para manejo de crisis que requieren reasignación de hormigas basada en prioridades.
-
-    ### 🎯 Jerarquía de Prioridades (Reasignación):
-    - **🛡️ Defense (1)** puede tomar hormigas de Communication y Collection
-    - **📡 Communication (2)** puede tomar hormigas de Collection
-    - **🌾 Collection (3)** no puede tomar hormigas de otros subsistemas
-
-    ### 🏗️ Algoritmo de Emergencia:
-    1. **Paso 1**: Busca hormigas libres disponibles
-    2. **Paso 2**: Si insuficientes, identifica hormigas reasignables:
-       - Solo de subsistemas con menor prioridad
-       - Que hayan esperado al menos `max_wait_seconds`
-    3. **Paso 3**: Reasigna hormigas al subsistema solicitante
-    4. **Paso 4**: Activa modo emergencia en la colonia
-
-    ### ⏰ Tiempo de Gracia:
-    - Mínimo **10 segundos** de espera antes de reasignar
-    - Configurable con parámetro `max_wait_seconds`
-
-    ### 📊 Respuesta:
-    Retorna lista de hormigas asignadas con metadatos de reasignación
-    """,
-    responses={
-        200: {"description": "Hormigas de emergencia asignadas", "model": List[EmergencyAntResponse]},
-    }
-)
-async def request_emergency_ants(request: EmergencyRequest):
-    emergency_ants = colony.request_emergency_ants(
-        requesting_subsystem=request.requesting_subsystem,
-        number_needed=request.number_needed,
-        max_wait_seconds=request.max_wait_seconds
-    )
-
-    return [
-        {
-            "ant": ant.to_dict(),
-            "reassigned": True,
-            "emergency_assignment": True
-        }
-        for ant in emergency_ants
-    ]
-
-
-# === 📊 ENDPOINTS DE CONSULTA Y ESTADO ===
-
-@app.get(
-    "/colony/status/comprehensive",
-    response_model=ComprehensiveColonyStatus,
-    tags=["📊 Estado y Consultas"],
-    summary="📈 Estado Detallado del Hormiguero",
-    description="""
-    **Endpoint principal** para consultar el estado comprehensive de la colonia.
-
-    ### 📊 Información Incluida:
-    - 🐜 **Estadísticas de hormigas**: totales, vivas, libres, asignadas, muertas
-    - 🍯 **Recursos**: stock actual de comida y capacidad de creación
-    - 🏗️ **Capacidad**: máximo configurado y disponibilidad
-    - 🚨 **Estado operacional**: modo emergencia, distribución por subsistema
-    - ⏰ **Configuración**: tiempo de vida de hormigas
-
-    **Ideal para dashboards y monitoreo** del estado general del subsistema.
-    """
-)
-async def get_comprehensive_colony_status():
-    return colony.get_comprehensive_status()
+#     **Ideal para dashboards y monitoreo** del estado general del subsistema.
+#     """
+# )
+# async def get_comprehensive_colony_status():
+#     return colony.get_comprehensive_status()
 
 
 @app.get(
@@ -369,11 +168,11 @@ async def get_all_ants(
     state: str = Query(
         None,
         description="Filtrar por estado",
-        regex="^(free|assigned|dead)$",
+        pattern="^(free|assigned|dead)$",
         examples=["free", "assigned", "dead"]
     )
 ):
-    colony.update_all_ant_states()
+    # colony.update_all_ant_states()
 
     if state == "free":
         ants = colony.get_free_ants()
@@ -413,15 +212,235 @@ async def get_ant(ant_id: str):
     if ant is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Ant not found"
+            detail="Hormiga no encontrada"
         )
 
     # Update state before returning
-    ant.update_state()
+    # ant.update_state()
     return ant.to_dict()
 
+# @app.get("/", include_in_schema=False)
+# async def redirect_to_docs():
+#     """Redirige automáticamente a la documentación Swagger"""
+#     return RedirectResponse(url="/docs")
 
-# === ⚙️ ENDPOINTS DE CONFIGURACIÓN Y ADMINISTRACIÓN ===
+
+# @app.get(
+#     "/info",
+#     response_model=RootResponse,
+#     tags=["🏠 Sistema"],
+#     summary="🏠 Información del Subsistema",
+#     description="""
+#     Endpoint informativo que devuelve datos básicos del **Subsistema de Hormiga Reina**.
+
+#     Útil para verificar:
+#     - ✅ Conectividad con la API
+#     - ✅ Versión del subsistema
+#     - ✅ Subsistemas externos disponibles
+#     - ✅ Estado general del servicio
+#     """
+# )
+# async def get_system_info():
+#     return {
+#         "message": "Queen Ant Subsystem - Ant Colony Management System",
+#         "version": "2.0.0",
+#         "subsystem": "Queen Ant (Hormiga Reina)",
+#         "available_subsystems": ["communication", "collection", "defense"]
+#     }
+
+
+# # === 🐜 ENDPOINTS PRINCIPALES PARA GESTIÓN DE HORMIGAS ===
+
+# @app.post(
+#     "/ants/request",
+#     response_model=AntAssignmentResponse,
+#     status_code=status.HTTP_200_OK,
+#     tags=["🐜 Gestión de Hormigas"],
+#     summary="🎯 R1: Solicitar Hormiga para Subsistema",
+#     description="""
+#     ## 📋 Requisito Académico R1: Dar Hormiga
+
+#     **Funcionalidad principal** para asignar hormigas a subsistemas solicitantes.
+
+#     ### 🔍 Validaciones Implementadas:
+#     - ✅ **Subsistema conocido**: Solo acepta Defense, Communication, Collection
+#     - ✅ **Recursos suficientes**: Verifica stock de comida y capacidad
+#     - ✅ **Vida restante**: La hormiga debe poder completar la tarea
+#     - ✅ **Prioridades**: Respeta jerarquía Defense > Communication > Collection
+
+#     ### 🏗️ Comportamiento:
+#     1. Busca hormiga libre con vida suficiente
+#     2. Si no encuentra, intenta crear nueva hormiga
+#     3. Si no puede crear, rechaza la solicitud
+#     4. Asigna hormiga al subsistema solicitante
+
+#     ### 📊 Códigos de Respuesta:
+#     - **200**: Asignación exitosa
+#     - **400**: Subsistema desconocido
+#     - **409**: Sin recursos/capacidad suficiente
+#     """,
+#     responses={
+#         200: {"description": "Hormiga asignada exitosamente", "model": AntAssignmentResponse},
+#         400: {"description": "Subsistema desconocido", "model": ErrorResponse},
+#         409: {"description": "Sin recursos o capacidad suficiente", "model": ErrorResponse},
+#     }
+# )
+# async def request_ant(request: AntRequest):
+#     """
+#     R1: Dar hormiga - Solicitar una hormiga para asignación a un subsistema
+#     Valida subsistema conocido, prioridad, y capacidad de la hormiga para la tarea
+#     """
+#     ant = colony.request_ant(
+#         subsystem_name=request.subsystem_name,
+#         priority=request.priority,
+#         estimated_duration_seconds=request.estimated_duration_seconds
+#     )
+
+#     if ant is None:
+#         # Determinar motivo del rechazo
+#         if request.subsystem_name.lower() not in ["communication", "collection", "defense"]:
+#             raise HTTPException(
+#                 status_code=400,
+#                 detail=f"Unknown subsystem: {request.subsystem_name}. Valid options: communication, collection, defense"
+#             )
+
+#         status = colony.get_comprehensive_status()
+#         if status['food_stock'] < colony.food_per_ant:
+#             raise HTTPException(
+#                 status_code=409,
+#                 detail="Insufficient food stock to create new ants"
+#             )
+
+#         if not status['can_create_more']:
+#             raise HTTPException(
+#                 status_code=409,
+#                 detail="No available ants and cannot create more (capacity reached)"
+#             )
+
+#         raise HTTPException(
+#             status_code=409,
+#             detail="No ants available with sufficient remaining life for this task"
+#         )
+
+#     return {
+#         "message": f"Ant assigned to {request.subsystem_name}",
+#         "ant": ant.to_dict(),
+#         "assignment_successful": True
+#     }
+
+
+# @app.post(
+#     "/ants/return",
+#     response_model=AntReturnResponse,
+#     status_code=status.HTTP_200_OK,
+#     tags=["🐜 Gestión de Hormigas"],
+#     summary="🔄 R2: Devolver Hormiga de Misión",
+#     description="""
+#     ## 📋 Requisito Académico R2: Devolver Hormiga
+
+#     **Endpoint para el retorno** de hormigas que completaron (o no) sus misiones asignadas.
+
+#     ### 🎯 Casos de Uso:
+#     - ✅ **Misión exitosa**: Hormiga regresa sana, posiblemente con comida
+#     - ✅ **Misión exitosa con comida**: +20 unidades al stock de la colonia
+#     - ❌ **Muerte en misión**: Hormiga marcada como muerta
+#     - 🔄 **Reasignación**: Hormiga libre queda disponible para nuevas misiones
+
+#     ### 🏗️ Comportamiento:
+#     1. Localiza la hormiga por ID
+#     2. Si regresa con comida, incrementa stock (+20 unidades)
+#     3. Si murió, marca como DEAD
+#     4. Si sobrevivió, marca como FREE
+#     5. Limpia asignación y tiempo de asignación
+
+#     ### 📊 Códigos de Respuesta:
+#     - **200**: Retorno procesado exitosamente
+#     - **404**: Hormiga no encontrada
+#     """,
+#     responses={
+#         200: {"description": "Retorno procesado exitosamente", "model": AntReturnResponse},
+#         404: {"description": "Hormiga no encontrada", "model": ErrorResponse},
+#     }
+# )
+# async def return_ant(return_data: AntReturn):
+#     success = colony.return_ant(
+#         ant_id=return_data.ant_id,
+#         returned_with_food=return_data.returned_with_food,
+#         died_in_mission=return_data.died_in_mission
+#     )
+
+#     if not success:
+#         raise HTTPException(
+#             status_code=status.HTTP_404_NOT_FOUND,
+#             detail=f"Ant with ID {return_data.ant_id} not found"
+#         )
+
+#     status_msg = "returned"
+#     if return_data.died_in_mission:
+#         status_msg = "died in mission"
+#     elif return_data.returned_with_food:
+#         status_msg = "returned with food"
+
+#     return {
+#         "message": f"Ant {return_data.ant_id} {status_msg}",
+#         "food_gained": return_data.returned_with_food and not return_data.died_in_mission,
+#         "ant_died": return_data.died_in_mission
+#     }
+
+
+# @app.post(
+#     "/ants/emergency",
+#     response_model=List[EmergencyAntResponse],
+#     status_code=status.HTTP_200_OK,
+#     tags=["🐜 Gestión de Hormigas"],
+#     summary="🚨 R3: Solicitar Hormigas de Emergencia",
+#     description="""
+#     ## 📋 Requisito Académico R3: Emergencia y Reasignación
+
+#     **Endpoint crítico** para manejo de crisis que requieren reasignación de hormigas basada en prioridades.
+
+#     ### 🎯 Jerarquía de Prioridades (Reasignación):
+#     - **🛡️ Defense (1)** puede tomar hormigas de Communication y Collection
+#     - **📡 Communication (2)** puede tomar hormigas de Collection
+#     - **🌾 Collection (3)** no puede tomar hormigas de otros subsistemas
+
+#     ### 🏗️ Algoritmo de Emergencia:
+#     1. **Paso 1**: Busca hormigas libres disponibles
+#     2. **Paso 2**: Si insuficientes, identifica hormigas reasignables:
+#        - Solo de subsistemas con menor prioridad
+#        - Que hayan esperado al menos `max_wait_seconds`
+#     3. **Paso 3**: Reasigna hormigas al subsistema solicitante
+#     4. **Paso 4**: Activa modo emergencia en la colonia
+
+#     ### ⏰ Tiempo de Gracia:
+#     - Mínimo **10 segundos** de espera antes de reasignar
+#     - Configurable con parámetro `max_wait_seconds`
+
+#     ### 📊 Respuesta:
+#     Retorna lista de hormigas asignadas con metadatos de reasignación
+#     """,
+#     responses={
+#         200: {"description": "Hormigas de emergencia asignadas", "model": List[EmergencyAntResponse]},
+#     }
+# )
+# async def request_emergency_ants(request: EmergencyRequest):
+#     emergency_ants = colony.request_emergency_ants(
+#         requesting_subsystem=request.requesting_subsystem,
+#         number_needed=request.number_needed,
+#         max_wait_seconds=request.max_wait_seconds
+#     )
+
+#     return [
+#         {
+#             "ant": ant.to_dict(),
+#             "reassigned": True,
+#             "emergency_assignment": True
+#         }
+#         for ant in emergency_ants
+#     ]
+
+
+# # === ⚙️ ENDPOINTS DE CONFIGURACIÓN Y ADMINISTRACIÓN ===
 
 @app.post(
     "/ants",
@@ -451,15 +470,15 @@ async def get_ant(ant_id: str):
 async def create_ant_directly():
     ant = colony.create_ant()
     if ant is None:
-        status = colony.get_comprehensive_status()
-        if status['food_stock'] < colony.food_per_ant:
+        status_colonia = colony.get_comprehensive_status()
+        if status_colonia['food_stock'] < colony.food_per_ant:
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
-                detail="Cannot create ant: insufficient food stock"
+                detail="Sin recursos"
             )
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
-            detail="Cannot create ant: colony is at maximum capacity"
+            detail="Sin capacidad"
         )
     return ant.to_dict()
 
@@ -524,125 +543,110 @@ async def configure_colony(
     }
 
 
-@app.post(
-    "/colony/food/add",
-    response_model=FoodResponse,
-    tags=["⚙️ Configuración"],
-    summary="🍯 Agregar Comida al Stock",
-    description="""
-    **Simula misiones exitosas** de recolección agregando comida al stock de la colonia.
+# @app.post(
+#     "/colony/food/add",
+#     response_model=FoodResponse,
+#     tags=["⚙️ Configuración"],
+#     summary="🍯 Agregar Comida al Stock",
+#     description="""
+#     **Simula misiones exitosas** de recolección agregando comida al stock de la colonia.
 
-    ### 🎯 Funcionalidad:
-    - Incrementa el stock de comida disponible
-    - Permite creación de más hormigas
-    - Simula retorno exitoso de misiones de Collection
+#     ### 🎯 Funcionalidad:
+#     - Incrementa el stock de comida disponible
+#     - Permite creación de más hormigas
+#     - Simula retorno exitoso de misiones de Collection
 
-    ### 📊 Uso Típico:
-    - **Testing**: Asegurar recursos para crear hormigas
-    - **Simulación**: Modelar ciclos de recolección exitosos
-    - **Recovery**: Recuperar stock después de muchas creaciones
-    """,
-    responses={
-        200: {"description": "Comida agregada exitosamente", "model": FoodResponse},
-        400: {"description": "Cantidad inválida", "model": ErrorResponse},
-    }
-)
-async def add_food(
-    amount: int = Query(..., description="Cantidad de comida a agregar", gt=0, examples=[50, 100, 200])
-):
-    if amount <= 0:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Amount must be positive")
+#     ### 📊 Uso Típico:
+#     - **Testing**: Asegurar recursos para crear hormigas
+#     - **Simulación**: Modelar ciclos de recolección exitosos
+#     - **Recovery**: Recuperar stock después de muchas creaciones
+#     """,
+#     responses={
+#         200: {"description": "Comida agregada exitosamente", "model": FoodResponse},
+#         400: {"description": "Cantidad inválida", "model": ErrorResponse},
+#     }
+# )
+# async def add_food(
+#     amount: int = Query(..., description="Cantidad de comida a agregar", gt=0, examples=[50, 100, 200])
+# ):
+#     if amount <= 0:
+#         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Amount must be positive")
 
-    colony.add_food(amount)
-    return {
-        "message": f"Added {amount} food units",
-        "total_food_stock": colony.food_stock
-    }
-
-
-# === 🔧 ENDPOINTS DE UTILIDADES ===
-
-@app.post(
-    "/colony/cleanup",
-    response_model=CleanupResponse,
-    tags=["🔧 Utilidades"],
-    summary="🧹 Limpiar Hormigas Muertas",
-    description="""
-    **Trigger manual** para limpieza de hormigas que han muerto por tiempo de vida agotado.
-
-    ### 🏗️ Funcionalidad:
-    - Remueve hormigas muertas de la colonia
-    - Libera espacio para crear nuevas hormigas
-    - Normalmente se ejecuta automáticamente, pero puede hacerse manual
-
-    ### 📊 Respuesta:
-    - Número de hormigas limpiadas
-    - Hormigas vivas restantes después de limpieza
-
-    **Útil para mantenimiento** y liberación de recursos.
-    """
-)
-async def cleanup_dead_ants():
-    cleaned_count = colony.cleanup_dead_ants()
-    return {
-        "message": f"Cleaned up {cleaned_count} dead ants",
-        "remaining_ants": len(colony.get_alive_ants())
-    }
+#     colony.add_food(amount)
+#     return {
+#         "message": f"Added {amount} food units",
+#         "total_food_stock": colony.food_stock
+#     }
 
 
-@app.get(
-    "/colony/status",
-    response_model=ColonyStatus,
-    tags=["🔧 Utilidades"],
-    summary="📊 Estado Básico (Compatibilidad)",
-    description="""
-    **Endpoint de compatibilidad** que retorna estado básico de la colonia.
+# # === 🔧 ENDPOINTS DE UTILIDADES ===
 
-    Mantiene **retrocompatibilidad** con versiones anteriores del API.
-    Para información detallada, usar `/colony/status/comprehensive`.
-    """
-)
-async def get_basic_colony_status():
-    return colony.get_status()
+# @app.post(
+#     "/colony/cleanup",
+#     response_model=CleanupResponse,
+#     tags=["🔧 Utilidades"],
+#     summary="🧹 Limpiar Hormigas Muertas",
+#     description="""
+#     **Trigger manual** para limpieza de hormigas que han muerto por tiempo de vida agotado.
+
+#     ### 🏗️ Funcionalidad:
+#     - Remueve hormigas muertas de la colonia
+#     - Libera espacio para crear nuevas hormigas
+#     - Normalmente se ejecuta automáticamente, pero puede hacerse manual
+
+#     ### 📊 Respuesta:
+#     - Número de hormigas limpiadas
+#     - Hormigas vivas restantes después de limpieza
+
+#     **Útil para mantenimiento** y liberación de recursos.
+#     """
+# )
+# async def cleanup_dead_ants():
+#     cleaned_count = colony.cleanup_dead_ants()
+#     return {
+#         "message": f"Cleaned up {cleaned_count} dead ants",
+#         "remaining_ants": len(colony.get_alive_ants())
+#     }
 
 
-@app.get(
-    "/subsystems",
-    response_model=SubsystemsResponse,
-    tags=["🔧 Utilidades"],
-    summary="🏗️ Información de Subsistemas",
-    description="""
-    **Información de referencia** sobre los subsistemas disponibles y sus prioridades.
 
-    ### 📋 Información Incluida:
-    - **IDs y nombres** de subsistemas disponibles
-    - **Niveles de prioridad** (1=máxima, 3=mínima)
-    - **Explicación** de jerarquía para reasignaciones
+# @app.get(
+#     "/subsystems",
+#     response_model=SubsystemsResponse,
+#     tags=["🔧 Utilidades"],
+#     summary="🏗️ Información de Subsistemas",
+#     description="""
+#     **Información de referencia** sobre los subsistemas disponibles y sus prioridades.
 
-    ### 🎯 Jerarquía de Prioridades:
-    1. **🛡️ Defense**: Máxima prioridad, puede tomar hormigas de otros
-    2. **📡 Communication**: Prioridad media, puede tomar de Collection
-    3. **🌾 Collection**: Mínima prioridad, no puede tomar de otros
+#     ### 📋 Información Incluida:
+#     - **IDs y nombres** de subsistemas disponibles
+#     - **Niveles de prioridad** (1=máxima, 3=mínima)
+#     - **Explicación** de jerarquía para reasignaciones
 
-    **Referencia esencial** para entender el sistema de prioridades.
-    """
-)
-async def get_available_subsystems():
-    from src.subsystems import Subsystem
-    subsystems = Subsystem.get_known_subsystems()
+#     ### 🎯 Jerarquía de Prioridades:
+#     1. **🛡️ Defense**: Máxima prioridad, puede tomar hormigas de otros
+#     2. **📡 Communication**: Prioridad media, puede tomar de Collection
+#     3. **🌾 Collection**: Mínima prioridad, no puede tomar de otros
 
-    return {
-        "available_subsystems": [
-            {
-                "id": subsystem.id.value,
-                "name": subsystem.name,
-                "priority_level": subsystem.priority_level
-            }
-            for subsystem in subsystems.values()
-        ],
-        "priority_explanation": {
-            "1": "Highest priority (Defense)",
-            "2": "Medium priority (Communication)",
-            "3": "Lowest priority (Collection)"
-        }
-    }
+#     **Referencia esencial** para entender el sistema de prioridades.
+#     """
+# )
+# async def get_available_subsystems():
+#     from src.subsystems import Subsystem
+#     subsystems = Subsystem.get_known_subsystems()
+
+#     return {
+#         "available_subsystems": [
+#             {
+#                 "id": subsystem.id.value,
+#                 "name": subsystem.name,
+#                 "priority_level": subsystem.priority_level
+#             }
+#             for subsystem in subsystems.values()
+#         ],
+#         "priority_explanation": {
+#             "1": "Highest priority (Defense)",
+#             "2": "Medium priority (Communication)",
+#             "3": "Lowest priority (Collection)"
+#         }
+#     }
