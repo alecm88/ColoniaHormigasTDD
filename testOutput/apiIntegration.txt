@@ -1,0 +1,282 @@
+Tenemos el documento del API de comunicacion. Vamos a crear pruebas para enviarles datos.
+
+1. Vamos a tener un metodo que cree un mensaje para enviar
+2. Comunicacion nos envio los codigos de los subsistemas, tenemos que actualizar las pruebas para utilizarlos
+
+
+La primer prueba es para enviar una hormiga
+================================== FAILURES ===================================
+___________ TestIntegrationAPI.test_request_ant_for_valid_subsystem ___________
+
+self = <tests.test_api_integration.TestIntegrationAPI object at 0x000002011D00DE80>
+client = <starlette.testclient.TestClient object at 0x000002011D00D9D0>
+
+    def test_request_ant_for_valid_subsystem(self, client):
+        request_data = {
+            "subsystem_name": "S05_DEF",
+            "priority": 1,
+            "estimated_duration_seconds": 30
+        }
+        response = client.post("/ants/request", json=request_data)
+    
+>       assert response.status_code == 200
+E       assert 405 == 200
+E        +  where 405 = <Response [405 Method Not Allowed]>.status_code
+
+tests\test_api_integration.py:30: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/test_api_integration.py::TestIntegrationAPI::test_request_ant_for_valid_subsystem
+============================== 1 failed in 0.70s ==============================
+
+Creamos el endpoint de request
+
+================================== FAILURES ===================================
+___________ TestIntegrationAPI.test_request_ant_for_valid_subsystem ___________
+
+self = <tests.test_api_integration.TestIntegrationAPI object at 0x000002D4E59DECC0>
+client = <starlette.testclient.TestClient object at 0x000002D4E59DE9C0>
+
+    def test_request_ant_for_valid_subsystem(self, client):
+        request_data = {
+            "subsystem_name": "S05_DEF",
+            "priority": 1,
+            "estimated_duration_seconds": 30
+        }
+>       response = client.post("/ants/request", json=request_data)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_api_integration.py:28: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+.venv\Lib\site-packages\starlette\testclient.py:552: in post
+    return super().post(
+.venv\Lib\site-packages\httpx\_client.py:1144: in post
+    return self.request(
+.venv\Lib\site-packages\starlette\testclient.py:451: in request
+    return super().request(
+.venv\Lib\site-packages\httpx\_client.py:825: in request
+    return self.send(request, auth=auth, follow_redirects=follow_redirects)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv\Lib\site-packages\httpx\_client.py:914: in send
+    response = self._send_handling_auth(
+.venv\Lib\site-packages\httpx\_client.py:942: in _send_handling_auth
+    response = self._send_handling_redirects(
+.venv\Lib\site-packages\httpx\_client.py:979: in _send_handling_redirects
+    response = self._send_single_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv\Lib\site-packages\httpx\_client.py:1014: in _send_single_request
+    response = transport.handle_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv\Lib\site-packages\starlette\testclient.py:354: in handle_request
+    raise exc
+.venv\Lib\site-packages\starlette\testclient.py:351: in handle_request
+    portal.call(self.app, scope, receive, send)
+.venv\Lib\site-packages\anyio\from_thread.py:321: in call
+    return cast(T_Retval, self.start_task_soon(func, *args).result())
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+C:\Python312\Lib\concurrent\futures\_base.py:456: in result
+    return self.__get_result()
+           ^^^^^^^^^^^^^^^^^^^
+C:\Python312\Lib\concurrent\futures\_base.py:401: in __get_result
+    raise self._exception
+.venv\Lib\site-packages\anyio\from_thread.py:252: in _call_func
+    retval = await retval_or_awaitable
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv\Lib\site-packages\fastapi\applications.py:1134: in __call__
+    await super().__call__(scope, receive, send)
+.venv\Lib\site-packages\starlette\applications.py:113: in __call__
+    await self.middleware_stack(scope, receive, send)
+.venv\Lib\site-packages\starlette\middleware\errors.py:186: in __call__
+    raise exc
+.venv\Lib\site-packages\starlette\middleware\errors.py:164: in __call__
+    await self.app(scope, receive, _send)
+.venv\Lib\site-packages\starlette\middleware\exceptions.py:63: in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+.venv\Lib\site-packages\starlette\_exception_handler.py:53: in wrapped_app
+    raise exc
+.venv\Lib\site-packages\starlette\_exception_handler.py:42: in wrapped_app
+    await app(scope, receive, sender)
+.venv\Lib\site-packages\fastapi\middleware\asyncexitstack.py:18: in __call__
+    await self.app(scope, receive, send)
+.venv\Lib\site-packages\starlette\routing.py:716: in __call__
+    await self.middleware_stack(scope, receive, send)
+.venv\Lib\site-packages\starlette\routing.py:736: in app
+    await route.handle(scope, receive, send)
+.venv\Lib\site-packages\starlette\routing.py:290: in handle
+    await self.app(scope, receive, send)
+.venv\Lib\site-packages\fastapi\routing.py:125: in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+.venv\Lib\site-packages\starlette\_exception_handler.py:53: in wrapped_app
+    raise exc
+.venv\Lib\site-packages\starlette\_exception_handler.py:42: in wrapped_app
+    await app(scope, receive, sender)
+.venv\Lib\site-packages\fastapi\routing.py:111: in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+.venv\Lib\site-packages\fastapi\routing.py:413: in app
+    content = await serialize_response(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+    async def serialize_response(
+        *,
+        field: Optional[ModelField] = None,
+        response_content: Any,
+        include: Optional[IncEx] = None,
+        exclude: Optional[IncEx] = None,
+        by_alias: bool = True,
+        exclude_unset: bool = False,
+        exclude_defaults: bool = False,
+        exclude_none: bool = False,
+        is_coroutine: bool = True,
+    ) -> Any:
+        if field:
+            errors = []
+            if not hasattr(field, "serialize"):
+                # pydantic v1
+                response_content = _prepare_response_content(
+                    response_content,
+                    exclude_unset=exclude_unset,
+                    exclude_defaults=exclude_defaults,
+                    exclude_none=exclude_none,
+                )
+            if is_coroutine:
+                value, errors_ = field.validate(response_content, {}, loc=("response",))
+            else:
+                value, errors_ = await run_in_threadpool(
+                    field.validate, response_content, {}, loc=("response",)
+                )
+            if isinstance(errors_, list):
+                errors.extend(errors_)
+            elif errors_:
+                errors.append(errors_)
+            if errors:
+>               raise ResponseValidationError(
+                    errors=_normalize_errors(errors), body=response_content
+                )
+E               fastapi.exceptions.ResponseValidationError: 3 validation errors:
+E                 {'type': 'missing', 'loc': ('response', 'message'), 'msg': 'Field required', 'input': {'emisor': 'S03_REI', 'receptor': 'SubsystemEnum.DEFENSE', 'contenido': {'message': 'Ant assigned to SubsystemEnum.DEFENSE', 'ant': {'id': '0cb0a712-21e9-405b-8d4a-ec35175b3e19', 'birth_time': '2025-11-21T09:19:25.322258', 'death_time': '2025-11-21T09:20:55.322258', 'is_alive': True, 'age_seconds': 0.0, 'remaining_life_seconds': 90.0, 'state': 'assigned', 'assigned_to': 'S05_DEF', 'assignment_time': '2025-11-21T09:19:25.322258'}, 'assignment_successful': True}}}
+E                 {'type': 'missing', 'loc': ('response', 'assignment_successful'), 'msg': 'Field required', 'input': {'emisor': 'S03_REI', 'receptor': 'SubsystemEnum.DEFENSE', 'contenido': {'message': 'Ant assigned to SubsystemEnum.DEFENSE', 'ant': {'id': '0cb0a712-21e9-405b-8d4a-ec35175b3e19', 'birth_time': '2025-11-21T09:19:25.322258', 'death_time': '2025-11-21T09:20:55.322258', 'is_alive': True, 'age_seconds': 0.0, 'remaining_life_seconds': 90.0, 'state': 'assigned', 'assigned_to': 'S05_DEF', 'assignment_time': '2025-11-21T09:19:25.322258'}, 'assignment_successful': True}}}
+E                 {'type': 'missing', 'loc': ('response', 'ant'), 'msg': 'Field required', 'input': {'emisor': 'S03_REI', 'receptor': 'SubsystemEnum.DEFENSE', 'contenido': {'message': 'Ant assigned to SubsystemEnum.DEFENSE', 'ant': {'id': '0cb0a712-21e9-405b-8d4a-ec35175b3e19', 'birth_time': '2025-11-21T09:19:25.322258', 'death_time': '2025-11-21T09:20:55.322258', 'is_alive': True, 'age_seconds': 0.0, 'remaining_life_seconds': 90.0, 'state': 'assigned', 'assigned_to': 'S05_DEF', 'assignment_time': '2025-11-21T09:19:25.322258'}, 'assignment_successful': True}}}
+
+.venv\Lib\site-packages\fastapi\routing.py:254: ResponseValidationError
+=========================== short test summary info ===========================
+FAILED tests/test_api_integration.py::TestIntegrationAPI::test_request_ant_for_valid_subsystem
+============================== 1 failed in 0.86s ==============================
+
+Parece que tenemos un tema entre los modelos y el formato de la respuesta. Revisamos.
+
+================================== FAILURES ===================================
+___________ TestIntegrationAPI.test_request_ant_for_valid_subsystem ___________
+
+self = <tests.test_api_integration.TestIntegrationAPI object at 0x000002069937E6F0>
+client = <starlette.testclient.TestClient object at 0x000002069937C9E0>
+
+    def test_request_ant_for_valid_subsystem(self, client):
+        request_data = {
+            "subsystem_name": "S05_DEF",
+            "priority": 1,
+            "estimated_duration_seconds": 30
+        }
+        response = client.post("/ants/request", json=request_data)
+    
+        assert response.status_code == 200
+        data = response.json()
+>       assert data["assignment_successful"] is True
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       KeyError: 'assignment_successful'
+
+tests\test_api_integration.py:32: KeyError
+=========================== short test summary info ===========================
+FAILED tests/test_api_integration.py::TestIntegrationAPI::test_request_ant_for_valid_subsystem
+============================== 1 failed in 0.64s ==============================
+
+Nos falta un atributo.
+
+================================== FAILURES ===================================
+___________ TestIntegrationAPI.test_request_ant_for_valid_subsystem ___________
+
+self = <tests.test_api_integration.TestIntegrationAPI object at 0x000001E55E1DE7E0>
+client = <starlette.testclient.TestClient object at 0x000001E55E1DEBD0>
+
+    def test_request_ant_for_valid_subsystem(self, client):
+        request_data = {
+            "subsystem_name": "S05_DEF",
+            "priority": 1,
+            "estimated_duration_seconds": 30
+        }
+        response = client.post("/ants/request", json=request_data)
+    
+        assert response.status_code == 200
+        data = response.json()
+>       assert "S05_DEF" in data["emisor"]
+E       AssertionError: assert 'S05_DEF' in 'S03_REI'
+
+tests\test_api_integration.py:32: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/test_api_integration.py::TestIntegrationAPI::test_request_ant_for_valid_subsystem
+============================== 1 failed in 0.64s ==============================
+
+Teniamos el emisor/receptor al reves
+
+================================== FAILURES ===================================
+___________ TestIntegrationAPI.test_request_ant_for_valid_subsystem ___________
+
+self = <tests.test_api_integration.TestIntegrationAPI object at 0x00000160677CE870>
+client = <starlette.testclient.TestClient object at 0x0000016068A12A80>
+
+    def test_request_ant_for_valid_subsystem(self, client):
+        request_data = {
+            "subsystem_name": "S05_DEF",
+            "priority": 1,
+            "estimated_duration_seconds": 30
+        }
+        response = client.post("/ants/request", json=request_data)
+        subsystem = Subsystem.get_by_name("S05_DEF")
+    
+        assert response.status_code == 200
+        data = response.json()
+>       assert "S05_DEF" in data["receptor"]
+E       AssertionError: assert 'S05_DEF' in 'SubsystemEnum.DEFENSE'
+
+tests\test_api_integration.py:34: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/test_api_integration.py::TestIntegrationAPI::test_request_ant_for_valid_subsystem
+============================== 1 failed in 0.62s ==============================
+
+Parece tenemos un error al comparar strings con subsistemas
+
+Corriendo pruebas anterior parece que con los cambios en subsistemas tenemos un error en al funcion de diccionario de las hormigas.
+================================== FAILURES ===================================
+__________ TestAntExtended.test_ant_to_dict_includes_all_new_fields ___________
+
+self = <tests.test_ant_extended.TestAntExtended object at 0x00000225F1151D30>
+
+    def test_ant_to_dict_includes_all_new_fields(self):
+        ant = Ant(lifespan_minutes=2.0)
+        ant.assign_to_subsystem(SubsystemType.COMMUNICATION)
+    
+        result = ant.to_dict()
+    
+        expected_keys = {
+            'id', 'birth_time', 'death_time', 'is_alive', 'age_seconds',
+            'remaining_life_seconds', 'state', 'assigned_to',
+            'assignment_time'
+        }
+        assert set(result.keys()) == expected_keys
+        assert result['state'] == 'assigned'
+>       assert result['assigned_to'] == 'communication'
+E       AssertionError: assert 'S01_COM' == 'communication'
+E         
+E         - communication
+E         + S01_COM
+
+tests\test_ant_extended.py:121: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/test_ant_extended.py::TestAntExtended::test_ant_to_dict_includes_all_new_fields
+============================== 1 failed in 0.12s ==============================
+
+Corregimos.
+============================== 1 passed in 0.06s ==============================
+
+Y revisamos las pruebas del API
+
+============================== 1 passed in 0.52s ==============================
