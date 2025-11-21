@@ -468,3 +468,60 @@ FAILED tests/test_api.py::TestAntsAPI::test_get_ant_by_id - KeyError: 'id'
 Parece que la colonia se estaba quedando sin comida.
 
 ============================== 7 passed in 0.58s ==============================
+
+Ahora vamos a correr pruebas adicionales del API.
+
+1. Vamos a tener un endpoint de informacion general
+2. Pedir hormigas para subsistema no existente
+3. Probamos el ciclo de una hormiga (request->retorno)
+4. Poder configurar la colonia desde el API
+
+Comenzamos con informacion general:
+================================== FAILURES ===================================
+___________ TestQueenAntAPI.test_root_endpoint_shows_queen_ant_info ___________
+
+self = <tests.test_api_extended.TestQueenAntAPI object at 0x000002A5B9421640>
+client = <starlette.testclient.TestClient object at 0x000002A5BABBD6D0>
+
+    def test_root_endpoint_shows_queen_ant_info(self, client):
+        response = client.get("/info")
+>       assert response.status_code == 200
+E       assert 404 == 200
+E        +  where 404 = <Response [404 Not Found]>.status_code
+
+tests\test_api_extended.py:27: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/test_api_extended.py::TestQueenAntAPI::test_root_endpoint_shows_queen_ant_info
+============================== 1 failed in 0.61s ==============================
+
+Creamos el endpoint
+
+============================== 1 passed in 0.49s ==============================
+
+Tenemos un tema pidiendo hormigas para subsistemas no existentes, ya que no es compatible con la definicion del modelo por no existir. Revisamos como tirar el error.
+
+Vemos la posibilidad de agregar un handler especial para la ruta. Alternativamente podriamos aceptarlo primero como string
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+request = <starlette.requests.Request object at 0x000002157F66B230>
+exc = RequestValidationError([{'type': 'enum', 'loc': ('body', 'subsystem_name'), 'msg': "Input should be 'S01_COM', 'S02_RE...'S05_DEF'", 'input': 'InvalidSystem', 'ctx': {'expected': "'S01_COM', 'S02_REC', 'S03_REI', 'S04_ENT' or 'S05_DEF'"}}])
+
+    @app.exception_handler(RequestValidationError)
+    async def custom_exception_handler(request: AntRequest, exc: RequestValidationError):
+        if (request.url.path == '/ants/request'):
+>           if  Subsystem.get_by_name(request.subsystem_name) is None:
+                                      ^^^^^^^^^^^^^^^^^^^^^^
+E           AttributeError: 'Request' object has no attribute 'subsystem_name'
+
+src\main.py:112: AttributeError
+=========================== short test summary info ===========================
+FAILED tests/test_api_extended.py::TestQueenAntAPI::test_request_ant_for_invalid_subsystem
+============================== 1 failed in 0.83s ==============================
+
+Tenemos varios temas con el manejo de excepciones. Por el momnto vamos a aceptar el error 422. Y lo agregamos a la documentacion
+
+============================== 1 passed in 0.55s ==============================
+
+
+
+
