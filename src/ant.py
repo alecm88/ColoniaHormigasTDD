@@ -77,7 +77,7 @@ class Ant:
             'age_seconds': self.age_seconds,
             'remaining_life_seconds': self.remaining_life_seconds,
             'state': self.state.value,
-            'assigned_to': self.assigned_to.value if self.assigned_to else None,
+            'assigned_to': self.assigned_to.value if self.assigned_to.value else None,
             'assignment_time': self.assignment_time.isoformat() if self.assignment_time else None,
             # 'wait_time_seconds': self.wait_time_seconds
         }

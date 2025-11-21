@@ -32,21 +32,22 @@ class TestQueenAntAPI:
         assert "collection" in data["available_subsystems"]
         assert "defense" in data["available_subsystems"]
 
-    def test_request_ant_for_valid_subsystem(self, client):
-        request_data = {
-            "subsystem_name": "Defense",
-            "priority": 1,
-            "estimated_duration_seconds": 30
-        }
-        response = client.post("/ants/request", json=request_data)
+    # Lo cambiamos para aceptar los subsistemazs nuevos. Lo movemos para test_api_integration
+    # def test_request_ant_for_valid_subsystem(self, client):
+    #     request_data = {
+    #         "subsystem_name": "defense",
+    #         "priority": 1,
+    #         "estimated_duration_seconds": 30
+    #     }
+    #     response = client.post("/ants/request", json=request_data)
 
-        assert response.status_code == 200
-        data = response.json()
-        assert data["assignment_successful"] is True
-        assert "Defense" in data["message"]
-        assert "ant" in data
-        assert data["ant"]["state"] == "assigned"
-        assert data["ant"]["assigned_to"] == "defense"
+    #     assert response.status_code == 200
+    #     data = response.json()
+    #     assert data["assignment_successful"] is True
+    #     assert "Defense" in data["message"]
+    #     assert "ant" in data
+    #     assert data["ant"]["state"] == "assigned"
+    #     assert data["ant"]["assigned_to"] == "defense"
 
     def test_request_ant_for_invalid_subsystem(self, client):
         request_data = {

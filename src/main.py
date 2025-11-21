@@ -3,11 +3,12 @@ from fastapi.responses import RedirectResponse
 from fastapi.middleware.cors import CORSMiddleware
 from typing import List
 from src.colony import Colony
+from src.subsystems import Subsystem, SubsystemType
 from src.models import (
     # Request models
     AntRequest, AntReturn, EmergencyRequest,
     # Response models
-    AntResponse, AntAssignmentResponse, AntReturnResponse, EmergencyAntResponse,
+    AntResponse, ContenidoResponse, AntAssignmentResponse, AntReturnResponse, EmergencyAntResponse,
     ComprehensiveColonyStatus, ColonyStatus, SubsystemsResponse,
     ConfigurationResponse, FoodResponse, CleanupResponse, RootResponse, ErrorResponse
 )
@@ -252,6 +253,88 @@ async def get_ant(ant_id: str):
 
 # # === 🐜 ENDPOINTS PRINCIPALES PARA GESTIÓN DE HORMIGAS ===
 
+@app.post(
+    "/ants/request",
+    response_model=AntAssignmentResponse,
+    status_code=status.HTTP_200_OK,
+    tags=["🐜 Gestión de Hormigas"],
+    summary="🎯 R1: Solicitar Hormiga para Subsistema",
+    description="""
+    ## 📋 Requisito Académico R1: Dar Hormiga
+
+    **Funcionalidad principal** para asignar hormigas a subsistemas solicitantes.
+
+    ### 🔍 Validaciones Implementadas:
+    - ✅ **Subsistema conocido**: Solo acepta Defense, Communication, Collection
+    - ✅ **Recursos suficientes**: Verifica stock de comida y capacidad
+    - ✅ **Vida restante**: La hormiga debe poder completar la tarea
+    - ✅ **Prioridades**: Respeta jerarquía Defense > Communication > Collection
+
+    ### 🏗️ Comportamiento:
+    1. Busca hormiga libre con vida suficiente
+    2. Si no encuentra, intenta crear nueva hormiga
+    3. Si no puede crear, rechaza la solicitud
+    4. Asigna hormiga al subsistema solicitante
+
+    ### 📊 Códigos de Respuesta:
+    - **200**: Asignación exitosa
+    - **400**: Subsistema desconocido
+    - **409**: Sin recursos/capacidad suficiente
+    """,
+    responses={
+        200: {"description": "Hormiga asignada exitosamente", "model": AntAssignmentResponse},
+        400: {"description": "Subsistema desconocido", "model": ErrorResponse},
+        409: {"description": "Sin recursos o capacidad suficiente", "model": ErrorResponse},
+    }
+)
+async def request_ant(request: AntRequest):
+    """
+    R1: Dar hormiga - Solicitar una hormiga para asignación a un subsistema
+    Valida subsistema conocido, prioridad, y capacidad de la hormiga para la tarea
+    """
+    ant = colony.request_ant(
+        subsystem_name=request.subsystem_name,
+        priority=request.priority,
+        estimated_duration_seconds=request.estimated_duration_seconds
+    )
+
+    if ant is None:
+        # Determinar motivo del rechazo
+        if  Subsystem.get_by_name(request.subsystem_name) is None:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Unknown subsystem: {request.subsystem_name}."
+            )
+
+        status = colony.get_comprehensive_status()
+        if status['food_stock'] < colony.food_per_ant:
+            raise HTTPException(
+                status_code=409,
+                detail="Insufficient food stock to create new ants"
+            )
+
+        if not status['can_create_more']:
+            raise HTTPException(
+                status_code=409,
+                detail="No available ants and cannot create more (capacity reached)"
+            )
+
+        raise HTTPException(
+            status_code=409,
+            detail="No ants available with sufficient remaining life for this task"
+        )
+
+    return {
+        "emisor": "S03_REI",
+        "receptor": f"{request.subsystem_name.value}",
+        "contenido": {
+            "message": f"Ant assigned to {request.subsystem_name}",
+            "ant": ant.to_dict(),
+            "assignment_successful": True
+        }
+    }
+
+
 # @app.post(
 #     "/ants/request",
 #     response_model=AntAssignmentResponse,
@@ -291,6 +374,7 @@ async def get_ant(ant_id: str):
 #     R1: Dar hormiga - Solicitar una hormiga para asignación a un subsistema
 #     Valida subsistema conocido, prioridad, y capacidad de la hormiga para la tarea
 #     """
+
 #     ant = colony.request_ant(
 #         subsystem_name=request.subsystem_name,
 #         priority=request.priority,

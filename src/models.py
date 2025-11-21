@@ -9,13 +9,14 @@ class AntStateEnum(str, Enum):
     FREE = "free"
     ASSIGNED = "assigned"
     DEAD = "dead"
-
-
+    
 class SubsystemEnum(str, Enum):
     """Subsistemas disponibles en la colonia"""
-    COMMUNICATION = "communication"
-    COLLECTION = "collection"
-    DEFENSE = "defense"
+    COMMUNICATION = "S01_COM"
+    COLLECTION = "S02_REC"
+    QUEEN = "S03_REI"
+    HABITAT = "S04_ENT" #Environment could be reserved keyword
+    DEFENSE = "S05_DEF"
 
 
 # === REQUEST MODELS ===
@@ -142,25 +143,54 @@ class AntResponse(BaseModel):
             }
         }
 
-
-class AntAssignmentResponse(BaseModel):
-    """Respuesta para asignación exitosa de hormiga"""
+class ContenidoResponse(BaseModel):
     message: str = Field(description="Mensaje de confirmación")
     assignment_successful: bool = Field(description="Si la asignación fue exitosa")
     ant: AntResponse = Field(description="Información de la hormiga asignada")
 
+class AntAssignmentResponse(BaseModel):
+    """Respuesta para asignación exitosa de hormiga"""
+    emisor: str = Field(description="Subsistema emisor (S03_REI)")
+    receptor: str = Field(description="Subsistema receptor")
+    contenido: ContenidoResponse = Field(description="Información de la hormiga asignada")
+
     class ConfigDict:
         json_schema_extra = {
             "example": {
-                "message": "Ant assigned to Defense",
-                "assignment_successful": True,
-                "ant": {
-                    "id": "550e8400-e29b-41d4-a716-446655440000",
-                    "state": "assigned",
-                    "assigned_to": "defense"
+                "emisor": "S03_REI",
+                "receptor": "S05_DEF",
+                "contenido": {
+                    "message": "Ant assigned to Defense",
+                    "assignment_successful": True,
+                    "ant": {
+                        "id": "550e8400-e29b-41d4-a716-446655440000",
+                        "state": "assigned",
+                        "assigned_to": "defense"
+                    }
                 }
             }
         }
+
+
+# Esta clase utilizaba los sistema antiguos.
+# class AntAssignmentResponse(BaseModel):
+#     """Respuesta para asignación exitosa de hormiga"""
+#     message: str = Field(description="Mensaje de confirmación")
+#     assignment_successful: bool = Field(description="Si la asignación fue exitosa")
+#     ant: AntResponse = Field(description="Información de la hormiga asignada")
+
+#     class ConfigDict:
+#         json_schema_extra = {
+#             "example": {
+#                 "message": "Ant assigned to Defense",
+#                 "assignment_successful": True,
+#                 "ant": {
+#                     "id": "550e8400-e29b-41d4-a716-446655440000",
+#                     "state": "assigned",
+#                     "assigned_to": "defense"
+#                 }
+#             }
+#         }
 
 
 class AntReturnResponse(BaseModel):

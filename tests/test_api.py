@@ -8,12 +8,12 @@ from src.ant import Ant
 def client():
     return TestClient(app)
 
-
 @pytest.fixture(autouse=True)
 def reset_colony():
     # Reset colony before each test
     colony.ants.clear()
     colony.max_ants = 100
+    colony.food_stock = 1000
     yield
 
 

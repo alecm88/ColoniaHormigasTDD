@@ -19,7 +19,7 @@ class TestColonyExtended:
         colony = Colony()
         ant1 = colony.create_ant()
 
-        ant = colony.request_ant("Defense", priority=1, estimated_duration_seconds=30)
+        ant = colony.request_ant("S05_DEF", priority=1, estimated_duration_seconds=30)
 
         assert ant is not None
         assert ant.state == AntState.ASSIGNED

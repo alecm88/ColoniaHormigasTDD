@@ -114,9 +114,8 @@ class TestAntExtended:
         expected_keys = {
             'id', 'birth_time', 'death_time', 'is_alive', 'age_seconds',
             'remaining_life_seconds', 'state', 'assigned_to',
-            'assignment_time', 'wait_time_seconds'
+            'assignment_time'
         }
         assert set(result.keys()) == expected_keys
         assert result['state'] == 'assigned'
-        assert result['assigned_to'] == 'communication'
-        assert result['wait_time_seconds'] == 10
+        assert result['assigned_to'] == 'S01_COM'
