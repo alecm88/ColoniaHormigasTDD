@@ -150,16 +150,20 @@ class ContenidoResponse(BaseModel):
 
 class AntAssignmentResponse(BaseModel):
     """Respuesta para asignación exitosa de hormiga"""
+    id: str = Field(description="id de parte de comunicacion")
+    timestamp: str = Field(description="fecha y hora recibida")
     emisor: str = Field(description="Subsistema emisor (S03_REI)")
     receptor: str = Field(description="Subsistema receptor")
-    contenido: ContenidoResponse = Field(description="Información de la hormiga asignada")
+    mensaje: ContenidoResponse = Field(description="Información de la hormiga asignada")
 
     class ConfigDict:
         json_schema_extra = {
             "example": {
+                "id":"f71860a5-a0ea-40c8-ab6e-ec0b94209139",
                 "emisor": "S03_REI",
                 "receptor": "S05_DEF",
-                "contenido": {
+                "timestamp":"2025-11-22T20:44:10.039359218Z",
+                "mensaje": {
                     "message": "Ant assigned to Defense",
                     "assignment_successful": True,
                     "ant": {

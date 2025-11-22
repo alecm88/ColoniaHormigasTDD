@@ -1,5 +1,10 @@
 from fastapi import FastAPI, HTTPException, Query, status
 from fastapi.responses import RedirectResponse
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
+from fastapi.exception_handlers import (
+    request_validation_exception_handler
+)
 from fastapi.middleware.cors import CORSMiddleware
 from typing import List
 from src.colony import Colony
@@ -12,7 +17,7 @@ from src.models import (
     ComprehensiveColonyStatus, ColonyStatus, SubsystemsResponse,
     ConfigurationResponse, FoodResponse, CleanupResponse, RootResponse, ErrorResponse
 )
-
+import requests
 
 # Global colony instance - configuración según requisitos académicos
 colony = Colony(max_ants=100, initial_food_stock=1000, ant_lifespan_minutes=1.5)
@@ -43,7 +48,7 @@ tags_metadata = [
         "description": "Herramientas de mantenimiento y información del sistema",
     }
 ]
-
+    
 app = FastAPI(
     title="🐜👑 Subsistema de Hormiga Reina",
     version="2.0.0",
@@ -227,28 +232,28 @@ async def get_ant(ant_id: str):
 #     return RedirectResponse(url="/docs")
 
 
-# @app.get(
-#     "/info",
-#     response_model=RootResponse,
-#     tags=["🏠 Sistema"],
-#     summary="🏠 Información del Subsistema",
-#     description="""
-#     Endpoint informativo que devuelve datos básicos del **Subsistema de Hormiga Reina**.
+@app.get(
+    "/info",
+    response_model=RootResponse,
+    tags=["🏠 Sistema"],
+    summary="🏠 Información del Subsistema",
+    description="""
+    Endpoint informativo que devuelve datos básicos del **Subsistema de Hormiga Reina**.
 
-#     Útil para verificar:
-#     - ✅ Conectividad con la API
-#     - ✅ Versión del subsistema
-#     - ✅ Subsistemas externos disponibles
-#     - ✅ Estado general del servicio
-#     """
-# )
-# async def get_system_info():
-#     return {
-#         "message": "Queen Ant Subsystem - Ant Colony Management System",
-#         "version": "2.0.0",
-#         "subsystem": "Queen Ant (Hormiga Reina)",
-#         "available_subsystems": ["communication", "collection", "defense"]
-#     }
+    Útil para verificar:
+    - ✅ Conectividad con la API
+    - ✅ Versión del subsistema
+    - ✅ Subsistemas externos disponibles
+    - ✅ Estado general del servicio
+    """
+)
+async def get_system_info():
+    return {
+        "message": "Subsistema Hormiga Reina",
+        "version": "1.0.0",
+        "subsystem": "S03_REI",
+        "available_subsystems": ["S01_COM", "S02_REC", "S04_ENT", "S05_DEF"]
+    }
 
 
 # # === 🐜 ENDPOINTS PRINCIPALES PARA GESTIÓN DE HORMIGAS ===
@@ -280,11 +285,13 @@ async def get_ant(ant_id: str):
     - **200**: Asignación exitosa
     - **400**: Subsistema desconocido
     - **409**: Sin recursos/capacidad suficiente
+    - **422**: Bad payload/Subsistema invalido
     """,
     responses={
         200: {"description": "Hormiga asignada exitosamente", "model": AntAssignmentResponse},
         400: {"description": "Subsistema desconocido", "model": ErrorResponse},
         409: {"description": "Sin recursos o capacidad suficiente", "model": ErrorResponse},
+        422: {"description": "Error en el formato o el subsistema no existe", "model": ErrorResponse},
     }
 )
 async def request_ant(request: AntRequest):
@@ -324,15 +331,31 @@ async def request_ant(request: AntRequest):
             detail="No ants available with sufficient remaining life for this task"
         )
 
-    return {
+    message = {
         "emisor": "S03_REI",
         "receptor": f"{request.subsystem_name.value}",
-        "contenido": {
+        "mensaje": {
             "message": f"Ant assigned to {request.subsystem_name}",
             "ant": ant.to_dict(),
             "assignment_successful": True
         }
     }
+
+    comunicacionUrl = "https://communicationservice-production.up.railway.app/api/mensaje"
+
+    response = requests.post(comunicacionUrl, json=message)
+
+    return response.json()
+
+    # return {
+    #     "emisor": "S03_REI",
+    #     "receptor": f"{request.subsystem_name.value}",
+    #     "mensaje": {
+    #         "message": f"Ant assigned to {request.subsystem_name}",
+    #         "ant": ant.to_dict(),
+    #         "assignment_successful": True
+    #     }
+    # }
 
 
 # @app.post(
