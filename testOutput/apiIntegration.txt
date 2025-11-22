@@ -280,3 +280,36 @@ Corregimos.
 Y revisamos las pruebas del API
 
 ============================== 1 passed in 0.52s ==============================
+
+Comunicacion actualizó el API. parece que en vez de contenido el parámetro va a ser mensaje. Actualizamos pruebas y código.
+
+
+tests\test_api_integration.py .                                          [100%]
+
+============================== 1 passed in 0.51s ==============================
+
+Ya tenemos un url para realizar las pruebas. Podemos hacer una pequeña prueba de integración.
+
+La primera prueba nos dio error:
+b'{"timestamp":"2025-11-22T20:41:58.083+00:00","status":415,"error":"Unsupported Media Type","path":"/api/mensaje"}'
+
+Especificamos que el payload es tipo JSON. Ya tenemos una respuesta exitosa, pero tenemos que actualizar modelos.
+
+E               fastapi.exceptions.ResponseValidationError: 5 validation errors:
+E                 {'type': 'missing', 'loc': ('response', 'id'), 'msg': 'Field required', 'input': <Response [200]>}
+E                 {'type': 'missing', 'loc': ('response', 'timestamp'), 'msg': 'Field required', 'input': <Response [200]>}
+E                 {'type': 'missing', 'loc': ('response', 'emisor'), 'msg': 'Field required', 'input': <Response [200]>}
+E                 {'type': 'missing', 'loc': ('response', 'receptor'), 'msg': 'Field required', 'input': <Response [200]>}
+E                 {'type': 'missing', 'loc': ('response', 'mensaje'), 'msg': 'Field required', 'input': <Response [200]>}
+
+.venv\Lib\site-packages\fastapi\routing.py:254: ResponseValidationError
+=========================== short test summary info ===========================
+FAILED tests/test_api_integration.py::TestIntegrationAPI::test_request_ant_for_valid_subsystem
+============================== 1 failed in 1.75s ==============================
+
+Tenemos errores de validacion. Revisamos. Parece que teniamos temas con el formato de conversion a JSON.
+
+
+tests\test_api_integration.py .                                          [100%]
+
+============================== 1 passed in 1.35s ==============================
