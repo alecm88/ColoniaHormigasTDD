@@ -313,3 +313,78 @@ Tenemos errores de validacion. Revisamos. Parece que teniamos temas con el forma
 tests\test_api_integration.py .                                          [100%]
 
 ============================== 1 passed in 1.35s ==============================
+
+Revisamos si podemos obtener el mensaje via la funcion de GET
+
+================================== FAILURES ===================================
+__________ TestIntegrationAPI.test_get_ant_for_valid_subsystem_comm ___________
+
+self = <tests.test_api_integration.TestIntegrationAPI object at 0x0000023303AA01A0>
+client = <starlette.testclient.TestClient object at 0x0000023303AA0B00>
+
+    def test_get_ant_for_valid_subsystem_comm(self, client):
+        #Assign the ant first
+        request_data = {
+            "subsystem_name": "S05_DEF",
+            "priority": 1,
+            "estimated_duration_seconds": 30
+        }
+        response = client.post("/ants/request", json=request_data)
+        data = response.json()
+>       communication_id = data.id
+                           ^^^^^^^
+E       AttributeError: 'dict' object has no attribute 'id'
+
+tests\test_api_integration.py:51: AttributeError
+=========================== short test summary info ===========================
+FAILED tests/test_api_integration.py::TestIntegrationAPI::test_get_ant_for_valid_subsystem_comm
+============================== 1 failed in 1.60s ==============================
+
+Creamos el endpoint. Y revisamos el error.
+
+        #Get the ant request simulating a DEFENSE subsystem call
+        response = client.get("/messages/S05_DEF")
+>       assert response.status_code == 200
+E       assert 422 == 200
+E        +  where 422 = <Response [422 Unprocessable Entity]>.status_code
+
+tests\test_api_integration.py:55: AssertionError
+
+Parece que tenemos un error en la definicion del endpoint.
+
+E               fastapi.exceptions.ResponseValidationError: 1 validation errors:
+E                 {'type': 'missing', 'loc': ('response', 'mensajes'), 'msg': 'Field required', 'input': {'timestamp': '2025-11-23T01:21:06.897+00:00', 'status': 404, 'error': 'Not Found', 'path': '/api/mensajes/S05_DEF'}}
+
+
+Revisamos la respuesta que estamos recibiendo. El endpoint deberia ser mensaje en vez de mensajes
+
+E               fastapi.exceptions.ResponseValidationError: 1 validation errors:
+E                 {'type': 'model_attributes_type', 'loc': ('response',), 'msg': 'Input should be a valid dictionary or object to extract fields from', 'input': [{'id': '9fd64a4b-51fd-4cf3-88ea-c658ede19b37', 'emisor': 'S03_REI', 'receptor': 'S05_DEF', 'mensaje': {'message': 'Ant assigned to SubsystemEnum.DEFENSE', 'ant': {'id': 'd408a918-dfcc-41e9-b6bc-1ca8380ed049', 'birth_time': '2025-11-22T19:22:55.008052', 'death_time': '2025-11-22T19:24:25.008052', 'is_alive': True, 'age_seconds': 0.0, 'remaining_life_seconds': 90.0, 'state': 'assigned', 'assigned_to': 'S05_DEF', 'assignment_time': '2025-11-22T19:22:55.008052'}, 'assignment_successful': True}, 'timestamp': '2025-11-23T01:22:57.422617540Z'}]}
+
+.venv\Lib\site-packages\fastapi\routing.py:254: ResponseValidationError
+=========================== short test summary info ===========================
+FAILED tests/test_api_integration.py::TestIntegrationAPI::test_get_ant_for_valid_subsystem_comm
+============================== 1 failed in 2.31s ==============================
+
+Revisamos las conversiones de datos. Estamos teniendo temas convirtiendo la respuesta a JSON. Era un tema con la definicion del LIST en el modelo.
+
+Ahora tenemos una inconsistencia de ids
+    
+>       assert any(message["id"] == communication_id for message in messageData)
+E       assert False
+E        +  where False = any(<generator object TestIntegrationAPI.test_get_ant_for_valid_subsystem_comm.<locals>.<genexpr> at 0x00000295D1B95CB0>)
+
+tests\test_api_integration.py:58: AssertionError
+
+Eso viene del modulo de comunicacion. Parece que se cambia el id del mensaje en cada llamado. Vamos a revisar por el id de nuestra hormiga.
+  
+============================== 1 passed in 2.09s ==============================
+
+
+Finalmente revisamos que podamos determinar si el queue de mensajes esta vacio
+
+============================== 1 passed in 2.10s ==============================
+tests\test_api_integration.py ...                                        [100%]
+
+============================== 3 passed in 3.26s ==============================
+Finished running tests!
