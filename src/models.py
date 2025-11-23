@@ -143,6 +143,58 @@ class AntResponse(BaseModel):
             }
         }
 
+class MessageResponse(BaseModel):
+    """Formato de mensajes de Comunicacion"""
+    id: str = Field(description="id de parte de comunicacion")
+    timestamp: str = Field(description="fecha y hora recibida")
+    emisor: str = Field(description="Subsistema emisor (S03_REI)")
+    receptor: str = Field(description="Subsistema receptor")
+    mensaje: dict = Field(description="Contenido del mensaje")
+
+    class ConfigDict:
+        json_schema_extra = {
+            "example": {
+                "id":"f71860a5-a0ea-40c8-ab6e-ec0b94209139",
+                "emisor": "S03_REI",
+                "receptor": "S05_DEF",
+                "timestamp":"2025-11-22T20:44:10.039359218Z",
+                "mensaje": {
+                    "message": "Ant assigned to Defense",
+                    "assignment_successful": True,
+                    "ant": {
+                        "id": "550e8400-e29b-41d4-a716-446655440000",
+                        "state": "assigned",
+                        "assigned_to": "defense"
+                    }
+                }
+            }
+        }
+
+# class CommunicationResponse(BaseModel):
+#     """Respuesta de comunicacion al recibir mensajes"""
+#     mensajes: Dict[int, MessageResponse] = Field(description="Lista de mensajes")
+
+#     class ConfigDict:
+#         json_schema_extra = {
+#             "example": [
+#                 {
+#                     "id":"f71860a5-a0ea-40c8-ab6e-ec0b94209139",
+#                     "emisor": "S03_REI",
+#                     "receptor": "S05_DEF",
+#                     "timestamp":"2025-11-22T20:44:10.039359218Z",
+#                     "mensaje": {
+#                         "message": "Ant assigned to Defense",
+#                         "assignment_successful": True,
+#                         "ant": {
+#                             "id": "550e8400-e29b-41d4-a716-446655440000",
+#                             "state": "assigned",
+#                             "assigned_to": "defense"
+#                         }
+#                     }
+#                 }
+#             ]
+#         }
+
 class ContenidoResponse(BaseModel):
     message: str = Field(description="Mensaje de confirmación")
     assignment_successful: bool = Field(description="Si la asignación fue exitosa")

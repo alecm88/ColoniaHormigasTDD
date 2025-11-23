@@ -37,6 +37,7 @@ class TestAntsAPI:
         assert data['dead_ants'] == 0
         assert data['max_ants'] == 100
         assert data['food_stock'] == 1000
+    #     assert data["can_create_more"] is True
 
     def test_create_ant_success(self, client):
         response = client.post("/ants")
@@ -47,23 +48,6 @@ class TestAntsAPI:
         assert "death_time" in data
         assert data["is_alive"] is True
         assert data["age_seconds"] < 1
-
-    # def test_get_colony_status(self, client):
-    #     # Create some ants
-    #     client.post("/ants")
-    #     client.post("/ants")
-
-    #     response = client.get("/colony/status")
-    #     assert response.status_code == 200
-    #     data = response.json()
-
-    #     expected_keys = {'total_ants', 'alive_ants', 'dead_ants', 'max_ants', 'can_create_more'}
-    #     assert set(data.keys()) == expected_keys
-    #     assert data["alive_ants"] == 2
-    #     assert data["total_ants"] == 2
-    #     assert data["dead_ants"] == 0
-    #     assert data["max_ants"] == 10
-    #     assert data["can_create_more"] is True
 
     def test_create_ant_at_capacity_fails(self, client):
         # Configure colony to max 1 ant
@@ -78,7 +62,7 @@ class TestAntsAPI:
         assert response2.status_code == 409
         assert "Sin capacidad" in response2.json()["detail"]
         
-    def test_create_ant_at_capacity_fails(self, client):
+    def test_create_ant_whitout_food_fails(self, client):
         # Configure colony to little food
         client.put("/colony/config?food_stock=10")
 

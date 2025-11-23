@@ -14,7 +14,7 @@ from src.models import (
     AntRequest, AntReturn, EmergencyRequest,
     # Response models
     AntResponse, ContenidoResponse, AntAssignmentResponse, AntReturnResponse, EmergencyAntResponse,
-    ComprehensiveColonyStatus, ColonyStatus, SubsystemsResponse,
+    ComprehensiveColonyStatus, ColonyStatus, SubsystemsResponse, MessageResponse,
     ConfigurationResponse, FoodResponse, CleanupResponse, RootResponse, ErrorResponse
 )
 import requests
@@ -225,6 +225,30 @@ async def get_ant(ant_id: str):
     # Update state before returning
     # ant.update_state()
     return ant.to_dict()
+
+@app.get(
+    "/messages/{subsystem_id}",
+    response_model=List[MessageResponse],
+    tags=["📊 Estado y Consultas"],
+    summary="🔍 Consultar Mensajes para un Subsistema",
+    description="""
+    Obtiene todos los mensajes activos (no expirados) dirigidos a un subsistema específico.
+
+    """,
+    responses={
+        200: {"description": "Lista de mensajes activos(no expirados)", "model": List[MessageResponse]},
+        404: {"description": "No hay mensajes activos para el subsistema", "model": ErrorResponse},
+    }
+)
+async def get_messages(subsystem_id: str):
+    comunicacionUrl = (f"https://communicationservice-production.up.railway.app/api/mensaje/{subsystem_id}")
+
+    response = requests.get(comunicacionUrl)
+    data = response.json() 
+    
+    return data
+
+
 
 # @app.get("/", include_in_schema=False)
 # async def redirect_to_docs():
