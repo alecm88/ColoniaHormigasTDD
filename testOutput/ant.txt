@@ -410,3 +410,47 @@ tests\test_ant.py:50: AssertionError
 
 Actualizamos la funcion.
 ============================= 16 passed in 0.05s ==============================
+
+Estamos corriendo las pruebas de nuevo posterior a los cambios de integracion.
+
+================================== FAILURES ===================================
+__________________________ TestAnt.test_ant_to_dict ___________________________
+
+self = <tests.test_ant.TestAnt object at 0x00000252BDF89640>
+
+    def test_ant_to_dict(self):
+        ant = Ant()
+>       result = ant.to_dict()
+                 ^^^^^^^^^^^^^
+
+tests\test_ant.py:48: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <src.ant.Ant object at 0x00000252BDF43B90>
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            'id': self.id,
+            'birth_time': self.birth_time.isoformat(),
+            'death_time': self.death_time.isoformat(),
+            'is_alive': self.is_alive,
+            'age_seconds': self.age_seconds,
+            'remaining_life_seconds': self.remaining_life_seconds,
+            'state': self.state.value,
+>           'assigned_to': self.assigned_to.value if self.assigned_to.value else None,
+                                                     ^^^^^^^^^^^^^^^^^^^^^^
+            'assignment_time': self.assignment_time.isoformat() if self.assignment_time else None,
+            # 'wait_time_seconds': self.wait_time_seconds
+        }
+E       AttributeError: 'NoneType' object has no attribute 'value'
+
+src\ant.py:80: AttributeError
+=========================== short test summary info ===========================
+FAILED tests/test_ant.py::TestAnt::test_ant_to_dict - AttributeError: 'NoneTy...
+======================== 1 failed, 15 passed in 0.14s =========================
+
+Revisamos si la variable existe.
+
+============================= 16 passed in 0.05s ==============================
+
+
