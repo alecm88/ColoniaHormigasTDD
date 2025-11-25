@@ -320,3 +320,56 @@ tests\test_colony_extended.py ...........                                [100%]
 ============================= 11 passed in 0.04s ==============================
 
 Para la colonia nos queda pendiente el manejo de estado de emergencia.
+
+Posterior a los cambios de integracion tenemos varios temas. Revisamos.
+=========================== short test summary info ===========================
+FAILED tests/test_colony_extended.py::TestColonyExtended::test_request_ant_creates_new_ant_if_needed
+FAILED tests/test_colony_extended.py::TestColonyExtended::test_return_ant_successful_with_food
+FAILED tests/test_colony_extended.py::TestColonyExtended::test_return_ant_died_in_mission
+FAILED tests/test_colony_extended.py::TestColonyExtended::test_get_free_ants
+FAILED tests/test_colony_extended.py::TestColonyExtended::test_get_assigned_ants
+FAILED tests/test_colony_extended.py::TestColonyExtended::test_comprehensive_status_includes_all_information
+========================= 6 failed, 5 passed in 0.12s =========================
+
+La mayoria de los temas es por cambios en los nombres de los subsistemas. Pasamos a usar la clase que definimos de subsistemas.
+================================== FAILURES ===================================
+____ TestColonyExtended.test_comprehensive_status_includes_all_information ____
+
+self = <tests.test_colony_extended.TestColonyExtended object at 0x0000021C65A2ADB0>
+
+    def test_comprehensive_status_includes_all_information(self):
+        colony = Colony()
+        colony.request_ant(SubsystemType.DEFENSE.value)  # Assigned ant
+        colony.request_ant(SubsystemType.COLLECTION.value)  # Another assigned ant
+        colony.create_ant()  # Free ant
+    
+        status = colony.get_comprehensive_status()
+    
+        expected_keys = {
+            'total_ants', 'alive_ants', 'free_ants', 'assigned_ants', 'dead_ants',
+            'max_ants', 'food_stock', 'can_create_more', 'emergency_mode',
+            'ants_by_subsystem', 'ant_lifespan_minutes'
+        }
+        assert set(status.keys()) == expected_keys
+    
+        assert status['total_ants'] == 3
+        assert status['alive_ants'] == 3
+        assert status['free_ants'] == 1
+        assert status['assigned_ants'] == 2
+        assert status['dead_ants'] == 0
+>       assert status['ants_by_subsystem']['defense'] == 1
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       KeyError: 'defense'
+
+tests\test_colony_extended.py:163: KeyError
+=========================== short test summary info ===========================
+FAILED tests/test_colony_extended.py::TestColonyExtended::test_comprehensive_status_includes_all_information
+======================== 1 failed, 10 passed in 0.14s =========================
+
+Y hacemos lo mismos para la comparacion.
+
+tests\test_colony_extended.py ...........                                [100%]
+
+============================= 11 passed in 0.04s ==============================
+
+Todavia tenemos pendiente manejo de emergencia.
