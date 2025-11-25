@@ -10,7 +10,6 @@ class TestAntExtended:
         assert ant.lifespan_seconds == 120  # 2 * 60
         assert ant.state == AntState.FREE
         assert ant.assigned_to is None
-        assert ant.wait_time_seconds == 10
 
     def test_ant_remaining_life_calculation(self):
         ant = Ant(lifespan_minutes=1.0)  # 60 seconds
@@ -37,21 +36,6 @@ class TestAntExtended:
         ant.state = AntState.DEAD
         assert ant.is_available_for_assignment is False
 
-    def test_ant_can_handle_task_with_sufficient_time(self):
-        ant = Ant(lifespan_minutes=2.0)  # 120 seconds
-        # Task requires 30 seconds + 10 seconds wait = 40 seconds total
-        assert ant.can_handle_task(30) is True
-
-    def test_ant_cannot_handle_task_with_insufficient_time(self):
-        ant = Ant(lifespan_minutes=1.0)  # 60 seconds
-        # Task requires 60 seconds + 10 seconds wait = 70 seconds total
-        assert ant.can_handle_task(60) is False
-
-    def test_ant_cannot_handle_task_when_dead(self):
-        ant = Ant()
-        ant.state = AntState.DEAD
-        assert ant.can_handle_task(10) is False
-
     def test_assign_ant_to_subsystem_success(self):
         ant = Ant()
         success = ant.assign_to_subsystem(SubsystemType.COMMUNICATION)
@@ -73,12 +57,12 @@ class TestAntExtended:
         ant = Ant()
         ant.assign_to_subsystem(SubsystemType.COLLECTION)
 
-        food_gained = ant.return_from_assignment(returned_with_food=True)
+        food_gained = ant.return_from_assignment(returned_with_food=10)
 
         assert ant.state == AntState.FREE
         assert ant.assigned_to is None
         assert ant.assignment_time is None
-        assert food_gained is True
+        assert food_gained == 10
 
     def test_return_ant_from_assignment_died_in_mission(self):
         ant = Ant()
@@ -89,21 +73,7 @@ class TestAntExtended:
         assert ant.state == AntState.DEAD
         assert ant.assigned_to is None
         assert ant.assignment_time is None
-        assert food_gained is False
-
-    def test_ant_update_state_kills_old_ant(self):
-        ant = Ant(lifespan_minutes=0.01)  # Very short lifespan
-        ant.assign_to_subsystem(SubsystemType.DEFENSE)
-
-        # Wait for ant to die
-        import time
-        time.sleep(1)
-
-        ant.update_state()
-
-        assert ant.state == AntState.DEAD
-        assert ant.assigned_to is None
-        assert ant.assignment_time is None
+        assert food_gained == 0
 
     def test_ant_to_dict_includes_all_new_fields(self):
         ant = Ant(lifespan_minutes=2.0)

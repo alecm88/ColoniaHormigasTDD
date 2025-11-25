@@ -36,14 +36,14 @@ class TestColonyExtended:
         colony = Colony()
         initial_ant_count = len(colony.ants)
 
-        ant = colony.request_ant("Communication")
+        ant = colony.request_ant(SubsystemType.COMMUNICATION.value)
 
         assert ant is not None
         assert len(colony.ants) == initial_ant_count + 1
 
     def test_return_ant_successful_with_food(self):
         colony = Colony()
-        ant = colony.request_ant("Collection")
+        ant = colony.request_ant(SubsystemType.COLLECTION.value)
         initial_food = colony.food_stock
 
         success = colony.return_ant(ant.id, returned_with_food=20)
@@ -54,7 +54,7 @@ class TestColonyExtended:
 
     def test_return_ant_died_in_mission(self):
         colony = Colony()
-        ant = colony.request_ant("Defense")
+        ant = colony.request_ant(SubsystemType.DEFENSE.value)
 
         success = colony.return_ant(ant.id, died_in_mission=True)
 
@@ -115,7 +115,7 @@ class TestColonyExtended:
     def test_get_free_ants(self):
         colony = Colony()
         colony.create_ant()
-        assigned_ant = colony.request_ant("Defense")
+        assigned_ant = colony.request_ant(SubsystemType.DEFENSE.value)
         free_ant1 = colony.create_ant()
 
         free_ants = colony.get_free_ants()
@@ -127,8 +127,8 @@ class TestColonyExtended:
 
     def test_get_assigned_ants(self):
         colony = Colony()
-        assigned_ant1 = colony.request_ant("Defense")
-        assigned_ant2 = colony.request_ant("Communication")
+        assigned_ant1 = colony.request_ant(SubsystemType.DEFENSE.value)
+        assigned_ant2 = colony.request_ant(SubsystemType.COLLECTION.value)
         free_ant = colony.create_ant()
 
         assigned_ants = colony.get_assigned_ants()
@@ -142,8 +142,8 @@ class TestColonyExtended:
 
     def test_comprehensive_status_includes_all_information(self):
         colony = Colony()
-        colony.request_ant("Defense")  # Assigned ant
-        colony.request_ant("Communication")  # Another assigned ant
+        colony.request_ant(SubsystemType.DEFENSE.value)  # Assigned ant
+        colony.request_ant(SubsystemType.COLLECTION.value)  # Another assigned ant
         colony.create_ant()  # Free ant
 
         status = colony.get_comprehensive_status()
@@ -160,9 +160,9 @@ class TestColonyExtended:
         assert status['free_ants'] == 1
         assert status['assigned_ants'] == 2
         assert status['dead_ants'] == 0
-        assert status['ants_by_subsystem']['defense'] == 1
-        assert status['ants_by_subsystem']['communication'] == 1
-        assert status['ants_by_subsystem']['collection'] == 0
+        assert status['ants_by_subsystem'][SubsystemType.DEFENSE.value] == 1
+        assert status['ants_by_subsystem'][SubsystemType.COLLECTION.value] == 1
+        assert status['ants_by_subsystem'][SubsystemType.COMMUNICATION.value] == 0
 
     def test_can_create_more_considers_food_and_capacity(self):
         # Test with sufficient food and capacity
