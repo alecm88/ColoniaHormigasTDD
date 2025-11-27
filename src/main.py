@@ -87,6 +87,10 @@ para otros subsistemas del ecosistema de la colonia:
     },
     servers=[
         {
+            "url": "https://coloniahormigastdd-production.up.railway.app",
+            "description": "Servidor de producción en Railway"
+        },
+        {
             "url": "http://localhost:8000",
             "description": "Servidor de desarrollo"
         },
