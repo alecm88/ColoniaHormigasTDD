@@ -18,7 +18,7 @@ class TestAnt:
         ant = Ant()
         # Simulate 5 seconds passing
         ant.birth_time = datetime.now() - timedelta(seconds=5)
-        assert ant.age_seconds == 5
+        assert ant.age_seconds >= 4.99 and ant.age_seconds <= 5.01
 
     def test_ant_lifespan_after_5_seconds (self):
         ant = Ant()

@@ -45,9 +45,9 @@ class Ant:
     def is_available_for_assignment(self) -> bool:
         return self.is_alive and self.state == AntState.FREE
 
-    def assign_to_subsystem(self, subsystem: SubsystemType) -> bool:
+    def assign_to_subsystem(self, subsystem: SubsystemType, emergency: bool = False) -> bool:
         """Assign ant to a subsystem if available"""
-        if not self.is_available_for_assignment:
+        if not self.is_available_for_assignment and not emergency:
             return False
 
         self.state = AntState.ASSIGNED

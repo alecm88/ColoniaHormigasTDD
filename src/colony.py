@@ -28,7 +28,7 @@ class Colony:
             return None
 
         # Create ant and consume food
-        ant = Ant()
+        ant = Ant(self.ant_lifespan_minutes)
         self.ants[ant.id] = ant
         self.food_stock -= self.food_per_ant
         return ant
@@ -88,8 +88,22 @@ class Colony:
 
         return True
 
+    def activate_emergency_mode(self) -> None:
+        self.emergency_mode = True
+        return
+    
+    def deactivate_emergency_mode(self) -> None:
+        self.emergency_mode = False
+        return
+
     def request_emergency_ants(self, requesting_subsystem: str,
-                             number_needed: int, max_wait_seconds: float = 30) -> List[Ant]:
+                             number_needed: int) -> List[Ant]:
+        
+        # Validate subsystem
+        subsystem = Subsystem.get_by_name(requesting_subsystem)
+        if not subsystem:
+            return None
+        
         """Handle emergency ant requests with reassignment from lower priority tasks"""
         self.emergency_mode = True
         emergency_ants = []
@@ -103,7 +117,7 @@ class Colony:
 
         # If we need more ants, reassign from lower priority subsystems
         if len(emergency_ants) < number_needed:
-            reassignable_ants = self._get_reassignable_ants(requesting_subsystem, max_wait_seconds)
+            reassignable_ants = self._get_reassignable_ants(requesting_subsystem)
             needed = number_needed - len(emergency_ants)
             emergency_ants.extend(reassignable_ants[:needed])
 
@@ -116,11 +130,11 @@ class Colony:
 
         if requesting_subsystem_enum:
             for ant in emergency_ants:
-                ant.assign_to_subsystem(requesting_subsystem_enum)
+                ant.assign_to_subsystem(requesting_subsystem_enum, True)
 
         return emergency_ants
 
-    def _get_reassignable_ants(self, requesting_subsystem: str, max_wait_seconds: float) -> List[Ant]:
+    def _get_reassignable_ants(self, requesting_subsystem: str) -> List[Ant]:
         """Get ants that can be reassigned based on priority"""
         requesting_priority = 3  # Default to lowest priority
         for subsystem in self.subsystems.values():
@@ -137,17 +151,10 @@ class Colony:
                 if (assigned_subsystem and
                     assigned_subsystem.priority_level > requesting_priority):
 
-                    # Check if ant has been waiting long enough
-                    wait_time = (datetime.now() - ant.assignment_time).total_seconds()
-                    if wait_time >= min(max_wait_seconds, ant.wait_time_seconds):
-                        reassignable.append(ant)
+                    reassignable.append(ant)
 
         return reassignable
 
-    def update_all_ant_states(self):
-        """Update the state of all ants"""
-        for ant in self.ants.values():
-            ant.update_state()
 
     def cleanup_dead_ants(self) -> int:
         """Remove dead ants from the colony"""

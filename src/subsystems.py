@@ -39,3 +39,18 @@ class Subsystem:
     def get_by_id(cls, subsystem_id: SubsystemType) -> Optional['Subsystem']:
         known = cls.get_known_subsystems()
         return known.get(subsystem_id)
+    
+    def __str__(self):
+        return f"{self.name} (Priority: {self.priority_level})"
+    
+    def __eq__(self, other):
+        return self.priority_level == other.priority_level
+
+    def __lt__(self, other):
+        return self.priority_level < other.priority_level
+    def __gt__(self, other):
+        return self.priority_level > other.priority_level
+    def __le__(self, other):
+        return self.priority_level <= other.priority_level
+    def __ge__(self, other):
+        return self.priority_level >= other.priority_level

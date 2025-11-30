@@ -98,18 +98,12 @@ class EmergencyRequest(BaseModel):
         gt=0,
         description="Número de hormigas necesarias"
     )
-    max_wait_seconds: float = Field(
-        default=30,
-        gt=0,
-        description="Tiempo máximo a esperar antes de reasignar hormigas"
-    )
 
     class ConfigDict:
         json_schema_extra = {
             "example": {
-                "requesting_subsystem": "Defense",
-                "number_needed": 3,
-                "max_wait_seconds": 30
+                "requesting_subsystem": "S05_DEF",
+                "number_needed": 3
             }
         }
 
@@ -336,6 +330,11 @@ class ConfigurationResponse(BaseModel):
     message: str = Field(description="Mensaje de confirmación")
     changes: Dict[str, Any] = Field(description="Cambios aplicados")
     current_status: ComprehensiveColonyStatus = Field(description="Estado actual después de cambios")
+
+class ServiceResponse(BaseModel):
+    """Respuesta para cambios de servicio"""
+    message: str = Field(description="Mensaje de confirmación")
+    changes: Dict[str, Any] = Field(description="Cambios aplicados")
 
 
 class FoodResponse(BaseModel):

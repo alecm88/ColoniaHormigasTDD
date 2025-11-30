@@ -103,3 +103,25 @@ class TestColony:
         assert status['dead_ants'] == 1
         assert status['max_ants'] == 5
         assert status['food_stock'] == 60
+
+    def test_get_ant_by_id(self):
+        colony = Colony(max_ants=2)
+        ant = colony.create_ant()
+
+        ant2 = colony.get_ant_by_id(ant.id)
+
+        assert ant is not None
+        assert len(colony.ants) == 1
+        assert ant.id in colony.ants
+        assert ant.id == ant2.id
+
+    def test_get_ant_by_invalid_id(self):
+        colony = Colony(max_ants=2)
+        ant = colony.create_ant()
+
+        ant2 = colony.get_ant_by_id('invalidid')
+
+        assert ant is not None
+        assert len(colony.ants) == 1
+        assert ant.id in colony.ants
+        assert ant2 is None

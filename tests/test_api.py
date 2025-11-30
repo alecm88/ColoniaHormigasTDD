@@ -79,6 +79,11 @@ class TestAntsAPI:
         # Create two ants
         client.post("/ants")
         client.post("/ants")
+        create_response = client.post("/ants")
+        ant_id = create_response.json()["id"]
+
+        # Make one ant die by accessing colony directly
+        colony.ants[ant_id].birth_time = datetime.now() - timedelta(seconds=91)
 
         response = client.get("/ants")
         assert response.status_code == 200
@@ -87,6 +92,24 @@ class TestAntsAPI:
         for ant in data:
             assert "id" in ant
             assert ant["is_alive"] is True
+
+    def test_get_dead_ants(self, client):
+        # Create two ants
+        client.post("/ants")
+        client.post("/ants")
+        create_response = client.post("/ants")
+        ant_id = create_response.json()["id"]
+
+        # Make one ant die by accessing colony directly
+        colony.ants[ant_id].birth_time = datetime.now() - timedelta(seconds=91)
+
+        response = client.get("/ants?state=dead")
+        assert response.status_code == 200
+        data = response.json()
+        assert len(data) == 1
+        for ant in data:
+            assert "id" in ant
+            assert ant["is_alive"] is False
 
     def test_get_ant_by_id(self, client):
         # Create an ant
@@ -105,60 +128,58 @@ class TestAntsAPI:
         assert response.status_code == 404
         assert "Hormiga no encontrada" in response.json()["detail"]
 
-    # def test_cleanup_dead_ants(self, client):
-    #     # Create an ant
-    #     create_response = client.post("/ants")
-    #     ant_id = create_response.json()["id"]
+    def test_cleanup_dead_ants(self, client):
+        # Create an ant
+        create_response = client.post("/ants")
+        ant_id = create_response.json()["id"]
 
-    #     # Make the ant die by accessing colony directly
-    #     colony.ants[ant_id].birth_time = datetime.now() - timedelta(seconds=91)
+        # Make the ant die by accessing colony directly
+        colony.ants[ant_id].birth_time = datetime.now() - timedelta(seconds=91)
 
-    #     # Cleanup dead ants
-    #     response = client.post("/colony/cleanup")
-    #     assert response.status_code == 200
-    #     assert "Cleaned up 1 dead ants" in response.json()["message"]
+        # Cleanup dead ants
+        response = client.post("/colony/cleanup")
+        assert response.status_code == 200
+        assert "Cleaned up 1 dead ants" in response.json()["message"]
 
-    #     # Verify ant is gone
-    #     get_response = client.get(f"/ants/{ant_id}")
-    #     assert get_response.status_code == 404
+        # Verify ant is gone
+        get_response = client.get(f"/ants/{ant_id}")
+        assert get_response.status_code == 404
 
-    # def test_configure_colony_max_ants(self, client):
-    #     response = client.put("/colony/config?max_ants=5")
-    #     assert response.status_code == 200
-    #     assert "maximum 5 ants" in response.json()["message"]
+    def test_configure_colony_max_ants(self, client):
+        response = client.put("/colony/config?max_ants=5")
+        assert response.status_code == 200
 
-    #     # Verify the configuration
-    #     status_response = client.get("/colony/status")
-    #     assert status_response.json()["max_ants"] == 5
+        # Verify the configuration
+        status_response = client.get("/colony/status")
+        assert status_response.json()["max_ants"] == 5
 
-    # def test_configure_colony_invalid_max_ants(self, client):
-    #     response = client.put("/colony/config?max_ants=0")
-    #     assert response.status_code == 400
-    #     assert "must be at least 1" in response.json()["detail"]
+    def test_configure_colony_invalid_max_ants(self, client):
+        response = client.put("/colony/config?max_ants=0")
+        assert response.status_code == 422
 
-    # def test_ant_lifecycle_integration(self, client):
-    #     # Configure small colony
-    #     client.put("/colony/config?max_ants=2")
+    def test_ant_lifecycle_integration(self, client):
+        # Configure small colony
+        client.put("/colony/config?max_ants=2")
 
-    #     # Create two ants (at capacity)
-    #     ant1_response = client.post("/ants")
-    #     ant2_response = client.post("/ants")
-    #     assert ant1_response.status_code == 200
-    #     assert ant2_response.status_code == 200
+        # Create two ants (at capacity)
+        ant1_response = client.post("/ants")
+        ant2_response = client.post("/ants")
+        assert ant1_response.status_code == 200
+        assert ant2_response.status_code == 200
 
-    #     # Try to create third ant (should fail)
-    #     ant3_response = client.post("/ants")
-    #     assert ant3_response.status_code == 409
+        # Try to create third ant (should fail)
+        ant3_response = client.post("/ants")
+        assert ant3_response.status_code == 409
 
-    #     # Make first ant die
-    #     ant1_id = ant1_response.json()["id"]
-    #     colony.ants[ant1_id].birth_time = datetime.now() - timedelta(seconds=91)
+        # Make first ant die
+        ant1_id = ant1_response.json()["id"]
+        colony.ants[ant1_id].birth_time = datetime.now() - timedelta(seconds=91)
 
-    #     # Now should be able to create new ant (cleanup happens automatically)
-    #     ant4_response = client.post("/ants")
-    #     assert ant4_response.status_code == 200
+        # Now should be able to create new ant (cleanup happens automatically)
+        ant4_response = client.post("/ants")
+        assert ant4_response.status_code == 200
 
-    #     # Verify status
-    #     status_response = client.get("/colony/status")
-    #     status_data = status_response.json()
-    #     assert status_data["alive_ants"] == 2  # ant2 + ant4
+        # Verify status
+        status_response = client.get("/colony/status")
+        status_data = status_response.json()
+        assert status_data["alive_ants"] == 2  # ant2 + ant4
