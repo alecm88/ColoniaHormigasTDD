@@ -1,0 +1,210 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.12.7, pytest-7.4.3, pluggy-1.0.0 -- /opt/anaconda3/bin/python
+cachedir: .pytest_cache
+rootdir: /Users/javier/Documents/ColoniaHormigasTDD
+configfile: pytest.ini
+plugins: asyncio-0.21.1, anyio-3.7.1
+asyncio: mode=Mode.STRICT
+collecting ... collected 33 items
+
+tests/test_api_extended.py::TestQueenAntAPI::test_root_endpoint_shows_queen_ant_info FAILED [  3%]
+tests/test_api_extended.py::TestQueenAntAPI::test_request_ant_for_valid_subsystem FAILED [  6%]
+tests/test_api_extended.py::TestQueenAntAPI::test_request_ant_for_invalid_subsystem FAILED [  9%]
+tests/test_api_extended.py::TestQueenAntAPI::test_request_ant_insufficient_food FAILED [ 12%]
+tests/test_api_extended.py::TestQueenAntAPI::test_request_ant_capacity_reached FAILED [ 15%]
+tests/test_api_extended.py::TestQueenAntAPI::test_return_ant_successful FAILED [ 18%]
+tests/test_api_extended.py::TestQueenAntAPI::test_return_ant_died_in_mission FAILED [ 21%]
+tests/test_api_extended.py::TestQueenAntAPI::test_return_nonexistent_ant PASSED [ 24%]
+tests/test_api_extended.py::TestQueenAntAPI::test_request_emergency_ants FAILED [ 27%]
+tests/test_api_extended.py::TestQueenAntAPI::test_get_comprehensive_colony_status PASSED [ 30%]
+tests/test_api_extended.py::TestQueenAntAPI::test_get_ants_filtered_by_state FAILED [ 33%]
+tests/test_api_extended.py::TestQueenAntAPI::test_configure_colony_parameters PASSED [ 36%]
+tests/test_api_extended.py::TestQueenAntAPI::test_configure_colony_invalid_parameters FAILED [ 39%]
+tests/test_api_extended.py::TestQueenAntAPI::test_add_food_to_colony PASSED [ 42%]
+tests/test_api_extended.py::TestQueenAntAPI::test_add_invalid_food_amount FAILED [ 45%]
+tests/test_api_extended.py::TestQueenAntAPI::test_get_available_subsystems PASSED [ 48%]
+tests/test_api_extended.py::TestQueenAntAPI::test_cleanup_dead_ants_endpoint PASSED [ 51%]
+tests/test_api_extended.py::TestQueenAntAPI::test_ant_assignment_priority_system FAILED [ 54%]
+tests/test_api_extended.py::TestQueenAntAPI::test_backward_compatibility_endpoints PASSED [ 57%]
+tests/test_api_extended.py::TestQueenAntAPI::test_concurrent_ant_requests FAILED [ 60%]
+tests/test_api_extended.py::TestQueenAntAPI::test_emergency_mode_activation_deactivation FAILED [ 63%]
+tests/test_api_extended.py::TestQueenAntAPI::test_food_consumption_during_ant_creation PASSED [ 66%]
+tests/test_api_extended.py::TestQueenAntAPI::test_ant_lifespan_configuration FAILED [ 69%]
+tests/test_api_extended.py::TestQueenAntAPI::test_subsystem_priority_during_emergency FAILED [ 72%]
+tests/test_api_extended.py::TestQueenAntAPI::test_invalid_subsystem_in_emergency_request FAILED [ 75%]
+tests/test_api_extended.py::TestQueenAntAPI::test_return_ant_without_food_no_death FAILED [ 78%]
+tests/test_api_extended.py::TestQueenAntAPI::test_get_specific_ant_details FAILED [ 81%]
+tests/test_api_extended.py::TestQueenAntAPI::test_get_nonexistent_ant PASSED [ 84%]
+tests/test_api_extended.py::TestQueenAntAPI::test_subsystem_statistics_endpoint FAILED [ 87%]
+tests/test_api_extended.py::TestQueenAntAPI::test_batch_ant_creation FAILED [ 90%]
+tests/test_api_extended.py::TestQueenAntAPI::test_batch_ant_creation_exceeds_capacity FAILED [ 93%]
+tests/test_api_extended.py::TestQueenAntAPI::test_reassign_ant_to_different_subsystem FAILED [ 96%]
+tests/test_api_extended.py::TestQueenAntAPI::test_colony_reset_endpoint FAILED [100%]
+
+=================================== FAILURES ===================================
+___________ TestQueenAntAPI.test_root_endpoint_shows_queen_ant_info ____________
+tests/test_api_extended.py:28: in test_root_endpoint_shows_queen_ant_info
+    data = response.json()
+/opt/anaconda3/lib/python3.12/site-packages/httpx/_models.py:761: in json
+    return jsonlib.loads(self.content, **kwargs)
+/opt/anaconda3/lib/python3.12/json/__init__.py:346: in loads
+    return _default_decoder.decode(s)
+/opt/anaconda3/lib/python3.12/json/decoder.py:337: in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+/opt/anaconda3/lib/python3.12/json/decoder.py:355: in raw_decode
+    raise JSONDecodeError("Expecting value", s, err.value) from None
+E   json.decoder.JSONDecodeError: Expecting value: line 2 column 5 (char 5)
+_____________ TestQueenAntAPI.test_request_ant_for_valid_subsystem _____________
+tests/test_api_extended.py:43: in test_request_ant_for_valid_subsystem
+    assert response.status_code == 200
+E   assert 422 == 200
+E    +  where 422 = <Response [422 Unprocessable Entity]>.status_code
+____________ TestQueenAntAPI.test_request_ant_for_invalid_subsystem ____________
+tests/test_api_extended.py:59: in test_request_ant_for_invalid_subsystem
+    assert response.status_code == 400
+E   assert 422 == 400
+E    +  where 422 = <Response [422 Unprocessable Entity]>.status_code
+______________ TestQueenAntAPI.test_request_ant_insufficient_food ______________
+tests/test_api_extended.py:73: in test_request_ant_insufficient_food
+    assert response.status_code == 409
+E   assert 422 == 409
+E    +  where 422 = <Response [422 Unprocessable Entity]>.status_code
+______________ TestQueenAntAPI.test_request_ant_capacity_reached _______________
+tests/test_api_extended.py:88: in test_request_ant_capacity_reached
+    assert response.status_code == 409
+E   assert 422 == 409
+E    +  where 422 = <Response [422 Unprocessable Entity]>.status_code
+__________________ TestQueenAntAPI.test_return_ant_successful __________________
+tests/test_api_extended.py:95: in test_return_ant_successful
+    ant_id = ant_response.json()["ant"]["id"]
+E   KeyError: 'ant'
+_______________ TestQueenAntAPI.test_return_ant_died_in_mission ________________
+tests/test_api_extended.py:115: in test_return_ant_died_in_mission
+    ant_id = ant_response.json()["ant"]["id"]
+E   KeyError: 'ant'
+_________________ TestQueenAntAPI.test_request_emergency_ants __________________
+tests/test_api_extended.py:154: in test_request_emergency_ants
+    assert response.status_code == 200
+E   assert 422 == 200
+E    +  where 422 = <Response [422 Unprocessable Entity]>.status_code
+_______________ TestQueenAntAPI.test_get_ants_filtered_by_state ________________
+tests/test_api_extended.py:198: in test_get_ants_filtered_by_state
+    assert len(assigned_ants) == 1
+E   assert 0 == 1
+E    +  where 0 = len([])
+___________ TestQueenAntAPI.test_configure_colony_invalid_parameters ___________
+tests/test_api_extended.py:220: in test_configure_colony_invalid_parameters
+    assert response.status_code == 400
+E   assert 422 == 400
+E    +  where 422 = <Response [422 Unprocessable Entity]>.status_code
+_________________ TestQueenAntAPI.test_add_invalid_food_amount _________________
+tests/test_api_extended.py:246: in test_add_invalid_food_amount
+    assert response.status_code == 400
+E   assert 422 == 400
+E    +  where 422 = <Response [422 Unprocessable Entity]>.status_code
+_____________ TestQueenAntAPI.test_ant_assignment_priority_system ______________
+tests/test_api_extended.py:292: in test_ant_assignment_priority_system
+    assert defense_response.status_code == 200
+E   assert 422 == 200
+E    +  where 422 = <Response [422 Unprocessable Entity]>.status_code
+_________________ TestQueenAntAPI.test_concurrent_ant_requests _________________
+tests/test_api_extended.py:328: in test_concurrent_ant_requests
+    assert response.status_code == 200
+E   assert 422 == 200
+E    +  where 422 = <Response [422 Unprocessable Entity]>.status_code
+_________ TestQueenAntAPI.test_emergency_mode_activation_deactivation __________
+tests/test_api_extended.py:339: in test_emergency_mode_activation_deactivation
+    assert response.status_code == 200
+E   assert 404 == 200
+E    +  where 404 = <Response [404 Not Found]>.status_code
+_______________ TestQueenAntAPI.test_ant_lifespan_configuration ________________
+tests/test_api_extended.py:378: in test_ant_lifespan_configuration
+    assert "expiry_time" in ant_details
+E   AssertionError: assert 'expiry_time' in {'age_seconds': 0.001676, 'assigned_to': None, 'assignment_time': None, 'birth_time': '2025-11-26T18:08:50.237711', ...}
+___________ TestQueenAntAPI.test_subsystem_priority_during_emergency ___________
+tests/test_api_extended.py:395: in test_subsystem_priority_during_emergency
+    assert response.status_code == 200
+E   assert 422 == 200
+E    +  where 422 = <Response [422 Unprocessable Entity]>.status_code
+_________ TestQueenAntAPI.test_invalid_subsystem_in_emergency_request __________
+tests/test_api_extended.py:410: in test_invalid_subsystem_in_emergency_request
+    assert response.status_code == 400
+E   assert 422 == 400
+E    +  where 422 = <Response [422 Unprocessable Entity]>.status_code
+____________ TestQueenAntAPI.test_return_ant_without_food_no_death _____________
+tests/test_api_extended.py:416: in test_return_ant_without_food_no_death
+    ant_id = ant_response.json()["ant"]["id"]
+E   KeyError: 'ant'
+________________ TestQueenAntAPI.test_get_specific_ant_details _________________
+tests/test_api_extended.py:448: in test_get_specific_ant_details
+    assert "created_at" in ant_data
+E   AssertionError: assert 'created_at' in {'age_seconds': 0.001759, 'assigned_to': None, 'assignment_time': None, 'birth_time': '2025-11-26T18:08:50.289799', ...}
+______________ TestQueenAntAPI.test_subsystem_statistics_endpoint ______________
+tests/test_api_extended.py:463: in test_subsystem_statistics_endpoint
+    assert response.status_code == 200
+E   assert 404 == 200
+E    +  where 404 = <Response [404 Not Found]>.status_code
+___________________ TestQueenAntAPI.test_batch_ant_creation ____________________
+tests/test_api_extended.py:473: in test_batch_ant_creation
+    assert response.status_code == 200
+E   assert 405 == 200
+E    +  where 405 = <Response [405 Method Not Allowed]>.status_code
+___________ TestQueenAntAPI.test_batch_ant_creation_exceeds_capacity ___________
+tests/test_api_extended.py:488: in test_batch_ant_creation_exceeds_capacity
+    assert response.status_code == 409
+E   assert 405 == 409
+E    +  where 405 = <Response [405 Method Not Allowed]>.status_code
+___________ TestQueenAntAPI.test_reassign_ant_to_different_subsystem ___________
+tests/test_api_extended.py:494: in test_reassign_ant_to_different_subsystem
+    ant_id = ant_response.json()["ant"]["id"]
+E   KeyError: 'ant'
+__________________ TestQueenAntAPI.test_colony_reset_endpoint __________________
+tests/test_api_extended.py:514: in test_colony_reset_endpoint
+    assert response.status_code == 200
+E   assert 404 == 200
+E    +  where 404 = <Response [404 Not Found]>.status_code
+=============================== warnings summary ===============================
+../../../../opt/anaconda3/lib/python3.12/site-packages/pydantic/_internal/_config.py:268
+../../../../opt/anaconda3/lib/python3.12/site-packages/pydantic/_internal/_config.py:268
+../../../../opt/anaconda3/lib/python3.12/site-packages/pydantic/_internal/_config.py:268
+../../../../opt/anaconda3/lib/python3.12/site-packages/pydantic/_internal/_config.py:268
+../../../../opt/anaconda3/lib/python3.12/site-packages/pydantic/_internal/_config.py:268
+../../../../opt/anaconda3/lib/python3.12/site-packages/pydantic/_internal/_config.py:268
+../../../../opt/anaconda3/lib/python3.12/site-packages/pydantic/_internal/_config.py:268
+../../../../opt/anaconda3/lib/python3.12/site-packages/pydantic/_internal/_config.py:268
+../../../../opt/anaconda3/lib/python3.12/site-packages/pydantic/_internal/_config.py:268
+  /opt/anaconda3/lib/python3.12/site-packages/pydantic/_internal/_config.py:268: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.5/migration/
+    warnings.warn(DEPRECATION_MESSAGE, DeprecationWarning)
+
+src/main.py:379
+  /Users/javier/Documents/ColoniaHormigasTDD/src/main.py:379: DeprecationWarning: `regex` has been deprecated, please use `pattern` instead
+    state: str = Query(
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+- generated xml file: /Users/javier/Documents/ColoniaHormigasTDD/testOutput/test_api_extended_results.xml -
+=========================== short test summary info ============================
+FAILED tests/test_api_extended.py::TestQueenAntAPI::test_root_endpoint_shows_queen_ant_info
+FAILED tests/test_api_extended.py::TestQueenAntAPI::test_request_ant_for_valid_subsystem
+FAILED tests/test_api_extended.py::TestQueenAntAPI::test_request_ant_for_invalid_subsystem
+FAILED tests/test_api_extended.py::TestQueenAntAPI::test_request_ant_insufficient_food
+FAILED tests/test_api_extended.py::TestQueenAntAPI::test_request_ant_capacity_reached
+FAILED tests/test_api_extended.py::TestQueenAntAPI::test_return_ant_successful
+FAILED tests/test_api_extended.py::TestQueenAntAPI::test_return_ant_died_in_mission
+FAILED tests/test_api_extended.py::TestQueenAntAPI::test_request_emergency_ants
+FAILED tests/test_api_extended.py::TestQueenAntAPI::test_get_ants_filtered_by_state
+FAILED tests/test_api_extended.py::TestQueenAntAPI::test_configure_colony_invalid_parameters
+FAILED tests/test_api_extended.py::TestQueenAntAPI::test_add_invalid_food_amount
+FAILED tests/test_api_extended.py::TestQueenAntAPI::test_ant_assignment_priority_system
+FAILED tests/test_api_extended.py::TestQueenAntAPI::test_concurrent_ant_requests
+FAILED tests/test_api_extended.py::TestQueenAntAPI::test_emergency_mode_activation_deactivation
+FAILED tests/test_api_extended.py::TestQueenAntAPI::test_ant_lifespan_configuration
+FAILED tests/test_api_extended.py::TestQueenAntAPI::test_subsystem_priority_during_emergency
+FAILED tests/test_api_extended.py::TestQueenAntAPI::test_invalid_subsystem_in_emergency_request
+FAILED tests/test_api_extended.py::TestQueenAntAPI::test_return_ant_without_food_no_death
+FAILED tests/test_api_extended.py::TestQueenAntAPI::test_get_specific_ant_details
+FAILED tests/test_api_extended.py::TestQueenAntAPI::test_subsystem_statistics_endpoint
+FAILED tests/test_api_extended.py::TestQueenAntAPI::test_batch_ant_creation
+FAILED tests/test_api_extended.py::TestQueenAntAPI::test_batch_ant_creation_exceeds_capacity
+FAILED tests/test_api_extended.py::TestQueenAntAPI::test_reassign_ant_to_different_subsystem
+FAILED tests/test_api_extended.py::TestQueenAntAPI::test_colony_reset_endpoint
+================== 24 failed, 9 passed, 10 warnings in 1.41s ===================

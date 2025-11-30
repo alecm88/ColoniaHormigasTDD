@@ -273,12 +273,210 @@ class TestQueenAntAPI:
         assert status["ants_by_subsystem"]["communication"] == 1
         assert status["ants_by_subsystem"]["collection"] == 1
 
-    # def test_backward_compatibility_endpoints(self, client):
-    #     # Test that old endpoints still work
-    #     response = client.get("/colony/status")
-    #     assert response.status_code == 200
+    def test_concurrent_ant_requests(self, client):
+        # Test that multiple subsystems can request ants simultaneously
+        responses = []
+        subsystems = ["Defense", "Communication", "Collection"]
 
-    #     # Should have the basic keys for backward compatibility
-    #     data = response.json()
-    #     basic_keys = {'total_ants', 'alive_ants', 'dead_ants', 'max_ants', 'can_create_more'}
-    #     assert basic_keys.issubset(set(data.keys()))
+        for subsystem in subsystems:
+            response = client.post("/ants/request", json={
+                "subsystem_name": subsystem,
+                "priority": 1,
+                "estimated_duration_seconds": 30
+            })
+            responses.append(response)
+
+        for response in responses:
+            assert response.status_code == 200
+            assert response.json()["assignment_successful"] is True
+
+        # Verify each subsystem has one ant
+        status = client.get("/colony/status/comprehensive").json()
+        for subsystem in ["defense", "communication", "collection"]:
+            assert status["ants_by_subsystem"][subsystem] == 1
+
+    def test_emergency_mode_activation_deactivation(self, client):
+        # Activate emergency mode
+        response = client.put("/colony/emergency?activate=true")
+        assert response.status_code == 200
+        assert response.json()["emergency_mode"] is True
+
+        # Check that colony is in emergency mode
+        status = client.get("/colony/status/comprehensive").json()
+        assert status["emergency_mode"] is True
+
+        # Deactivate emergency mode
+        response = client.put("/colony/emergency?activate=false")
+        assert response.status_code == 200
+        assert response.json()["emergency_mode"] is False
+
+    def test_food_consumption_during_ant_creation(self, client):
+        initial_status = client.get("/colony/status/comprehensive").json()
+        initial_food = initial_status["food_stock"]
+
+        # Create an ant
+        response = client.post("/ants")
+        assert response.status_code == 200
+
+        # Check that food was consumed
+        final_status = client.get("/colony/status/comprehensive").json()
+        assert final_status["food_stock"] == initial_food - 10
+
+    def test_ant_lifespan_configuration(self, client):
+        # Set a specific lifespan
+        response = client.put("/colony/config?ant_lifespan_minutes=3.5")
+        assert response.status_code == 200
+
+        # Create an ant and verify its expiry time
+        ant_response = client.post("/ants")
+        ant_data = ant_response.json()
+
+        # Get ant details
+        ant_id = ant_data["id"]
+        response = client.get(f"/ants/{ant_id}")
+        assert response.status_code == 200
+
+        ant_details = response.json()
+        assert "expiry_time" in ant_details
+
+    def test_subsystem_priority_during_emergency(self, client):
+        # Create limited ants
+        for _ in range(3):
+            client.post("/ants")
+
+        # Activate emergency mode
+        client.put("/colony/emergency?activate=true")
+
+        # Request emergency ants for Defense (highest priority)
+        response = client.post("/ants/emergency", json={
+            "requesting_subsystem": "Defense",
+            "number_needed": 3,
+            "max_wait_seconds": 10
+        })
+
+        assert response.status_code == 200
+        ants = response.json()
+        assert len(ants) == 3
+
+        for ant in ants:
+            assert ant["emergency_assignment"] is True
+            assert ant["ant"]["assigned_to"] == "defense"
+
+    def test_invalid_subsystem_in_emergency_request(self, client):
+        response = client.post("/ants/emergency", json={
+            "requesting_subsystem": "InvalidSubsystem",
+            "number_needed": 1,
+            "max_wait_seconds": 10
+        })
+
+        assert response.status_code == 400
+        assert "Unknown subsystem" in response.json()["detail"]
+
+    def test_return_ant_without_food_no_death(self, client):
+        # Request an ant
+        ant_response = client.post("/ants/request", json={"subsystem_name": "Collection"})
+        ant_id = ant_response.json()["ant"]["id"]
+
+        initial_food = client.get("/colony/status/comprehensive").json()["food_stock"]
+
+        # Return ant without food and not dead
+        response = client.post("/ants/return", json={
+            "ant_id": ant_id,
+            "returned_with_food": False,
+            "died_in_mission": False
+        })
+
+        assert response.status_code == 200
+        data = response.json()
+        assert data["food_gained"] is False
+        assert data["ant_died"] is False
+
+        # Verify food stock unchanged
+        final_food = client.get("/colony/status/comprehensive").json()["food_stock"]
+        assert final_food == initial_food
+
+    def test_get_specific_ant_details(self, client):
+        # Create an ant
+        ant_response = client.post("/ants")
+        ant_id = ant_response.json()["id"]
+
+        # Get specific ant details
+        response = client.get(f"/ants/{ant_id}")
+        assert response.status_code == 200
+
+        ant_data = response.json()
+        assert ant_data["id"] == ant_id
+        assert ant_data["state"] == "free"
+        assert "created_at" in ant_data
+        assert "expiry_time" in ant_data
+
+    def test_get_nonexistent_ant(self, client):
+        response = client.get("/ants/nonexistent-id")
+        assert response.status_code == 404
+        assert "not found" in response.json()["detail"]
+
+    def test_subsystem_statistics_endpoint(self, client):
+        # Create ants and assign to different subsystems
+        client.post("/ants/request", json={"subsystem_name": "Defense"})
+        client.post("/ants/request", json={"subsystem_name": "Defense"})
+        client.post("/ants/request", json={"subsystem_name": "Communication"})
+
+        response = client.get("/subsystems/statistics")
+        assert response.status_code == 200
+
+        stats = response.json()
+        assert "subsystem_statistics" in stats
+        assert stats["subsystem_statistics"]["defense"]["assigned_ants"] == 2
+        assert stats["subsystem_statistics"]["communication"]["assigned_ants"] == 1
+        assert stats["subsystem_statistics"]["collection"]["assigned_ants"] == 0
+
+    def test_batch_ant_creation(self, client):
+        response = client.post("/ants/batch?count=5")
+        assert response.status_code == 200
+
+        data = response.json()
+        assert len(data["created_ants"]) == 5
+        assert data["total_created"] == 5
+
+        # Verify all ants were created
+        status = client.get("/colony/status/comprehensive").json()
+        assert status["total_ants"] == 5
+
+    def test_batch_ant_creation_exceeds_capacity(self, client):
+        # Set low capacity
+        client.put("/colony/config?max_ants=3")
+
+        response = client.post("/ants/batch?count=5")
+        assert response.status_code == 409
+        assert "Cannot create 5 ants" in response.json()["detail"]
+
+    def test_reassign_ant_to_different_subsystem(self, client):
+        # Create and assign ant to Communication
+        ant_response = client.post("/ants/request", json={"subsystem_name": "Communication"})
+        ant_id = ant_response.json()["ant"]["id"]
+
+        # Reassign to Defense
+        response = client.put(f"/ants/{ant_id}/reassign", json={
+            "new_subsystem": "Defense",
+            "priority": 1
+        })
+
+        assert response.status_code == 200
+        data = response.json()
+        assert data["ant"]["assigned_to"] == "defense"
+        assert "Reassigned ant" in data["message"]
+
+    def test_colony_reset_endpoint(self, client):
+        # Create some ants and modify colony state
+        client.post("/ants/batch?count=3")
+        client.put("/colony/config?food_stock=500")
+
+        # Reset colony
+        response = client.post("/colony/reset")
+        assert response.status_code == 200
+
+        # Verify reset
+        status = client.get("/colony/status/comprehensive").json()
+        assert status["total_ants"] == 0
+        assert status["food_stock"] == 1000  # Default value
+        assert status["max_ants"] == 100  # Default value

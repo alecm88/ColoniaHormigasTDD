@@ -1,0 +1,94 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.12.7, pytest-7.4.3, pluggy-1.0.0 -- /opt/anaconda3/bin/python
+cachedir: .pytest_cache
+rootdir: /Users/javier/Documents/ColoniaHormigasTDD
+configfile: pytest.ini
+plugins: asyncio-0.21.1, anyio-3.7.1
+asyncio: mode=Mode.STRICT
+collecting ... collected 22 items
+
+tests/test_subsystems.py::TestSubsystem::test_get_known_subsystems_returns_three_subsystems PASSED [  4%]
+tests/test_subsystems.py::TestSubsystem::test_defense_has_highest_priority PASSED [  9%]
+tests/test_subsystems.py::TestSubsystem::test_communication_has_medium_priority PASSED [ 13%]
+tests/test_subsystems.py::TestSubsystem::test_collection_has_lowest_priority PASSED [ 18%]
+tests/test_subsystems.py::TestSubsystem::test_get_by_name_case_insensitive PASSED [ 22%]
+tests/test_subsystems.py::TestSubsystem::test_get_by_name_unknown_subsystem_returns_none PASSED [ 27%]
+tests/test_subsystems.py::TestSubsystem::test_get_by_id_unknown_subsystem_returns_none PASSED [ 31%]
+tests/test_subsystems.py::TestSubsystem::test_subsystem_priority_ordering FAILED [ 36%]
+tests/test_subsystems.py::TestSubsystem::test_subsystem_equality PASSED  [ 40%]
+tests/test_subsystems.py::TestSubsystem::test_subsystem_string_representation FAILED [ 45%]
+tests/test_subsystems.py::TestSubsystem::test_subsystem_description_exists FAILED [ 50%]
+tests/test_subsystems.py::TestSubsystem::test_get_subsystem_by_priority_level FAILED [ 54%]
+tests/test_subsystems.py::TestSubsystem::test_subsystem_has_required_attributes FAILED [ 59%]
+tests/test_subsystems.py::TestSubsystem::test_subsystem_is_high_priority FAILED [ 63%]
+tests/test_subsystems.py::TestSubsystem::test_subsystem_enum_values_are_unique PASSED [ 68%]
+tests/test_subsystems.py::TestSubsystem::test_all_subsystem_names_are_unique PASSED [ 72%]
+tests/test_subsystems.py::TestSubsystem::test_get_subsystem_stats FAILED [ 77%]
+tests/test_subsystems.py::TestSubsystem::test_subsystem_comparison_operators FAILED [ 81%]
+tests/test_subsystems.py::TestSubsystem::test_subsystem_hash_consistency FAILED [ 86%]
+tests/test_subsystems.py::TestSubsystem::test_subsystem_get_by_partial_name FAILED [ 90%]
+tests/test_subsystems.py::TestSubsystem::test_subsystem_type_conversion PASSED [ 95%]
+tests/test_subsystems.py::TestSubsystem::test_get_subsystems_by_priority_range FAILED [100%]
+
+=================================== FAILURES ===================================
+________________ TestSubsystem.test_subsystem_priority_ordering ________________
+tests/test_subsystems.py:44: in test_subsystem_priority_ordering
+    subsystems = Subsystem.get_all_ordered_by_priority()
+E   AttributeError: type object 'Subsystem' has no attribute 'get_all_ordered_by_priority'
+______________ TestSubsystem.test_subsystem_string_representation ______________
+tests/test_subsystems.py:69: in test_subsystem_string_representation
+    assert str(defense) == "Defense (Priority: 1)"
+E   AssertionError: assert 'Subsystem(id...rity_level=1)' == 'Defense (Priority: 1)'
+E     - Defense (Priority: 1)
+E     + Subsystem(id=<SubsystemType.DEFENSE: 'defense'>, name='Defense', priority_level=1)
+_______________ TestSubsystem.test_subsystem_description_exists ________________
+tests/test_subsystems.py:78: in test_subsystem_description_exists
+    assert subsystem.description is not None
+E   AttributeError: 'Subsystem' object has no attribute 'description'
+______________ TestSubsystem.test_get_subsystem_by_priority_level ______________
+tests/test_subsystems.py:82: in test_get_subsystem_by_priority_level
+    highest_priority = Subsystem.get_by_priority(1)
+E   AttributeError: type object 'Subsystem' has no attribute 'get_by_priority'
+_____________ TestSubsystem.test_subsystem_has_required_attributes _____________
+tests/test_subsystems.py:103: in test_subsystem_has_required_attributes
+    assert hasattr(defense, 'description')
+E   AssertionError: assert False
+E    +  where False = hasattr(Subsystem(id=<SubsystemType.DEFENSE: 'defense'>, name='Defense', priority_level=1), 'description')
+________________ TestSubsystem.test_subsystem_is_high_priority _________________
+tests/test_subsystems.py:115: in test_subsystem_is_high_priority
+    assert defense.is_high_priority() is True
+E   AttributeError: 'Subsystem' object has no attribute 'is_high_priority'
+____________________ TestSubsystem.test_get_subsystem_stats ____________________
+tests/test_subsystems.py:135: in test_get_subsystem_stats
+    stats = Subsystem.get_subsystem_stats()
+E   AttributeError: type object 'Subsystem' has no attribute 'get_subsystem_stats'
+______________ TestSubsystem.test_subsystem_comparison_operators _______________
+tests/test_subsystems.py:152: in test_subsystem_comparison_operators
+    assert defense < communication
+E   TypeError: '<' not supported between instances of 'Subsystem' and 'Subsystem'
+________________ TestSubsystem.test_subsystem_hash_consistency _________________
+tests/test_subsystems.py:166: in test_subsystem_hash_consistency
+    assert hash(defense1) == hash(defense2)
+E   TypeError: unhashable type: 'Subsystem'
+_______________ TestSubsystem.test_subsystem_get_by_partial_name _______________
+tests/test_subsystems.py:173: in test_subsystem_get_by_partial_name
+    defense = Subsystem.get_by_partial_name("Def")
+E   AttributeError: type object 'Subsystem' has no attribute 'get_by_partial_name'
+_____________ TestSubsystem.test_get_subsystems_by_priority_range ______________
+tests/test_subsystems.py:200: in test_get_subsystems_by_priority_range
+    high_priority = Subsystem.get_by_priority_range(1, 2)
+E   AttributeError: type object 'Subsystem' has no attribute 'get_by_priority_range'
+- generated xml file: /Users/javier/Documents/ColoniaHormigasTDD/testOutput/test_subsystems_results.xml -
+=========================== short test summary info ============================
+FAILED tests/test_subsystems.py::TestSubsystem::test_subsystem_priority_ordering
+FAILED tests/test_subsystems.py::TestSubsystem::test_subsystem_string_representation
+FAILED tests/test_subsystems.py::TestSubsystem::test_subsystem_description_exists
+FAILED tests/test_subsystems.py::TestSubsystem::test_get_subsystem_by_priority_level
+FAILED tests/test_subsystems.py::TestSubsystem::test_subsystem_has_required_attributes
+FAILED tests/test_subsystems.py::TestSubsystem::test_subsystem_is_high_priority
+FAILED tests/test_subsystems.py::TestSubsystem::test_get_subsystem_stats - At...
+FAILED tests/test_subsystems.py::TestSubsystem::test_subsystem_comparison_operators
+FAILED tests/test_subsystems.py::TestSubsystem::test_subsystem_hash_consistency
+FAILED tests/test_subsystems.py::TestSubsystem::test_subsystem_get_by_partial_name
+FAILED tests/test_subsystems.py::TestSubsystem::test_get_subsystems_by_priority_range
+======================== 11 failed, 11 passed in 0.15s =========================
