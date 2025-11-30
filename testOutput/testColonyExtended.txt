@@ -373,3 +373,190 @@ tests\test_colony_extended.py ...........                                [100%]
 ============================= 11 passed in 0.04s ==============================
 
 Todavia tenemos pendiente manejo de emergencia.
+
+Vamos a manejar el modo de emergencia. Creamos 3 escenarios de prueba:
+1. En emergencia tenemos hormigas disponibles
+2. Tenemos que pedir hormigas de vuelta
+3. Respetamos prioridades
+
+================================== FAILURES ===================================
+_____ TestColonyExtended.test_emergency_ants_respects_priority_hierarchy ______
+
+self = <tests.test_colony_extended.TestColonyExtended object at 0x000001A5A9B64CB0>
+
+    def test_emergency_ants_respects_priority_hierarchy(self):
+        colony = Colony()
+    
+        # Assign ants to different subsystems
+        defense_ant = colony.request_ant("S05_DEF")  # Priority 1
+        collection_ant = colony.request_ant("S02_REQ")  # Priority 3
+    
+        # Make assignments old enough
+        for ant in [defense_ant, collection_ant]:
+>           ant.assignment_time = datetime.now() - timedelta(seconds=15)
+            ^^^^^^^^^^^^^^^^^^^
+E           AttributeError: 'NoneType' object has no attribute 'assignment_time'
+
+tests\test_colony_extended.py:105: AttributeError
+=========================== short test summary info ===========================
+FAILED tests/test_colony_extended.py::TestColonyExtended::test_emergency_ants_respects_priority_hierarchy
+============================== 1 failed in 0.16s ==============================
+================================== FAILURES ===================================
+_ TestColonyExtended.test_request_emergency_ants_reassigns_from_lower_priority _
+
+self = <tests.test_colony_extended.TestColonyExtended object at 0x00000234AE995610>
+
+    def test_request_emergency_ants_reassigns_from_lower_priority(self):
+        colony = Colony()
+    
+        # Assign ant to Collection (lowest priority)
+        collection_ant = colony.request_ant("S02_REC")
+        # Make the assignment old enough to be reassignable
+        collection_ant.assignment_time = datetime.now() - timedelta(seconds=15)
+    
+        # Request emergency ant for Defense (highest priority)
+        emergency_ants = colony.request_emergency_ants("S05_DEF", number_needed=1)
+    
+        assert len(emergency_ants) == 1
+        assert emergency_ants[0].id == collection_ant.id
+>       assert emergency_ants[0].assigned_to == SubsystemType.DEFENSE
+E       AssertionError: assert <SubsystemType.COLLECTION: 'S02_REC'> == <SubsystemType.DEFENSE: 'S05_DEF'>
+E        +  where <SubsystemType.COLLECTION: 'S02_REC'> = <src.ant.Ant object at 0x00000234AE996AE0>.assigned_to
+E        +  and   <SubsystemType.DEFENSE: 'S05_DEF'> = SubsystemType.DEFENSE
+
+tests\test_colony_extended.py:94: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/test_colony_extended.py::TestColonyExtended::test_request_emergency_ants_reassigns_from_lower_priority
+============================== 1 failed in 0.15s ==============================
+
+Revisamos. Teniamos un tema con el nombre del subsistema. Ademas las hormigas estaban bloqueando reasignacion de sistemas. Les agregamos una opciones de emergencia.
+
+============================== 1 passed in 0.03s ==============================
+
+Ahora vamos a crear una suite de pruebas para el modo de emergencia
+
+Funcion para iniciar/terminar modo de emergencia
+
+============================== 1 passed in 0.03s ==============================
+============================== 1 passed in 0.03s ==============================
+
+Cascada de emergencia
+================================== FAILURES ===================================
+________ TestColonyEmergencyScenarios.test_emergency_cascade_scenario _________
+
+self = <tests.test_colony_extended.TestColonyEmergencyScenarios object at 0x000002575FEE6510>
+
+    def test_emergency_cascade_scenario(self):
+        """Test cascading emergency requests from multiple subsystems"""
+        colony = Colony()
+    
+        # Create and assign ants to all subsystems
+        for _ in range(2):
+            colony.request_ant("S02_REC")  # Lowest priority
+        for _ in range(2):
+            colony.request_ant("S01_COM")  # Medium priority
+    
+        # Make assignments old enough
+        for ant in colony.ants:
+>           if ant.state == AntState.ASSIGNED:
+               ^^^^^^^^^
+E           AttributeError: 'str' object has no attribute 'state'
+
+tests\test_colony_extended.py:223: AttributeError
+=========================== short test summary info ===========================
+FAILED tests/test_colony_extended.py::TestColonyEmergencyScenarios::test_emergency_cascade_scenario
+============================== 1 failed in 0.15s ==============================
+
+Estabamos obteniendo el id de la hormiga en vez del objeto
+============================== 1 passed in 0.09s ==============================
+
+================================== FAILURES ===================================
+____ TestColonyEmergencyScenarios.test_emergency_request_invalid_subsystem ____
+
+self = <tests.test_colony_extended.TestColonyEmergencyScenarios object at 0x00000253AB384740>
+
+    def test_emergency_request_invalid_subsystem(self):
+        colony = Colony()
+        colony.create_ant()
+    
+        emergency_ants = colony.request_emergency_ants("InvalidSubsystem", number_needed=1)
+    
+>       assert len(emergency_ants) == 0
+E       assert 1 == 0
+E        +  where 1 = len([<src.ant.Ant object at 0x00000253AB385460>])
+
+tests\test_colony_extended.py:243: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/test_colony_extended.py::TestColonyEmergencyScenarios::test_emergency_request_invalid_subsystem
+============================== 1 failed in 0.10s ==============================
+
+Estamos activando modo emergencia para un subsistema no existente.
+
+============================== 1 passed in 0.08s ==============================
+
+Caso en el que tenemos menos hormigas disponibles de las necesarias
+
+============================== 1 passed in 0.09s ==============================
+
+Las hormigas mueren muy rapido
+================================== FAILURES ===================================
+_________ TestColonyEmergencyScenarios.test_emergency_with_dead_ants __________
+
+self = <tests.test_colony_extended.TestColonyEmergencyScenarios object at 0x000001D154675E20>
+
+    def test_emergency_with_dead_ants(self):
+        colony = Colony(ant_lifespan_minutes=0.01)  # Very short lifespan
+    
+        # Create ants and let them die
+        ant1 = colony.create_ant()
+        ant2 = colony.create_ant()
+    
+        import time
+        time.sleep(1)  # Wait for ants to die
+    
+        colony.cleanup_dead_ants()
+    
+        # Try to request emergency ants
+        emergency_ants = colony.request_emergency_ants("S05_DEF", number_needed=2)
+    
+>       assert len(emergency_ants) == 0  # No living ants available
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       assert 2 == 0
+E        +  where 2 = len([<src.ant.Ant object at 0x000001D1546764E0>, <src.ant.Ant object at 0x000001D154676690>])
+
+tests\test_colony_extended.py:276: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/test_colony_extended.py::TestColonyEmergencyScenarios::test_emergency_with_dead_ants
+============================== 1 failed in 1.16s ==============================
+
+Parece que no estabamos definiendo correctamente el tiempo de vida de una hormiga
+
+============================== 1 passed in 1.03s ==============================
+
+Revisamos manejo de prioridad
+
+============================== 1 passed in 0.09s ==============================
+
+Revisamos creacion normal de hormigas
+
+============================== 1 passed in 0.03s ==============================
+
+Manejo de multiples emergencias
+
+============================== 1 passed in 0.09s ==============================
+
+Hormigas tienen datos actualizados
+
+============================== 1 passed in 0.03s ==============================
+
+La comida no se ve afectada
+
+============================== 1 passed in 0.10s ==============================
+
+Modo de emergencia no afecta estado de la colonia
+
+============================== 1 passed in 0.03s ==============================
+
+Revisamos pruebas completas
+
+============================= 27 passed in 1.07s ==============================
