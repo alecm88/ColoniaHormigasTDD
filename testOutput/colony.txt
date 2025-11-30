@@ -557,5 +557,14 @@ tests\test_colony.py .........                                           [100%]
 Finished running tests!
 
   
+Vamos a correr pruebas para mejorar la cobertura.
+
+get_ant_by_id
+============================== 1 passed in 0.05s ==============================
+get_nonexistant_ant_by_id
+============================== 1 passed in 0.07s ==============================
+test_request_ant_without_resources
+============================== 1 passed in 0.08s ==============================
+
 
   
