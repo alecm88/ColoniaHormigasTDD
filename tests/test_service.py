@@ -1,9 +1,6 @@
 import pytest, time
 from src.service import Service
 
-@pytest.fixture
-def client():
-    return TestClient(app)
 
 class TestService:
     def test_start_service(self):
