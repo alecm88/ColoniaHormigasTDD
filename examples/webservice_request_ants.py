@@ -18,7 +18,7 @@ def ejemplo_solicitud_exitosa():
         "subsystem_name": "Defense",
         "quantity": 5,
         "priority": 1,
-        "estimated_duration_seconds": 120
+        "estimated_duration_seconds": 80  # Menos de 90s (vida útil por defecto)
     }
 
     # Hacer la solicitud POST

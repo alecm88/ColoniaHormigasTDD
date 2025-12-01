@@ -261,7 +261,17 @@ async def request_ant(request: AntRequest):
     - No hay suficientes hormigas disponibles + creables
     - El subsistema especificado no existe
     - La cantidad solicitada es inválida (≤ 0)
-    - No hay suficiente vida útil para la duración estimada
+    - **⏰ Duración excesiva**: La duración estimada supera la vida útil de las hormigas (por defecto: 90 segundos)
+
+    ## ⚠️ Limitación Importante
+
+    **Vida útil de hormigas**: Por defecto, las hormigas viven 90 segundos (1.5 minutos).
+    - ✅ **Duración ≤ 70s**: Operación exitosa (70s tarea + 10s espera = 80s total)
+    - ❌ **Duración > 80s**: Falla con "Failed to create required ants"
+
+    **Nota**: Las hormigas necesitan `duración_tarea + 10s_espera ≤ 90s_vida_útil`
+
+    Para tareas más largas, configure primero la colonia con `POST /colony/configure` aumentando `ant_lifespan_minutes`.
 
     ## 💡 Ejemplo de Uso
 
@@ -271,7 +281,7 @@ async def request_ant(request: AntRequest):
         "subsystem_name": "Defense",
         "quantity": 5,
         "priority": 1,
-        "estimated_duration_seconds": 120
+        "estimated_duration_seconds": 70  # 70s + 10s espera = 80s < 90s vida útil
     })
 
     if response.json()['success']:
@@ -301,7 +311,8 @@ async def request_ant(request: AntRequest):
                                         "id": "ant-123",
                                         "state": "assigned",
                                         "assigned_to": "defense",
-                                        "remaining_life_seconds": 85.5
+                                        "remaining_life_seconds": 89.2,
+                                        "estimated_duration_seconds": 80
                                     }
                                 ],
                                 "ants_used": 2,
@@ -348,7 +359,7 @@ async def request_multiple_ants(request: MultipleAntsRequest):
     for ant in result['ants']:
         ants_response.append(AntResponse(
             id=ant.id,
-            birth_time=ant.created_at.isoformat(),
+            birth_time=ant.birth_time.isoformat(),
             death_time=ant.death_time.isoformat(),
             is_alive=ant.is_alive,
             age_seconds=ant.age_seconds,

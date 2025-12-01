@@ -16,7 +16,7 @@ curl -X POST "$BASE_URL/ants/request-multiple" \
     "subsystem_name": "Defense",
     "quantity": 5,
     "priority": 1,
-    "estimated_duration_seconds": 120
+    "estimated_duration_seconds": 80
   }' | python -m json.tool
 
 # 2. Solicitud con parámetros mínimos

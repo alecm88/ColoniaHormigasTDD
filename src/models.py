@@ -115,7 +115,7 @@ class MultipleAntsRequest(BaseModel):
                 "subsystem_name": "Defense",
                 "quantity": 5,
                 "priority": 1,
-                "estimated_duration_seconds": 120
+                "estimated_duration_seconds": 70
             }
         }
 
