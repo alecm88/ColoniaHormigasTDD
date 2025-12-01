@@ -263,13 +263,27 @@ async def request_ant(request: AntRequest):
     - La cantidad solicitada es inválida (≤ 0)
     - **⏰ Duración excesiva**: La duración estimada supera la vida útil de las hormigas (por defecto: 90 segundos)
 
-    ## ⚠️ Limitación Importante
+    ## ⚠️ Limitación Importante - Cálculo de Duración
 
     **Vida útil de hormigas**: Por defecto, las hormigas viven 90 segundos (1.5 minutos).
-    - ✅ **Duración ≤ 70s**: Operación exitosa (70s tarea + 10s espera = 80s total)
-    - ❌ **Duración > 80s**: Falla con "Failed to create required ants"
 
-    **Nota**: Las hormigas necesitan `duración_tarea + 10s_espera ≤ 90s_vida_útil`
+    ### 📐 Fórmula de Cálculo:
+    ```
+    estimated_duration_seconds + 10s_tiempo_espera ≤ 90s_vida_útil
+    ```
+
+    **Tiempo de espera fijo**: Cada hormiga requiere **10 segundos adicionales** de tiempo de espera.
+
+    ### ✅ Ejemplos válidos:
+    - `estimated_duration_seconds: 40` → 40s + 10s = 50s ≤ 90s ✅
+    - `estimated_duration_seconds: 70` → 70s + 10s = 80s ≤ 90s ✅
+    - `estimated_duration_seconds: 79` → 79s + 10s = 89s ≤ 90s ✅
+
+    ### ❌ Ejemplos inválidos:
+    - `estimated_duration_seconds: 80` → 80s + 10s = 90s ≥ 90s ❌ (margen muy estrecho)
+    - `estimated_duration_seconds: 85` → 85s + 10s = 95s > 90s ❌
+
+    **Recomendación**: Use máximo 79 segundos para tener margen de seguridad.
 
     Para tareas más largas, configure primero la colonia con `POST /colony/configure` aumentando `ant_lifespan_minutes`.
 

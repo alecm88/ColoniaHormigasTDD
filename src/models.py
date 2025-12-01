@@ -106,7 +106,8 @@ class MultipleAntsRequest(BaseModel):
     estimated_duration_seconds: float = Field(
         default=60,
         gt=0,
-        description="Duración estimada de la tarea en segundos"
+        le=79,
+        description="Duración estimada de la tarea en segundos. NOTA: Se añaden 10s de tiempo de espera automáticamente. Máximo recomendado: 79s (79+10=89 ≤ 90s vida útil)"
     )
 
     class Config:
