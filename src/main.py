@@ -8,6 +8,7 @@ from fastapi.exception_handlers import (
 from fastapi.middleware.cors import CORSMiddleware
 from typing import List
 from src.colony import Colony
+from src.service import Service
 from src.subsystems import Subsystem, SubsystemType
 from src.models import (
     # Request models
@@ -18,10 +19,13 @@ from src.models import (
     ConfigurationResponse, FoodResponse, CleanupResponse, RootResponse, ErrorResponse,
     ServiceResponse
 )
-import requests
+import requests, time
 
 # Global colony instance - configuración según requisitos académicos
 colony = Colony(max_ants=100, initial_food_stock=1000, ant_lifespan_minutes=1.5)
+
+# Global service instance in charge of message queue
+globalService = Service(interval=5, run_for_minutes=0.1, colony=colony)
 
 # OpenAPI metadata
 tags_metadata = [
@@ -613,18 +617,9 @@ async def request_multiple_ants(request: MultipleAntsRequest):
     # Convertir las hormigas a formato de respuesta
     ants_response = []
     for ant in result['ants']:
-        ants_response.append(AntResponse(
-            id=ant.id,
-            birth_time=ant.birth_time.isoformat(),
-            death_time=ant.death_time.isoformat(),
-            is_alive=ant.is_alive,
-            age_seconds=ant.age_seconds,
-            remaining_life_seconds=ant.remaining_life_seconds,
-            state=ant.state.value,
-            assigned_to=ant.assigned_to.value if ant.assigned_to else None,
-            assignment_time=ant.assignment_time.isoformat() if ant.assignment_time else None,
-            wait_time_seconds=ant.wait_time_seconds
-        ))
+        ants_response.append(
+            ant.to_dict()
+        )
 
     return MultipleAntsResponse(
         success=result['success'],
@@ -750,7 +745,7 @@ async def request_emergency_ants(request: EmergencyRequest):
 
 # # === ⚙️ ENDPOINTS DE CONFIGURACIÓN Y ADMINISTRACIÓN ===
 
-@app.put(
+@app.post(
     "/service",
     response_model=ServiceResponse,
     tags=["⚙️ Servicio"],
@@ -765,24 +760,36 @@ async def request_emergency_ants(request: EmergencyRequest):
 )
 async def service(
     interval: int = Query(1, description="Cada cuantos segundos se corre la consulta", ge=1, examples=[1, 10, 20]),
-    run_for_minutes: int = Query(5, description="Numero de minutos para mantener vivo el servicio", ge=1, examples=[5, 10, 20])
+    run_for_minutes: float = Query(5, description="Numero de minutos para mantener vivo el servicio", ge=0.1, examples=[5, 10, 20]),
+    activate: bool = Query(None, description="Inicio del servicio", examples=[True, False])
 ):
     config_changes = {}
 
     if interval is not None:
         if interval < 1:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="interval must be at least 1")
+        globalService.interval = interval
         config_changes["interval"] = interval
 
     if run_for_minutes is not None:
-        if run_for_minutes < 1:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="run_for_minutes must be at least 1")
+        if run_for_minutes < 0.1:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="run_for_minutes must be at least 0.1")
         config_changes["run_for_minutes"] = run_for_minutes
+        globalService.run_for_minutes = run_for_minutes
+
+    if activate is not None:
+        if (activate):
+            globalService.service_start()
+        else:
+            globalService.service_stop()
+        config_changes['Service start'] = activate
+
+    time.sleep(1)  # Give some time for service to update
 
     return {
-        "message": "Colony configuration updated",
+        "message": "Service configuration updated",
         "changes": config_changes,
-        "current_status": colony.get_comprehensive_status()
+        "current_status": globalService.get_status()
     }
 
 

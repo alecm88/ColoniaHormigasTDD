@@ -389,3 +389,23 @@ class TestColonyEmergencyScenarios:
         assert colony.emergency_mode is False
         assert colony.food_stock > 0
         assert len(colony.get_free_ants()) > 0
+
+    def test_request_multiple_ants_creates_new_ant_if_needed(self):
+        colony = Colony()
+        initial_ant_count = len(colony.ants)
+
+        result = colony.request_ants(SubsystemType.COMMUNICATION.value, 5)
+        ants = result["ants"]
+
+        assert result["success"] is True
+        assert len(ants) == 5
+        assert len(colony.ants) == initial_ant_count + 5
+
+    def test_request_multiple_ants_incomplete_block_fails(self):
+        colony = Colony(max_ants = 3)
+        initial_ant_count = len(colony.ants)
+
+        result = colony.request_ants(SubsystemType.COMMUNICATION.value, 5)
+
+        assert result["success"] is False
+        assert len(colony.ants) == initial_ant_count

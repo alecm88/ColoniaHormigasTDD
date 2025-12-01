@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 from src.main import app, colony
 from src.ant import Ant
 from src.subsystems import Subsystem, SubsystemType
+import time
 
 @pytest.fixture
 def client():
@@ -65,3 +66,26 @@ class TestIntegrationAPI:
         #This might backfire if communication system is receiving messages
         messageResponse = client.get("/messages/S03_REI")
         assert messageResponse.status_code == 404 or len(messageResponse.json()) == 0
+
+    def test_service_start(self, client):
+        response = client.post("/service?interval=5&run_for_minutes=0.1&activate=true")
+
+        assert response.status_code == 200
+        assert response.json()["current_status"]["is_running"] is True
+
+    def test_service_stop(self, client):
+        response = client.post("/service?interval=5&run_for_minutes=1&activate=true")
+
+        assert response.status_code == 200
+        assert response.json()["current_status"]["is_running"] is True
+
+        # Stop service before time is up
+        request_data = {
+            "activate": False
+        }
+        response = client.post("/service?activate=false")
+
+        time.sleep(1)  # Give some time for service to stop
+
+        assert response.status_code == 200
+        assert response.json()["current_status"]["is_running"] is False

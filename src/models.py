@@ -111,7 +111,7 @@ class MultipleAntsRequest(BaseModel):
         description="Duración estimada de la tarea en segundos. NOTA: Se añaden 10s de tiempo de espera automáticamente. Máximo recomendado: 79s (79+10=89 ≤ 90s vida útil)"
     )
 
-    class Config:
+    class ConfigDict:
         json_schema_extra = {
             "example": {
                 "subsystem_name": "Defense",
@@ -200,6 +200,27 @@ class MessageResponse(BaseModel):
                         "assigned_to": "defense"
                     }
                 }
+            }
+        }
+
+class ServiceStatus(BaseModel):
+    """Formato de estado del servicio"""
+    interval: int = Field(description="Intervalo de tiempo en segundos")
+    run_for_minutes: float = Field(description="Tiempo en minutos configurado para correr el servicio")
+    end_time: str = Field(description="fecha y hora de finalización (ISO format)")
+    messages_pending: int = Field(description="Numero de mensajes pendientes de procesar")
+    calls: int = Field(description="Numero de llamadas realizadas")
+    is_running: bool = Field(description="Indica si el servicio está en ejecución")
+
+    class ConfigDict:
+        json_schema_extra = {
+            "example": {
+                "interval": 5,
+                "run_for_minutes": 0.1,
+                "end_time": "2025-11-22T20:44:10.039359218Z",
+                "messages_pending": "[]",
+                "calls": 10,
+                "is_running": True
             }
         }
 
@@ -309,7 +330,7 @@ class MultipleAntsResponse(BaseModel):
     can_create: int = Field(description="Número de hormigas que se podían crear")
     requested: int = Field(description="Número de hormigas solicitadas")
 
-    class Config:
+    class ConfigDict:
         json_schema_extra = {
             "example": {
                 "success": True,
@@ -400,6 +421,7 @@ class ServiceResponse(BaseModel):
     """Respuesta para cambios de servicio"""
     message: str = Field(description="Mensaje de confirmación")
     changes: Dict[str, Any] = Field(description="Cambios aplicados")
+    current_status: ServiceStatus = Field(description="Estado servicio")
 
 
 class FoodResponse(BaseModel):

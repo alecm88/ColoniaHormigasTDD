@@ -415,6 +415,37 @@ class TestQueenAntAPI:
         response = client.get("/ants/nonexistent-id")
         assert response.status_code == 404
         assert "Hormiga no encontrada" in response.json()["detail"]
+        
+        
+    def test_request_multiple_ants(self, client):
+        request_data = {
+            "subsystem_name": "S05_DEF",
+            "quantity": 5
+        }
+        response = client.post("/ants/request-multiple", json=request_data)
+        result = response.json()
+        
+        ants = result["ants"]
+
+        assert response.status_code == 200
+        assert result["success"] is True
+        assert len(ants) == 5
+
+    def test_request_multiple_ants_incomplete_block_fails(self, client):
+        request_data = {
+            "subsystem_name": "S05_DEF",
+            "quantity": 5
+        }
+        colony.max_ants = 3
+        response = client.post("/ants/request-multiple", json=request_data)
+        result = response.json()
+        
+        ants = result["ants"]
+
+        assert response.status_code == 200
+        assert result["success"] is False
+        assert len(ants) == 0
+
 
     # def test_colony_reset_endpoint(self, client):
     #     # Create some ants and modify colony state

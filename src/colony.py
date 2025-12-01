@@ -122,7 +122,6 @@ class Colony:
             return result
 
         # Update states first
-        self.update_all_ant_states()
         self.cleanup_dead_ants()
 
         # Validate subsystem
@@ -134,7 +133,7 @@ class Colony:
         # Get available ants that can handle the task
         available_ants = [
             ant for ant in self.ants.values()
-            if ant.is_available_for_assignment and ant.can_handle_task(estimated_duration_seconds)
+            if ant.is_available_for_assignment
         ]
         result['available'] = len(available_ants)
 
@@ -175,7 +174,7 @@ class Colony:
             # Create the ants
             for _ in range(ants_needed):
                 new_ant = self.create_ant()
-                if new_ant and new_ant.can_handle_task(estimated_duration_seconds):
+                if new_ant:
                     ants_to_create.append(new_ant)
                 else:
                     # Rollback: Return created ants to free state
