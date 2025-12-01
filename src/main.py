@@ -5,10 +5,10 @@ from typing import List
 from src.colony import Colony
 from src.models import (
     # Request models
-    AntRequest, AntReturn, EmergencyRequest,
+    AntRequest, AntReturn, EmergencyRequest, MultipleAntsRequest,
     # Response models
     AntResponse, AntAssignmentResponse, AntReturnResponse, EmergencyAntResponse,
-    ComprehensiveColonyStatus, ColonyStatus, SubsystemsResponse,
+    MultipleAntsResponse, ComprehensiveColonyStatus, ColonyStatus, SubsystemsResponse,
     ConfigurationResponse, FoodResponse, CleanupResponse, RootResponse, ErrorResponse
 )
 
@@ -222,6 +222,153 @@ async def request_ant(request: AntRequest):
         "ant": ant.to_dict(),
         "assignment_successful": True
     }
+
+
+@app.post(
+    "/ants/request-multiple",
+    response_model=MultipleAntsResponse,
+    status_code=200,
+    summary="📦 Solicitar múltiples hormigas (Operación en bloque)",
+    description="""
+    ## 🎯 Propósito
+    Solicita múltiples hormigas de una vez para asignación a un subsistema específico.
+
+    ## ⚡ Características principales
+
+    ### Operación Atómica
+    - ✅ **Todo o nada**: Se asignan TODAS las hormigas solicitadas o NINGUNA
+    - 🔄 **Rollback automático**: Si falla parcialmente, revierte cualquier asignación
+
+    ### Estrategia de Asignación
+    1. **Prioridad a existentes**: Usa primero hormigas disponibles en la colonia
+    2. **Creación inteligente**: Crea nuevas hormigas solo si es necesario
+    3. **Validación de recursos**: Verifica capacidad y stock de comida antes de proceder
+
+    ## 📊 Información de Respuesta
+
+    La respuesta incluye información detallada sobre:
+    - `success`: Indica si la operación fue exitosa
+    - `ants`: Lista de hormigas asignadas (vacía si falla)
+    - `ants_used`: Cuántas hormigas existentes se utilizaron
+    - `ants_created`: Cuántas nuevas hormigas se crearon
+    - `available`: Hormigas disponibles antes de la solicitud
+    - `can_create`: Máximo de hormigas que se podían crear
+    - `message`: Descripción detallada del resultado
+
+    ## 🚨 Casos de Fallo
+
+    La operación falla (sin asignar ninguna hormiga) cuando:
+    - No hay suficientes hormigas disponibles + creables
+    - El subsistema especificado no existe
+    - La cantidad solicitada es inválida (≤ 0)
+    - No hay suficiente vida útil para la duración estimada
+
+    ## 💡 Ejemplo de Uso
+
+    ```python
+    # Solicitar 5 hormigas para Defense
+    response = requests.post('/ants/request-multiple', json={
+        "subsystem_name": "Defense",
+        "quantity": 5,
+        "priority": 1,
+        "estimated_duration_seconds": 120
+    })
+
+    if response.json()['success']:
+        print(f"Asignadas: {len(response.json()['ants'])}")
+    ```
+
+    ## 🔗 Endpoints Relacionados
+    - `POST /ants/request`: Solicitar una sola hormiga
+    - `POST /ants/emergency`: Solicitar hormigas de emergencia
+    - `GET /colony/status/comprehensive`: Ver estado de la colonia
+    """,
+    tags=["🐜 Gestión de Hormigas"],
+    responses={
+        200: {
+            "description": "Operación completada (exitosa o fallida)",
+            "model": MultipleAntsResponse,
+            "content": {
+                "application/json": {
+                    "examples": {
+                        "success": {
+                            "summary": "✅ Solicitud exitosa",
+                            "value": {
+                                "success": True,
+                                "message": "Successfully assigned 5 ants",
+                                "ants": [
+                                    {
+                                        "id": "ant-123",
+                                        "state": "assigned",
+                                        "assigned_to": "defense",
+                                        "remaining_life_seconds": 85.5
+                                    }
+                                ],
+                                "ants_used": 2,
+                                "ants_created": 3,
+                                "available": 2,
+                                "can_create": 10,
+                                "requested": 5
+                            }
+                        },
+                        "failure": {
+                            "summary": "❌ Recursos insuficientes",
+                            "value": {
+                                "success": False,
+                                "message": "Cannot fulfill request for 10 ants. Available: 3, Can create: 2",
+                                "ants": [],
+                                "ants_used": 0,
+                                "ants_created": 0,
+                                "available": 3,
+                                "can_create": 2,
+                                "requested": 10
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+)
+async def request_multiple_ants(request: MultipleAntsRequest):
+    """
+    Solicitar múltiples hormigas de forma atómica
+
+    Si la solicitud no puede ser completada en su totalidad, no se asigna ninguna hormiga.
+    """
+    result = colony.request_ants(
+        subsystem_name=request.subsystem_name,
+        quantity=request.quantity,
+        priority=request.priority,
+        estimated_duration_seconds=request.estimated_duration_seconds
+    )
+
+    # Convertir las hormigas a formato de respuesta
+    ants_response = []
+    for ant in result['ants']:
+        ants_response.append(AntResponse(
+            id=ant.id,
+            birth_time=ant.created_at.isoformat(),
+            death_time=ant.death_time.isoformat(),
+            is_alive=ant.is_alive,
+            age_seconds=ant.age_seconds,
+            remaining_life_seconds=ant.remaining_life_seconds,
+            state=ant.state.value,
+            assigned_to=ant.assigned_to.value if ant.assigned_to else None,
+            assignment_time=ant.assignment_time.isoformat() if ant.assignment_time else None,
+            wait_time_seconds=ant.wait_time_seconds
+        ))
+
+    return MultipleAntsResponse(
+        success=result['success'],
+        message=result['message'],
+        ants=ants_response,
+        ants_used=result['ants_used'],
+        ants_created=result['ants_created'],
+        available=result['available'],
+        can_create=result['can_create'],
+        requested=result['requested']
+    )
 
 
 @app.post(

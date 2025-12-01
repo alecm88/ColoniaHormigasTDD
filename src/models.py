@@ -82,6 +82,44 @@ class AntReturn(BaseModel):
         }
 
 
+class MultipleAntsRequest(BaseModel):
+    """
+    Modelo para solicitar múltiples hormigas de una vez.
+
+    Solicitud atómica: Se asignan todas las hormigas solicitadas o ninguna
+    """
+    subsystem_name: SubsystemEnum = Field(
+        ...,
+        description="Nombre del subsistema solicitante"
+    )
+    quantity: int = Field(
+        ...,
+        gt=0,
+        description="Número de hormigas a solicitar"
+    )
+    priority: int = Field(
+        default=1,
+        ge=1,
+        le=3,
+        description="Prioridad de la solicitud (1=máxima, 3=mínima)"
+    )
+    estimated_duration_seconds: float = Field(
+        default=60,
+        gt=0,
+        description="Duración estimada de la tarea en segundos"
+    )
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "subsystem_name": "Defense",
+                "quantity": 5,
+                "priority": 1,
+                "estimated_duration_seconds": 120
+            }
+        }
+
+
 class EmergencyRequest(BaseModel):
     """
     Modelo para solicitar hormigas de emergencia.
@@ -177,6 +215,32 @@ class AntReturnResponse(BaseModel):
                 "message": "Ant 550e8400-e29b-41d4-a716-446655440000 returned with food",
                 "food_gained": True,
                 "ant_died": False
+            }
+        }
+
+
+class MultipleAntsResponse(BaseModel):
+    """Respuesta para solicitud de múltiples hormigas"""
+    success: bool = Field(description="Si la solicitud fue exitosa")
+    message: str = Field(description="Mensaje descriptivo del resultado")
+    ants: List[AntResponse] = Field(description="Lista de hormigas asignadas (vacía si falla)")
+    ants_used: int = Field(description="Número de hormigas existentes utilizadas")
+    ants_created: int = Field(description="Número de nuevas hormigas creadas")
+    available: int = Field(description="Número de hormigas disponibles antes de la solicitud")
+    can_create: int = Field(description="Número de hormigas que se podían crear")
+    requested: int = Field(description="Número de hormigas solicitadas")
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "success": True,
+                "message": "Successfully assigned 5 ants",
+                "ants": [],
+                "ants_used": 2,
+                "ants_created": 3,
+                "available": 2,
+                "can_create": 8,
+                "requested": 5
             }
         }
 
