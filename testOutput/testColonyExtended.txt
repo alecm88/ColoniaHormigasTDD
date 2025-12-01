@@ -561,4 +561,11 @@ Revisamos pruebas completas
 
 ============================= 27 passed in 1.07s ==============================
 
+Tenemos que poder pedir mas de una hormiga. Probamos
 
+============================== 1 passed in 0.08s ==============================
+
+Revisamos si falla el bloque completo en caso de no tener suficientes
+
+
+============================== 1 passed in 0.03s ==============================
