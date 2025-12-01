@@ -279,3 +279,11 @@ Id inexistente
 Corremos todas las pruebas.
 
 ============================= 24 passed in 7.62s ==============================
+
+Nos faltaba poder pedir mas de una hormiga. Hacemos la prueba
+
+============================== 1 passed in 0.65s ==============================
+
+Si el bloque no se puede pedir completo
+============================== 1 passed in 0.58s ==============================
+

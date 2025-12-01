@@ -561,4 +561,33 @@ Revisamos pruebas completas
 
 ============================= 27 passed in 1.07s ==============================
 
+Tenemos que poder pedir mas de una hormiga. Probamos
 
+================================== FAILURES ===================================
+_ TestColonyEmergencyScenarios.test_request_multiple_ants_creates_new_ant_if_needed _
+
+self = <tests.test_colony_extended.TestColonyEmergencyScenarios object at 0x000001C7FA269D90>
+
+    def test_request_multiple_ants_creates_new_ant_if_needed(self):
+        colony = Colony()
+        initial_ant_count = len(colony.ants)
+    
+        ants = colony.request_ants(SubsystemType.COMMUNICATION.value, 5)
+    
+>       assert len(ants) == 5
+E       AssertionError: assert 9 == 5
+E        +  where 9 = len({'ants': [<src.ant.Ant object at 0x000001C7FA24AA20>, <src.ant.Ant object at 0x000001C7FA26A1E0>, <src.ant.Ant object ...000001C7FA26A330>, <src.ant.Ant object at 0x000001C7FA26A390>], 'ants_created': 5, 'ants_used': 0, 'available': 0, ...})
+
+tests\test_colony_extended.py:399: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/test_colony_extended.py::TestColonyEmergencyScenarios::test_request_multiple_ants_creates_new_ant_if_needed
+============================== 1 failed in 0.09s ==============================
+
+Estamos devolviendo mucha informacion. Revisamos.
+
+============================== 1 passed in 0.08s ==============================
+
+Revisamos si falla el bloque completo en caso de no tener suficientes
+
+
+============================== 1 passed in 0.03s ==============================
