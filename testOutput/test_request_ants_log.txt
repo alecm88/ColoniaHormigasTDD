@@ -1,0 +1,93 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.12.7, pytest-7.4.3, pluggy-1.0.0 -- /opt/anaconda3/bin/python
+cachedir: .pytest_cache
+rootdir: /Users/javier/Documents/ColoniaHormigasTDD
+configfile: pytest.ini
+plugins: asyncio-0.21.1, anyio-3.7.1
+asyncio: mode=Mode.STRICT
+collecting ... collected 15 items
+
+tests/test_request_ants.py::TestRequestAnts::test_request_multiple_ants_creates_new_ants_if_needed PASSED [  6%]
+tests/test_request_ants.py::TestRequestAnts::test_request_ants_uses_available_ants_first PASSED [ 13%]
+tests/test_request_ants.py::TestRequestAnts::test_request_ants_fails_if_cannot_fulfill_all PASSED [ 20%]
+tests/test_request_ants.py::TestRequestAnts::test_request_ants_with_invalid_subsystem PASSED [ 26%]
+tests/test_request_ants.py::TestRequestAnts::test_request_ants_with_zero_quantity PASSED [ 33%]
+tests/test_request_ants.py::TestRequestAnts::test_request_ants_with_negative_quantity PASSED [ 40%]
+tests/test_request_ants.py::TestRequestAnts::test_request_ants_respects_max_capacity FAILED [ 46%]
+tests/test_request_ants.py::TestRequestAnts::test_request_ants_with_duration_filter FAILED [ 53%]
+tests/test_request_ants.py::TestRequestAnts::test_request_ants_with_priority PASSED [ 60%]
+tests/test_request_ants.py::TestRequestAnts::test_request_ants_transaction_rollback_on_partial_failure PASSED [ 66%]
+tests/test_request_ants.py::TestRequestAnts::test_request_ants_detailed_response_on_success PASSED [ 73%]
+tests/test_request_ants.py::TestRequestAnts::test_request_ants_detailed_response_on_failure FAILED [ 80%]
+tests/test_request_ants.py::TestRequestAnts::test_request_ants_concurrent_requests PASSED [ 86%]
+tests/test_request_ants.py::TestRequestAnts::test_request_ants_with_all_parameters PASSED [ 93%]
+tests/test_request_ants.py::TestRequestAnts::test_request_ants_preserves_existing_assignments PASSED [100%]
+
+=================================== FAILURES ===================================
+___________ TestRequestAnts.test_request_ants_respects_max_capacity ____________
+
+self = <tests.test_request_ants.TestRequestAnts object at 0x10df6a9f0>
+
+    def test_request_ants_respects_max_capacity(self):
+        colony = Colony(max_ants=5, initial_food_stock=1000)
+    
+        # Create 3 ants
+        colony.create_ant()
+        colony.create_ant()
+        colony.create_ant()
+    
+        # Try to request 5 ants (would exceed max of 5)
+        result = colony.request_ants(SubsystemType.COMMUNICATION.value, 5)
+    
+>       assert result['success'] is False
+E       assert True is False
+
+tests/test_request_ants.py:96: AssertionError
+____________ TestRequestAnts.test_request_ants_with_duration_filter ____________
+
+self = <tests.test_request_ants.TestRequestAnts object at 0x10df6a750>
+
+    def test_request_ants_with_duration_filter(self):
+        colony = Colony(ant_lifespan_minutes=0.1)  # Short lifespan for testing
+    
+        # Create ants with different ages
+        young_ant = colony.create_ant()
+        time.sleep(0.1)
+    
+        old_ant = colony.create_ant()
+        old_ant.created_at = datetime.now() - timedelta(seconds=5)  # Make it older
+    
+        # Request ants for a long task
+        result = colony.request_ants(
+            SubsystemType.DEFENSE.value,
+            2,
+            estimated_duration_seconds=30
+        )
+    
+>       assert result['success'] is True
+E       assert False is True
+
+tests/test_request_ants.py:119: AssertionError
+________ TestRequestAnts.test_request_ants_detailed_response_on_failure ________
+
+self = <tests.test_request_ants.TestRequestAnts object at 0x10df6a1e0>
+
+    def test_request_ants_detailed_response_on_failure(self):
+        colony = Colony(max_ants=3, initial_food_stock=10)  # Very limited resources
+    
+        # Create 1 ant
+        colony.create_ant()
+    
+        result = colony.request_ants(SubsystemType.DEFENSE.value, 5)
+    
+        assert result['success'] is False
+        assert result['available'] == 1
+>       assert result['can_create'] == 1  # Can create 1 more with available food
+E       assert 0 == 1
+
+tests/test_request_ants.py:189: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_request_ants.py::TestRequestAnts::test_request_ants_respects_max_capacity
+FAILED tests/test_request_ants.py::TestRequestAnts::test_request_ants_with_duration_filter
+FAILED tests/test_request_ants.py::TestRequestAnts::test_request_ants_detailed_response_on_failure
+========================= 3 failed, 12 passed in 0.21s =========================

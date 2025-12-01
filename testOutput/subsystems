@@ -1,0 +1,49 @@
+Habiammos hecho una pequeña clase de subsistemas pero no teníamos pruebas extendidas
+Corremos las pruebas de subsistemas
+
+Pruebas iniciales:
+========================== short test summary info ===========================
+FAILED tests/test_subsystems.py::TestSubsystem::test_subsystem_string_representation
+FAILED tests/test_subsystems.py::TestSubsystem::test_subsystem_has_required_attributes
+FAILED tests/test_subsystems.py::TestSubsystem::test_subsystem_comparison_operators
+======================== 3 failed, 11 passed in 0.26s ========================
+Finished running tests!
+
+Estabamos probando para 3 subsistemas pero comunicacion nos envió lista de 5
+
+Creamos el metodo str para la clase
+
+Creamos metodos para comparar prioridades
+
+
+================================== FAILURES ===================================
+_____________ TestSubsystem.test_subsystem_string_representation ______________
+
+self = <tests.test_subsystems.TestSubsystem object at 0x00000204E9E00F50>
+
+    def test_subsystem_string_representation(self):
+        defense = Subsystem.get_by_id(SubsystemType.DEFENSE)
+        communication = Subsystem.get_by_id(SubsystemType.COMMUNICATION)
+        collection = Subsystem.get_by_id(SubsystemType.COLLECTION)
+    
+>       assert str(defense) == "S05_DEF (Priority: 1)"
+               ^^^^^^^^^^^^
+
+tests\test_subsystems.py:68: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = Subsystem(id=<SubsystemType.DEFENSE: 'S05_DEF'>, name='S05_DEF', priority_level=1)
+
+    def __str__(self):
+>       return f"{self.name} (Priority: {self.priority})"
+                                         ^^^^^^^^^^^^^
+E       AttributeError: 'Subsystem' object has no attribute 'priority'
+
+src\subsystems.py:44: AttributeError
+=========================== short test summary info ===========================
+FAILED tests/test_subsystems.py::TestSubsystem::test_subsystem_string_representation
+======================== 1 failed, 13 passed in 0.13s =========================
+
+Teniamos  un error en el nombre de la propiedad
+
+============================= 14 passed in 0.09s ==============================

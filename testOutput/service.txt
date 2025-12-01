@@ -1,0 +1,15 @@
+Vamos a probar el servicio de cola de mensajes
+Es un sistema mas relacionado a integracion pero mantenemos una prueba
+
+    def test_start_service(self):
+        service = Service(5, 0.1)
+        service.run_for_duration()
+        time.sleep(1)  # Wait for service call
+        status = service.get_status()
+>       assert status['calls'] > 0
+               ^^^^^^^^^^^^^^^
+E       KeyError: 'calls'
+
+tests\test_service.py:11: KeyError
+
+Un leve error con el llamado. La mayoria de temas a este nivel los tuvimos con la integracion mas que con la funcionalidad del metodo.

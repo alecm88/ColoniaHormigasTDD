@@ -1,0 +1,281 @@
+
+Vamos a trabajar  el ciclo completo del API incluyendo retorno de hormigas.
+Muchas de estas funciones son la base para manejarlo con Comunicacion. Aunque no se van a usar directamente
+
+
+Retorno de hormigas con comida
+================================== FAILURES ===================================
+_________________ TestQueenAntAPI.test_return_ant_successful __________________
+
+self = <tests.test_api_extended.TestQueenAntAPI object at 0x000001F06CC4E1E0>
+client = <starlette.testclient.TestClient object at 0x000001F06CC4DE20>
+
+    def test_return_ant_successful(self, client):
+        # First request an ant
+        request_data = {
+            "subsystem_name": "S02_REC",
+            "priority": 1,
+            "estimated_duration_seconds": 30
+        }
+        ant_response = client.post("/ants/request", json=request_data)
+        ant_id = ant_response.json()["mensaje"]["ant"]["id"]
+    
+        # Return the ant with food
+        return_data = {
+            "ant_id": ant_id,
+            "returned_with_food": True,
+            "died_in_mission": False
+        }
+        response = client.post("/ants/return", json=return_data)
+    
+>       assert response.status_code == 200
+E       assert 405 == 200
+E        +  where 405 = <Response [405 Method Not Allowed]>.status_code
+
+tests\test_api_extended.py:81: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/test_api_extended.py::TestQueenAntAPI::test_return_ant_successful
+============================== 1 failed in 1.59s ==============================
+
+Hacemos el endpoint.
+
+============================== 1 passed in 1.50s ==============================
+
+Retorno de hormiga muerta
+
+============================== 1 passed in 1.52s ==============================
+
+Intentamos obtener una hormiga que no existe (retorno)
+
+============================== 1 passed in 0.68s ==============================
+
+Manejo de estado de emergencia
+================================== FAILURES ===================================
+_________________ TestQueenAntAPI.test_request_emergency_ants _________________
+
+self = <tests.test_api_extended.TestQueenAntAPI object at 0x000001DECFBC3200>
+client = <starlette.testclient.TestClient object at 0x000001DECFC193A0>
+
+    def test_request_emergency_ants(self, client):
+        # Create some ants first
+        client.post("/ants")
+        client.post("/ants")
+    
+        emergency_data = {
+            "subsystem_name": "S05_DEF",
+            "number_needed": 2,
+            "max_wait_seconds": 30
+        }
+        response = client.post("/ants/emergency", json=emergency_data)
+    
+>       assert response.status_code == 200
+E       assert 405 == 200
+E        +  where 405 = <Response [405 Method Not Allowed]>.status_code
+
+tests\test_api_extended.py:134: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/test_api_extended.py::TestQueenAntAPI::test_request_emergency_ants
+============================== 1 failed in 0.91s ==============================
+
+Este endpoint tenemos que trabajarlo primero a nivel de la colonia. Para tener el modo de emergencia.
+
+================================== FAILURES ===================================
+_________________ TestQueenAntAPI.test_request_emergency_ants _________________
+
+self = <tests.test_api_extended.TestQueenAntAPI object at 0x000001FB703DBAD0>
+client = <starlette.testclient.TestClient object at 0x000001FB70415FA0>
+
+    def test_request_emergency_ants(self, client):
+        # Create some ants first
+        client.post("/ants")
+        client.post("/ants")
+    
+        emergency_data = {
+            "requesting_subsystem": "S05_DEF",
+            "number_needed": 2
+        }
+        response = client.post("/ants/emergency", json=emergency_data)
+    
+        assert response.status_code == 200
+        data = response.json()
+        assert len(data) == 2
+        for ant_data in data:
+            assert ant_data["reassigned"] is True
+            assert ant_data["emergency_assignment"] is True
+>           assert ant_data["ant"]["assigned_to"] == "defense"
+E           AssertionError: assert 'S05_DEF' == 'defense'
+E             
+E             - defense
+E             + S05_DEF
+
+tests\test_api_extended.py:139: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/test_api_extended.py::TestQueenAntAPI::test_request_emergency_ants
+============================== 1 failed in 0.84s ==============================
+
+Tenemos q actualizar nombre de sistemas a nuevos
+
+============================== 1 passed in 0.72s ==============================
+
+Manejo de informacion
+
+Devolvemos el estado completo de la colonia
+
+============================== 1 passed in 0.64s ==============================
+
+Filtro para obtener solo cierto tipo de hormigas
+
+============================== 1 passed in 1.40s ==============================
+
+Poder pasarle atributos de configuracion a la colonia
+
+============================== 1 passed in 0.67s ==============================
+
+Pasamos parámetros inválidos
+================================== FAILURES ===================================
+__________ TestQueenAntAPI.test_configure_colony_invalid_parameters ___________
+
+self = <tests.test_api_extended.TestQueenAntAPI object at 0x0000028C20384980>
+client = <starlette.testclient.TestClient object at 0x0000028C20386E70>
+
+    def test_configure_colony_invalid_parameters(self, client):
+        # Test invalid max_ants
+        response = client.put("/colony/config?max_ants=0")
+        assert response.status_code == 422
+>       assert "must be at least 1" in response.json()["detail"]
+E       AssertionError: assert 'must be at least 1' in [{'ctx': {'ge': 1}, 'input': '0', 'loc': ['query', 'max_ants'], 'msg': 'Input should be greater than or equal to 1', ...}]
+
+tests\test_api_extended.py:201: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/test_api_extended.py::TestQueenAntAPI::test_configure_colony_invalid_parameters
+============================== 1 failed in 0.86s ==============================
+
+Tenemos un tema leyendo los errores. Por la forma en la que trabaja Pydantic el mensaje lo generan ellos. Verificamos el status por ahora.
+
+============================== 1 passed in 0.72s ==============================
+
+Endpoint para agregar comida
+
+============================== 1 passed in 0.63s ==============================
+
+Obtener lista de subsistemas
+================================== FAILURES ===================================
+________________ TestQueenAntAPI.test_get_available_subsystems ________________
+
+self = <tests.test_api_extended.TestQueenAntAPI object at 0x0000021A06609820>
+client = <starlette.testclient.TestClient object at 0x0000021A0660B770>
+
+    def test_get_available_subsystems(self, client):
+        response = client.get("/subsystems")
+    
+        assert response.status_code == 200
+        data = response.json()
+    
+        assert "available_subsystems" in data
+        assert "priority_explanation" in data
+    
+        subsystems = data["available_subsystems"]
+>       assert len(subsystems) == 3
+E       AssertionError: assert 5 == 3
+E        +  where 5 = len([{'id': 'S01_COM', 'name': 'S01_COM', 'priority_level': 2}, {'id': 'S02_REC', 'name': 'S02_REC', 'priority_level': 3},..., {'id': 'S04_ENT', 'name': 'S04_ENT', 'priority_level': 3}, {'id': 'S05_DEF', 'name': 'S05_DEF', 'priority_level': 1}])
+
+tests\test_api_extended.py:235: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/test_api_extended.py::TestQueenAntAPI::test_get_available_subsystems
+============================== 1 failed in 0.83s ==============================
+
+Ahora manejamos 5 subsistemas segun reglas de comunicacion
+================================== FAILURES ===================================
+________________ TestQueenAntAPI.test_get_available_subsystems ________________
+
+self = <tests.test_api_extended.TestQueenAntAPI object at 0x000001788C84DF70>
+client = <starlette.testclient.TestClient object at 0x000001788C84FBF0>
+
+    def test_get_available_subsystems(self, client):
+        response = client.get("/subsystems")
+    
+        assert response.status_code == 200
+        data = response.json()
+    
+        assert "available_subsystems" in data
+        assert "priority_explanation" in data
+    
+        subsystems = data["available_subsystems"]
+        assert len(subsystems) == 5
+    
+        # Check that Defense has priority 1 (highest)
+>       defense = next(s for s in subsystems if s["name"] == "S05")
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       StopIteration
+
+tests\test_api_extended.py:238: StopIteration
+=========================== short test summary info ===========================
+FAILED tests/test_api_extended.py::TestQueenAntAPI::test_get_available_subsystems
+============================== 1 failed in 0.87s ==============================
+
+El sistema se llama S05_DEF
+
+============================== 1 passed in 0.71s ==============================
+
+Forzar la limpieza de hormigas muertas
+
+
+============================== 1 passed in 0.67s ==============================
+
+Revisamos log de hormigas por subsistemas
+
+============================== 1 passed in 2.82s ==============================
+
+Requests concurrentes
+
+============================== 1 passed in 3.06s ==============================
+
+Activar modo de emergencia
+
+Tuvimos algunos temas haciendo el endpoint    
+def test_emergency_mode_activation_deactivation(self, client):
+        # Activate emergency mode
+        response = client.put("/colony/emergency?activate=true")
+        assert response.status_code == 200
+        assert response.json()["current_status"]["emergency_mode"] is True
+    
+        # Check that colony is in emergency mode
+        status = client.get("/colony/status/comprehensive").json()
+        assert status["emergency_mode"] is True
+    
+        # Deactivate emergency mode
+        response = client.put("/colony/emergency?activate=false")
+        assert response.status_code == 200
+>       assert response.json()["current_status"]["emergency_mode"] is False
+E       assert True is False
+
+tests\test_api_extended.py:315: AssertionError
+
+============================== 1 passed in 0.64s ==============================
+
+Configuracion tiempo de vida de hormigas
+
+============================== 1 passed in 0.65s ==============================
+
+Asignaciones de emergencia
+
+============================== 1 passed in 0.73s ==============================
+
+Asignacion a subsistema invalido
+============================== 1 passed in 0.71s ==============================
+
+Hormiga regresa con comida
+
+============================== 1 passed in 1.44s ==============================
+
+Pedir informacion de hormigas
+
+
+
+Id inexistente
+
+============================== 1 passed in 0.75s ==============================
+
+Corremos todas las pruebas.
+
+============================= 24 passed in 7.62s ==============================

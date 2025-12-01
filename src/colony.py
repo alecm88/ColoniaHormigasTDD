@@ -74,6 +74,141 @@ class Colony:
 
         return None
 
+    def request_ants(self, subsystem_name: str, quantity: int, priority: int = 1,
+                    estimated_duration_seconds: float = 60) -> Dict[str, Any]:
+        """Request multiple ants for assignment to a subsystem.
+
+        This method attempts to fulfill the entire request atomically.
+        If the full quantity cannot be provided, no ants are assigned.
+
+        Args:
+            subsystem_name: Name of the subsystem requesting ants
+            quantity: Number of ants requested
+            priority: Priority level of the request
+            estimated_duration_seconds: Estimated duration of the task
+
+        Returns:
+            Dictionary with:
+                - success: Boolean indicating if the request was fulfilled
+                - ants: List of assigned ants (empty if failed)
+                - message: Description of the result
+                - ants_used: Number of existing ants used
+                - ants_created: Number of new ants created
+                - available: Number of available ants before request
+                - can_create: Number of ants that can be created
+                - requested: Number of ants requested
+                - needed: Number of ants needed to fulfill request
+        """
+        result = {
+            'success': False,
+            'ants': [],
+            'message': '',
+            'ants_used': 0,
+            'ants_created': 0,
+            'available': 0,
+            'can_create': 0,
+            'requested': quantity,
+            'needed': quantity
+        }
+
+        # Validate quantity
+        if quantity < 0:
+            result['message'] = f"Invalid quantity: {quantity}"
+            return result
+
+        if quantity == 0:
+            result['success'] = True
+            result['message'] = "No ants requested"
+            return result
+
+        # Update states first
+        self.update_all_ant_states()
+        self.cleanup_dead_ants()
+
+        # Validate subsystem
+        subsystem = Subsystem.get_by_name(subsystem_name)
+        if not subsystem:
+            result['message'] = f"Invalid subsystem: {subsystem_name}"
+            return result
+
+        # Get available ants that can handle the task
+        available_ants = [
+            ant for ant in self.ants.values()
+            if ant.is_available_for_assignment and ant.can_handle_task(estimated_duration_seconds)
+        ]
+        result['available'] = len(available_ants)
+
+        # Calculate how many ants we can create
+        alive_count = len([ant for ant in self.ants.values() if ant.is_alive])
+        capacity_available = self.max_ants - alive_count
+        food_available = self.food_stock // self.food_per_ant
+        can_create = min(capacity_available, food_available)
+        result['can_create'] = can_create
+
+        # Check if we can fulfill the request
+        total_available = len(available_ants) + can_create
+        if total_available < quantity:
+            result['message'] = (f"Cannot fulfill request for {quantity} ants. "
+                                f"Available: {len(available_ants)}, Can create: {can_create}")
+            return result
+
+        # Prepare lists for transaction
+        ants_to_assign = []
+        ants_to_create = []
+
+        # Use existing available ants first
+        ants_to_use = min(len(available_ants), quantity)
+        if ants_to_use > 0:
+            # Sort by remaining life to get the best ants
+            available_ants.sort(key=lambda ant: ant.remaining_life_seconds, reverse=True)
+            ants_to_assign = available_ants[:ants_to_use]
+            result['ants_used'] = ants_to_use
+
+        # Calculate how many new ants we need to create
+        ants_needed = quantity - ants_to_use
+        if ants_needed > 0:
+            # Verify we can create them (double-check)
+            if ants_needed > can_create:
+                result['message'] = f"Internal error: Cannot create {ants_needed} ants"
+                return result
+
+            # Create the ants
+            for _ in range(ants_needed):
+                new_ant = self.create_ant()
+                if new_ant and new_ant.can_handle_task(estimated_duration_seconds):
+                    ants_to_create.append(new_ant)
+                else:
+                    # Rollback: Return created ants to free state
+                    # (They're already free by default, but we'll clean up)
+                    result['message'] = "Failed to create required ants"
+                    return result
+
+            result['ants_created'] = len(ants_to_create)
+
+        # Now assign all ants to the subsystem
+        all_ants = ants_to_assign + ants_to_create
+        assigned_ants = []
+
+        for ant in all_ants:
+            if ant.assign_to_subsystem(subsystem.id):
+                assigned_ants.append(ant)
+            else:
+                # Rollback: Free all previously assigned ants
+                for assigned_ant in assigned_ants:
+                    assigned_ant.state = AntState.FREE
+                    assigned_ant.assigned_to = None
+                    assigned_ant.assignment_time = None
+
+                result['message'] = f"Failed to assign ant {ant.id}"
+                return result
+
+        # Success!
+        result['success'] = True
+        result['ants'] = assigned_ants
+        result['message'] = f"Successfully assigned {len(assigned_ants)} ants"
+
+        return result
+
     def return_ant(self, ant_id: str, returned_with_food: int = 0,
                   died_in_mission: bool = False) -> bool:
         """Return an ant from assignment"""
@@ -185,6 +320,14 @@ class Colony:
     def add_food(self, amount: int):
         """Add food to the colony stock"""
         self.food_stock += amount
+
+    def activate_emergency_mode(self):
+        """Activate emergency mode for the colony"""
+        self.emergency_mode = True
+
+    def deactivate_emergency_mode(self):
+        """Deactivate emergency mode for the colony"""
+        self.emergency_mode = False
 
     def get_comprehensive_status(self) -> Dict[str, Any]:
         """Get detailed colony status"""
