@@ -1,0 +1,26 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.12.7, pytest-7.4.3, pluggy-1.0.0 -- /opt/anaconda3/bin/python
+cachedir: .pytest_cache
+rootdir: /Users/javier/Documents/ColoniaHormigasTDD
+configfile: pytest.ini
+plugins: asyncio-0.21.1, anyio-3.7.1
+asyncio: mode=Mode.STRICT
+collecting ... collected 15 items
+
+tests/test_request_ants.py::TestRequestAnts::test_request_multiple_ants_creates_new_ants_if_needed PASSED [  6%]
+tests/test_request_ants.py::TestRequestAnts::test_request_ants_uses_available_ants_first PASSED [ 13%]
+tests/test_request_ants.py::TestRequestAnts::test_request_ants_fails_if_cannot_fulfill_all PASSED [ 20%]
+tests/test_request_ants.py::TestRequestAnts::test_request_ants_with_invalid_subsystem PASSED [ 26%]
+tests/test_request_ants.py::TestRequestAnts::test_request_ants_with_zero_quantity PASSED [ 33%]
+tests/test_request_ants.py::TestRequestAnts::test_request_ants_with_negative_quantity PASSED [ 40%]
+tests/test_request_ants.py::TestRequestAnts::test_request_ants_respects_max_capacity PASSED [ 46%]
+tests/test_request_ants.py::TestRequestAnts::test_request_ants_with_duration_filter PASSED [ 53%]
+tests/test_request_ants.py::TestRequestAnts::test_request_ants_with_priority PASSED [ 60%]
+tests/test_request_ants.py::TestRequestAnts::test_request_ants_transaction_rollback_on_partial_failure PASSED [ 66%]
+tests/test_request_ants.py::TestRequestAnts::test_request_ants_detailed_response_on_success PASSED [ 73%]
+tests/test_request_ants.py::TestRequestAnts::test_request_ants_detailed_response_on_failure PASSED [ 80%]
+tests/test_request_ants.py::TestRequestAnts::test_request_ants_concurrent_requests PASSED [ 86%]
+tests/test_request_ants.py::TestRequestAnts::test_request_ants_with_all_parameters PASSED [ 93%]
+tests/test_request_ants.py::TestRequestAnts::test_request_ants_preserves_existing_assignments PASSED [100%]
+
+============================== 15 passed in 0.07s ==============================

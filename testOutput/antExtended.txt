@@ -1,0 +1,33 @@
+Pruebas extendida hormigas
+Vamos a realizar casos adicionales para las hormigas:
+1. Cambios al tiempo de vida y calculos de tiempo restante
+2. Estado de disponibilidad
+3. Revisiones adicionales de estados bajo asignacion
+
+Despues de crear los casos, tenemos 1 error. Revisamos.
+================================== FAILURES ===================================
+_______ TestAntExtended.test_return_ant_from_assignment_died_in_mission _______
+
+self = <tests.test_ant_extended.TestAntExtended object at 0x000002C675D40A70>
+
+    def test_return_ant_from_assignment_died_in_mission(self):
+        ant = Ant()
+        ant.assign_to_subsystem(SubsystemType.DEFENSE)
+    
+        food_gained = ant.return_from_assignment(died_in_mission=True)
+    
+        assert ant.state == AntState.DEAD
+        assert ant.assigned_to is None
+        assert ant.assignment_time is None
+>       assert food_gained is False
+E       assert 0 is False
+
+tests\test_ant_extended.py:76: AssertionError
+
+=========================== short test summary info ===========================
+FAILED tests/test_ant_extended.py::TestAntExtended::test_return_ant_from_assignment_died_in_mission
+======================== 1 failed, 10 passed in 1.11s =========================
+
+Estabamos comparando retorno de comida (int) con un boolean.
+
+============================= 11 passed in 0.04s ==============================

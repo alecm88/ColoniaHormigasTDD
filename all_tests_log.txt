@@ -1,0 +1,604 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.12.7, pytest-7.4.3, pluggy-1.0.0 -- /opt/anaconda3/bin/python
+cachedir: .pytest_cache
+rootdir: /Users/javier/Documents/ColoniaHormigasTDD
+configfile: pytest.ini
+plugins: asyncio-0.21.1, anyio-3.7.1
+asyncio: mode=Mode.STRICT
+collecting ... collected 143 items
+
+tests/test_ant.py::TestAnt::test_ant_creation PASSED                     [  0%]
+tests/test_ant.py::TestAnt::test_ant_lifespan_is_90_seconds FAILED       [  1%]
+tests/test_ant.py::TestAnt::test_ant_dies_after_90_seconds PASSED        [  2%]
+tests/test_ant.py::TestAnt::test_ant_is_alive_before_90_seconds PASSED   [  2%]
+tests/test_ant.py::TestAnt::test_ant_has_unique_id PASSED                [  3%]
+tests/test_ant.py::TestAnt::test_ant_to_dict FAILED                      [  4%]
+tests/test_ant_extended.py::TestAntExtended::test_ant_creation_with_custom_lifespan PASSED [  4%]
+tests/test_ant_extended.py::TestAntExtended::test_ant_remaining_life_calculation PASSED [  5%]
+tests/test_ant_extended.py::TestAntExtended::test_ant_death_time_calculation PASSED [  6%]
+tests/test_ant_extended.py::TestAntExtended::test_ant_is_available_for_assignment_when_free_and_alive PASSED [  6%]
+tests/test_ant_extended.py::TestAntExtended::test_ant_is_not_available_when_assigned PASSED [  7%]
+tests/test_ant_extended.py::TestAntExtended::test_ant_is_not_available_when_dead PASSED [  8%]
+tests/test_ant_extended.py::TestAntExtended::test_ant_can_handle_task_with_sufficient_time PASSED [  9%]
+tests/test_ant_extended.py::TestAntExtended::test_ant_cannot_handle_task_with_insufficient_time PASSED [  9%]
+tests/test_ant_extended.py::TestAntExtended::test_ant_cannot_handle_task_when_dead PASSED [ 10%]
+tests/test_ant_extended.py::TestAntExtended::test_assign_ant_to_subsystem_success PASSED [ 11%]
+tests/test_ant_extended.py::TestAntExtended::test_assign_ant_to_subsystem_fails_when_not_available PASSED [ 11%]
+tests/test_ant_extended.py::TestAntExtended::test_return_ant_from_assignment_successful PASSED [ 12%]
+tests/test_ant_extended.py::TestAntExtended::test_return_ant_from_assignment_died_in_mission PASSED [ 13%]
+tests/test_ant_extended.py::TestAntExtended::test_ant_update_state_kills_old_ant PASSED [ 13%]
+tests/test_ant_extended.py::TestAntExtended::test_ant_to_dict_includes_all_new_fields PASSED [ 14%]
+tests/test_api.py::TestAntsAPI::test_root_endpoint FAILED                [ 15%]
+tests/test_api.py::TestAntsAPI::test_create_ant_success PASSED           [ 16%]
+tests/test_api.py::TestAntsAPI::test_create_ant_at_capacity_fails FAILED [ 16%]
+tests/test_api.py::TestAntsAPI::test_get_all_ants PASSED                 [ 17%]
+tests/test_api.py::TestAntsAPI::test_get_ant_by_id PASSED                [ 18%]
+tests/test_api.py::TestAntsAPI::test_get_nonexistent_ant FAILED          [ 18%]
+tests/test_api.py::TestAntsAPI::test_get_colony_status PASSED            [ 19%]
+tests/test_api.py::TestAntsAPI::test_cleanup_dead_ants PASSED            [ 20%]
+tests/test_api.py::TestAntsAPI::test_configure_colony_max_ants FAILED    [ 20%]
+tests/test_api.py::TestAntsAPI::test_configure_colony_invalid_max_ants FAILED [ 21%]
+tests/test_api.py::TestAntsAPI::test_ant_lifecycle_integration FAILED    [ 22%]
+tests/test_api_extended.py::TestQueenAntAPI::test_root_endpoint_shows_queen_ant_info FAILED [ 23%]
+tests/test_api_extended.py::TestQueenAntAPI::test_request_ant_for_valid_subsystem FAILED [ 23%]
+tests/test_api_extended.py::TestQueenAntAPI::test_request_ant_for_invalid_subsystem FAILED [ 24%]
+tests/test_api_extended.py::TestQueenAntAPI::test_request_ant_insufficient_food FAILED [ 25%]
+tests/test_api_extended.py::TestQueenAntAPI::test_request_ant_capacity_reached FAILED [ 25%]
+tests/test_api_extended.py::TestQueenAntAPI::test_return_ant_successful FAILED [ 26%]
+tests/test_api_extended.py::TestQueenAntAPI::test_return_ant_died_in_mission FAILED [ 27%]
+tests/test_api_extended.py::TestQueenAntAPI::test_return_nonexistent_ant PASSED [ 27%]
+tests/test_api_extended.py::TestQueenAntAPI::test_request_emergency_ants FAILED [ 28%]
+tests/test_api_extended.py::TestQueenAntAPI::test_get_comprehensive_colony_status PASSED [ 29%]
+tests/test_api_extended.py::TestQueenAntAPI::test_get_ants_filtered_by_state FAILED [ 30%]
+tests/test_api_extended.py::TestQueenAntAPI::test_configure_colony_parameters PASSED [ 30%]
+tests/test_api_extended.py::TestQueenAntAPI::test_configure_colony_invalid_parameters FAILED [ 31%]
+tests/test_api_extended.py::TestQueenAntAPI::test_add_food_to_colony PASSED [ 32%]
+tests/test_api_extended.py::TestQueenAntAPI::test_add_invalid_food_amount FAILED [ 32%]
+tests/test_api_extended.py::TestQueenAntAPI::test_get_available_subsystems PASSED [ 33%]
+tests/test_api_extended.py::TestQueenAntAPI::test_cleanup_dead_ants_endpoint PASSED [ 34%]
+tests/test_api_extended.py::TestQueenAntAPI::test_ant_assignment_priority_system FAILED [ 34%]
+tests/test_api_extended.py::TestQueenAntAPI::test_backward_compatibility_endpoints PASSED [ 35%]
+tests/test_api_extended.py::TestQueenAntAPI::test_concurrent_ant_requests FAILED [ 36%]
+tests/test_api_extended.py::TestQueenAntAPI::test_emergency_mode_activation_deactivation FAILED [ 37%]
+tests/test_api_extended.py::TestQueenAntAPI::test_food_consumption_during_ant_creation PASSED [ 37%]
+tests/test_api_extended.py::TestQueenAntAPI::test_ant_lifespan_configuration FAILED [ 38%]
+tests/test_api_extended.py::TestQueenAntAPI::test_subsystem_priority_during_emergency FAILED [ 39%]
+tests/test_api_extended.py::TestQueenAntAPI::test_invalid_subsystem_in_emergency_request FAILED [ 39%]
+tests/test_api_extended.py::TestQueenAntAPI::test_return_ant_without_food_no_death FAILED [ 40%]
+tests/test_api_extended.py::TestQueenAntAPI::test_get_specific_ant_details FAILED [ 41%]
+tests/test_api_extended.py::TestQueenAntAPI::test_get_nonexistent_ant PASSED [ 41%]
+tests/test_api_extended.py::TestQueenAntAPI::test_subsystem_statistics_endpoint FAILED [ 42%]
+tests/test_api_extended.py::TestQueenAntAPI::test_batch_ant_creation FAILED [ 43%]
+tests/test_api_extended.py::TestQueenAntAPI::test_batch_ant_creation_exceeds_capacity FAILED [ 44%]
+tests/test_api_extended.py::TestQueenAntAPI::test_reassign_ant_to_different_subsystem FAILED [ 44%]
+tests/test_api_extended.py::TestQueenAntAPI::test_colony_reset_endpoint FAILED [ 45%]
+tests/test_colony.py::TestColony::test_colony_creation_with_max_ants PASSED [ 46%]
+tests/test_colony.py::TestColony::test_create_ant_when_under_limit PASSED [ 46%]
+tests/test_colony.py::TestColony::test_cannot_create_ant_when_at_limit PASSED [ 47%]
+tests/test_colony.py::TestColony::test_cleanup_dead_ants PASSED          [ 48%]
+tests/test_colony.py::TestColony::test_can_create_ant_after_cleanup PASSED [ 48%]
+tests/test_colony.py::TestColony::test_get_alive_ants PASSED             [ 49%]
+tests/test_colony.py::TestColony::test_get_colony_status PASSED          [ 50%]
+tests/test_colony_extended.py::TestColonyExtended::test_colony_creation_with_academic_requirements PASSED [ 51%]
+tests/test_colony_extended.py::TestColonyExtended::test_create_ant_consumes_food PASSED [ 51%]
+tests/test_colony_extended.py::TestColonyExtended::test_cannot_create_ant_without_sufficient_food PASSED [ 52%]
+tests/test_colony_extended.py::TestColonyExtended::test_request_ant_for_known_subsystem PASSED [ 53%]
+tests/test_colony_extended.py::TestColonyExtended::test_request_ant_for_unknown_subsystem_returns_none PASSED [ 53%]
+tests/test_colony_extended.py::TestColonyExtended::test_request_ant_creates_new_ant_if_needed PASSED [ 54%]
+tests/test_colony_extended.py::TestColonyExtended::test_request_ant_uses_existing_ant_with_most_remaining_life PASSED [ 55%]
+tests/test_colony_extended.py::TestColonyExtended::test_request_ant_fails_when_insufficient_remaining_life PASSED [ 55%]
+tests/test_colony_extended.py::TestColonyExtended::test_return_ant_successful_with_food PASSED [ 56%]
+tests/test_colony_extended.py::TestColonyExtended::test_return_ant_died_in_mission PASSED [ 57%]
+tests/test_colony_extended.py::TestColonyExtended::test_return_ant_nonexistent_ant_fails PASSED [ 58%]
+tests/test_colony_extended.py::TestColonyExtended::test_request_emergency_ants_gets_available_ants_first PASSED [ 58%]
+tests/test_colony_extended.py::TestColonyExtended::test_request_emergency_ants_reassigns_from_lower_priority FAILED [ 59%]
+tests/test_colony_extended.py::TestColonyExtended::test_emergency_ants_respects_priority_hierarchy PASSED [ 60%]
+tests/test_colony_extended.py::TestColonyExtended::test_get_free_ants FAILED [ 60%]
+tests/test_colony_extended.py::TestColonyExtended::test_get_assigned_ants FAILED [ 61%]
+tests/test_colony_extended.py::TestColonyExtended::test_add_food PASSED  [ 62%]
+tests/test_colony_extended.py::TestColonyExtended::test_comprehensive_status_includes_all_information FAILED [ 62%]
+tests/test_colony_extended.py::TestColonyExtended::test_can_create_more_considers_food_and_capacity PASSED [ 63%]
+tests/test_colony_extended.py::TestColonyEmergencyScenarios::test_emergency_mode_activation PASSED [ 64%]
+tests/test_colony_extended.py::TestColonyEmergencyScenarios::test_emergency_mode_deactivation PASSED [ 65%]
+tests/test_colony_extended.py::TestColonyEmergencyScenarios::test_emergency_request_with_no_ants_available PASSED [ 65%]
+tests/test_colony_extended.py::TestColonyEmergencyScenarios::test_emergency_cascade_scenario FAILED [ 66%]
+tests/test_colony_extended.py::TestColonyEmergencyScenarios::test_emergency_with_mixed_ant_states FAILED [ 67%]
+tests/test_colony_extended.py::TestColonyEmergencyScenarios::test_emergency_request_invalid_subsystem FAILED [ 67%]
+tests/test_colony_extended.py::TestColonyEmergencyScenarios::test_emergency_partial_fulfillment PASSED [ 68%]
+tests/test_colony_extended.py::TestColonyEmergencyScenarios::test_emergency_with_dead_ants PASSED [ 69%]
+tests/test_colony_extended.py::TestColonyEmergencyScenarios::test_emergency_priority_preservation PASSED [ 69%]
+tests/test_colony_extended.py::TestColonyEmergencyScenarios::test_emergency_mode_affects_new_ant_creation PASSED [ 70%]
+tests/test_colony_extended.py::TestColonyEmergencyScenarios::test_simultaneous_emergency_requests PASSED [ 71%]
+tests/test_colony_extended.py::TestColonyEmergencyScenarios::test_emergency_with_max_wait_timeout PASSED [ 72%]
+tests/test_colony_extended.py::TestColonyEmergencyScenarios::test_emergency_reassignment_tracking FAILED [ 72%]
+tests/test_colony_extended.py::TestColonyEmergencyScenarios::test_emergency_food_conservation FAILED [ 73%]
+tests/test_colony_extended.py::TestColonyEmergencyScenarios::test_emergency_clear_after_resolution PASSED [ 74%]
+tests/test_request_ants.py::TestRequestAnts::test_request_multiple_ants_creates_new_ants_if_needed PASSED [ 74%]
+tests/test_request_ants.py::TestRequestAnts::test_request_ants_uses_available_ants_first PASSED [ 75%]
+tests/test_request_ants.py::TestRequestAnts::test_request_ants_fails_if_cannot_fulfill_all PASSED [ 76%]
+tests/test_request_ants.py::TestRequestAnts::test_request_ants_with_invalid_subsystem PASSED [ 76%]
+tests/test_request_ants.py::TestRequestAnts::test_request_ants_with_zero_quantity PASSED [ 77%]
+tests/test_request_ants.py::TestRequestAnts::test_request_ants_with_negative_quantity PASSED [ 78%]
+tests/test_request_ants.py::TestRequestAnts::test_request_ants_respects_max_capacity PASSED [ 79%]
+tests/test_request_ants.py::TestRequestAnts::test_request_ants_with_duration_filter PASSED [ 79%]
+tests/test_request_ants.py::TestRequestAnts::test_request_ants_with_priority PASSED [ 80%]
+tests/test_request_ants.py::TestRequestAnts::test_request_ants_transaction_rollback_on_partial_failure PASSED [ 81%]
+tests/test_request_ants.py::TestRequestAnts::test_request_ants_detailed_response_on_success PASSED [ 81%]
+tests/test_request_ants.py::TestRequestAnts::test_request_ants_detailed_response_on_failure PASSED [ 82%]
+tests/test_request_ants.py::TestRequestAnts::test_request_ants_concurrent_requests PASSED [ 83%]
+tests/test_request_ants.py::TestRequestAnts::test_request_ants_with_all_parameters PASSED [ 83%]
+tests/test_request_ants.py::TestRequestAnts::test_request_ants_preserves_existing_assignments PASSED [ 84%]
+tests/test_subsystems.py::TestSubsystem::test_get_known_subsystems_returns_three_subsystems PASSED [ 85%]
+tests/test_subsystems.py::TestSubsystem::test_defense_has_highest_priority PASSED [ 86%]
+tests/test_subsystems.py::TestSubsystem::test_communication_has_medium_priority PASSED [ 86%]
+tests/test_subsystems.py::TestSubsystem::test_collection_has_lowest_priority PASSED [ 87%]
+tests/test_subsystems.py::TestSubsystem::test_get_by_name_case_insensitive PASSED [ 88%]
+tests/test_subsystems.py::TestSubsystem::test_get_by_name_unknown_subsystem_returns_none PASSED [ 88%]
+tests/test_subsystems.py::TestSubsystem::test_get_by_id_unknown_subsystem_returns_none PASSED [ 89%]
+tests/test_subsystems.py::TestSubsystem::test_subsystem_priority_ordering FAILED [ 90%]
+tests/test_subsystems.py::TestSubsystem::test_subsystem_equality PASSED  [ 90%]
+tests/test_subsystems.py::TestSubsystem::test_subsystem_string_representation FAILED [ 91%]
+tests/test_subsystems.py::TestSubsystem::test_subsystem_description_exists FAILED [ 92%]
+tests/test_subsystems.py::TestSubsystem::test_get_subsystem_by_priority_level FAILED [ 93%]
+tests/test_subsystems.py::TestSubsystem::test_subsystem_has_required_attributes FAILED [ 93%]
+tests/test_subsystems.py::TestSubsystem::test_subsystem_is_high_priority FAILED [ 94%]
+tests/test_subsystems.py::TestSubsystem::test_subsystem_enum_values_are_unique PASSED [ 95%]
+tests/test_subsystems.py::TestSubsystem::test_all_subsystem_names_are_unique PASSED [ 95%]
+tests/test_subsystems.py::TestSubsystem::test_get_subsystem_stats FAILED [ 96%]
+tests/test_subsystems.py::TestSubsystem::test_subsystem_comparison_operators FAILED [ 97%]
+tests/test_subsystems.py::TestSubsystem::test_subsystem_hash_consistency FAILED [ 97%]
+tests/test_subsystems.py::TestSubsystem::test_subsystem_get_by_partial_name FAILED [ 98%]
+tests/test_subsystems.py::TestSubsystem::test_subsystem_type_conversion PASSED [ 99%]
+tests/test_subsystems.py::TestSubsystem::test_get_subsystems_by_priority_range FAILED [100%]
+
+=================================== FAILURES ===================================
+___________________ TestAnt.test_ant_lifespan_is_90_seconds ____________________
+tests/test_ant.py:15: in test_ant_lifespan_is_90_seconds
+    assert ant.lifespan == 90
+E   AttributeError: 'Ant' object has no attribute 'lifespan'
+___________________________ TestAnt.test_ant_to_dict ___________________________
+tests/test_ant.py:38: in test_ant_to_dict
+    assert set(result.keys()) == expected_keys
+E   AssertionError: assert {'age_seconds...e', 'id', ...} == {'age_seconds...', 'is_alive'}
+E     Extra items in the left set:
+E     'wait_time_seconds'
+E     'death_time'
+E     'assignment_time'
+E     'assigned_to'
+E     'remaining_life_seconds'
+E     'state'...
+E     
+E     ...Full output truncated (13 lines hidden), use '-vv' to show
+________________________ TestAntsAPI.test_root_endpoint ________________________
+tests/test_api.py:24: in test_root_endpoint
+    assert response.json() == {"message": "Ant Colony Management System"}
+/opt/anaconda3/lib/python3.12/site-packages/httpx/_models.py:761: in json
+    return jsonlib.loads(self.content, **kwargs)
+/opt/anaconda3/lib/python3.12/json/__init__.py:346: in loads
+    return _default_decoder.decode(s)
+/opt/anaconda3/lib/python3.12/json/decoder.py:337: in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+/opt/anaconda3/lib/python3.12/json/decoder.py:355: in raw_decode
+    raise JSONDecodeError("Expecting value", s, err.value) from None
+E   json.decoder.JSONDecodeError: Expecting value: line 2 column 5 (char 5)
+________________ TestAntsAPI.test_create_ant_at_capacity_fails _________________
+tests/test_api.py:44: in test_create_ant_at_capacity_fails
+    response2 = client.post("/ants")
+/opt/anaconda3/lib/python3.12/site-packages/starlette/testclient.py:590: in post
+    return super().post(
+/opt/anaconda3/lib/python3.12/site-packages/httpx/_client.py:1132: in post
+    return self.request(
+/opt/anaconda3/lib/python3.12/site-packages/starlette/testclient.py:465: in request
+    return super().request(
+/opt/anaconda3/lib/python3.12/site-packages/httpx/_client.py:814: in request
+    return self.send(request, auth=auth, follow_redirects=follow_redirects)
+/opt/anaconda3/lib/python3.12/site-packages/httpx/_client.py:901: in send
+    response = self._send_handling_auth(
+/opt/anaconda3/lib/python3.12/site-packages/httpx/_client.py:929: in _send_handling_auth
+    response = self._send_handling_redirects(
+/opt/anaconda3/lib/python3.12/site-packages/httpx/_client.py:966: in _send_handling_redirects
+    response = self._send_single_request(request)
+/opt/anaconda3/lib/python3.12/site-packages/httpx/_client.py:1002: in _send_single_request
+    response = transport.handle_request(request)
+/opt/anaconda3/lib/python3.12/site-packages/starlette/testclient.py:342: in handle_request
+    raise exc
+/opt/anaconda3/lib/python3.12/site-packages/starlette/testclient.py:339: in handle_request
+    portal.call(self.app, scope, receive, send)
+/opt/anaconda3/lib/python3.12/site-packages/anyio/from_thread.py:277: in call
+    return cast(T_Retval, self.start_task_soon(func, *args).result())
+/opt/anaconda3/lib/python3.12/concurrent/futures/_base.py:449: in result
+    return self.__get_result()
+/opt/anaconda3/lib/python3.12/concurrent/futures/_base.py:401: in __get_result
+    raise self._exception
+/opt/anaconda3/lib/python3.12/site-packages/anyio/from_thread.py:217: in _call_func
+    retval = await retval
+/opt/anaconda3/lib/python3.12/site-packages/fastapi/applications.py:1106: in __call__
+    await super().__call__(scope, receive, send)
+/opt/anaconda3/lib/python3.12/site-packages/starlette/applications.py:122: in __call__
+    await self.middleware_stack(scope, receive, send)
+/opt/anaconda3/lib/python3.12/site-packages/starlette/middleware/errors.py:184: in __call__
+    raise exc
+/opt/anaconda3/lib/python3.12/site-packages/starlette/middleware/errors.py:162: in __call__
+    await self.app(scope, receive, _send)
+/opt/anaconda3/lib/python3.12/site-packages/starlette/middleware/cors.py:83: in __call__
+    await self.app(scope, receive, send)
+/opt/anaconda3/lib/python3.12/site-packages/starlette/middleware/exceptions.py:79: in __call__
+    raise exc
+/opt/anaconda3/lib/python3.12/site-packages/starlette/middleware/exceptions.py:68: in __call__
+    await self.app(scope, receive, sender)
+/opt/anaconda3/lib/python3.12/site-packages/fastapi/middleware/asyncexitstack.py:20: in __call__
+    raise e
+/opt/anaconda3/lib/python3.12/site-packages/fastapi/middleware/asyncexitstack.py:17: in __call__
+    await self.app(scope, receive, send)
+/opt/anaconda3/lib/python3.12/site-packages/starlette/routing.py:718: in __call__
+    await route.handle(scope, receive, send)
+/opt/anaconda3/lib/python3.12/site-packages/starlette/routing.py:276: in handle
+    await self.app(scope, receive, send)
+/opt/anaconda3/lib/python3.12/site-packages/starlette/routing.py:66: in app
+    response = await func(request)
+/opt/anaconda3/lib/python3.12/site-packages/fastapi/routing.py:274: in app
+    raw_response = await run_endpoint_function(
+/opt/anaconda3/lib/python3.12/site-packages/fastapi/routing.py:191: in run_endpoint_function
+    return await dependant.call(**values)
+src/main.py:475: in create_ant_directly
+    status_code=status.HTTP_409_CONFLICT,
+E   AttributeError: 'dict' object has no attribute 'HTTP_409_CONFLICT'
+_____________________ TestAntsAPI.test_get_nonexistent_ant _____________________
+tests/test_api.py:76: in test_get_nonexistent_ant
+    assert "not found or dead" in response.json()["detail"]
+E   AssertionError: assert 'not found or dead' in 'Ant not found'
+__________________ TestAntsAPI.test_configure_colony_max_ants __________________
+tests/test_api.py:115: in test_configure_colony_max_ants
+    assert "maximum 5 ants" in response.json()["message"]
+E   AssertionError: assert 'maximum 5 ants' in 'Colony configuration updated'
+______________ TestAntsAPI.test_configure_colony_invalid_max_ants ______________
+tests/test_api.py:123: in test_configure_colony_invalid_max_ants
+    assert response.status_code == 400
+E   assert 422 == 400
+E    +  where 422 = <Response [422 Unprocessable Entity]>.status_code
+__________________ TestAntsAPI.test_ant_lifecycle_integration __________________
+tests/test_api.py:137: in test_ant_lifecycle_integration
+    ant3_response = client.post("/ants")
+/opt/anaconda3/lib/python3.12/site-packages/starlette/testclient.py:590: in post
+    return super().post(
+/opt/anaconda3/lib/python3.12/site-packages/httpx/_client.py:1132: in post
+    return self.request(
+/opt/anaconda3/lib/python3.12/site-packages/starlette/testclient.py:465: in request
+    return super().request(
+/opt/anaconda3/lib/python3.12/site-packages/httpx/_client.py:814: in request
+    return self.send(request, auth=auth, follow_redirects=follow_redirects)
+/opt/anaconda3/lib/python3.12/site-packages/httpx/_client.py:901: in send
+    response = self._send_handling_auth(
+/opt/anaconda3/lib/python3.12/site-packages/httpx/_client.py:929: in _send_handling_auth
+    response = self._send_handling_redirects(
+/opt/anaconda3/lib/python3.12/site-packages/httpx/_client.py:966: in _send_handling_redirects
+    response = self._send_single_request(request)
+/opt/anaconda3/lib/python3.12/site-packages/httpx/_client.py:1002: in _send_single_request
+    response = transport.handle_request(request)
+/opt/anaconda3/lib/python3.12/site-packages/starlette/testclient.py:342: in handle_request
+    raise exc
+/opt/anaconda3/lib/python3.12/site-packages/starlette/testclient.py:339: in handle_request
+    portal.call(self.app, scope, receive, send)
+/opt/anaconda3/lib/python3.12/site-packages/anyio/from_thread.py:277: in call
+    return cast(T_Retval, self.start_task_soon(func, *args).result())
+/opt/anaconda3/lib/python3.12/concurrent/futures/_base.py:449: in result
+    return self.__get_result()
+/opt/anaconda3/lib/python3.12/concurrent/futures/_base.py:401: in __get_result
+    raise self._exception
+/opt/anaconda3/lib/python3.12/site-packages/anyio/from_thread.py:217: in _call_func
+    retval = await retval
+/opt/anaconda3/lib/python3.12/site-packages/fastapi/applications.py:1106: in __call__
+    await super().__call__(scope, receive, send)
+/opt/anaconda3/lib/python3.12/site-packages/starlette/applications.py:122: in __call__
+    await self.middleware_stack(scope, receive, send)
+/opt/anaconda3/lib/python3.12/site-packages/starlette/middleware/errors.py:184: in __call__
+    raise exc
+/opt/anaconda3/lib/python3.12/site-packages/starlette/middleware/errors.py:162: in __call__
+    await self.app(scope, receive, _send)
+/opt/anaconda3/lib/python3.12/site-packages/starlette/middleware/cors.py:83: in __call__
+    await self.app(scope, receive, send)
+/opt/anaconda3/lib/python3.12/site-packages/starlette/middleware/exceptions.py:79: in __call__
+    raise exc
+/opt/anaconda3/lib/python3.12/site-packages/starlette/middleware/exceptions.py:68: in __call__
+    await self.app(scope, receive, sender)
+/opt/anaconda3/lib/python3.12/site-packages/fastapi/middleware/asyncexitstack.py:20: in __call__
+    raise e
+/opt/anaconda3/lib/python3.12/site-packages/fastapi/middleware/asyncexitstack.py:17: in __call__
+    await self.app(scope, receive, send)
+/opt/anaconda3/lib/python3.12/site-packages/starlette/routing.py:718: in __call__
+    await route.handle(scope, receive, send)
+/opt/anaconda3/lib/python3.12/site-packages/starlette/routing.py:276: in handle
+    await self.app(scope, receive, send)
+/opt/anaconda3/lib/python3.12/site-packages/starlette/routing.py:66: in app
+    response = await func(request)
+/opt/anaconda3/lib/python3.12/site-packages/fastapi/routing.py:274: in app
+    raw_response = await run_endpoint_function(
+/opt/anaconda3/lib/python3.12/site-packages/fastapi/routing.py:191: in run_endpoint_function
+    return await dependant.call(**values)
+src/main.py:475: in create_ant_directly
+    status_code=status.HTTP_409_CONFLICT,
+E   AttributeError: 'dict' object has no attribute 'HTTP_409_CONFLICT'
+___________ TestQueenAntAPI.test_root_endpoint_shows_queen_ant_info ____________
+tests/test_api_extended.py:28: in test_root_endpoint_shows_queen_ant_info
+    data = response.json()
+/opt/anaconda3/lib/python3.12/site-packages/httpx/_models.py:761: in json
+    return jsonlib.loads(self.content, **kwargs)
+/opt/anaconda3/lib/python3.12/json/__init__.py:346: in loads
+    return _default_decoder.decode(s)
+/opt/anaconda3/lib/python3.12/json/decoder.py:337: in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+/opt/anaconda3/lib/python3.12/json/decoder.py:355: in raw_decode
+    raise JSONDecodeError("Expecting value", s, err.value) from None
+E   json.decoder.JSONDecodeError: Expecting value: line 2 column 5 (char 5)
+_____________ TestQueenAntAPI.test_request_ant_for_valid_subsystem _____________
+tests/test_api_extended.py:43: in test_request_ant_for_valid_subsystem
+    assert response.status_code == 200
+E   assert 422 == 200
+E    +  where 422 = <Response [422 Unprocessable Entity]>.status_code
+____________ TestQueenAntAPI.test_request_ant_for_invalid_subsystem ____________
+tests/test_api_extended.py:59: in test_request_ant_for_invalid_subsystem
+    assert response.status_code == 400
+E   assert 422 == 400
+E    +  where 422 = <Response [422 Unprocessable Entity]>.status_code
+______________ TestQueenAntAPI.test_request_ant_insufficient_food ______________
+tests/test_api_extended.py:73: in test_request_ant_insufficient_food
+    assert response.status_code == 409
+E   assert 422 == 409
+E    +  where 422 = <Response [422 Unprocessable Entity]>.status_code
+______________ TestQueenAntAPI.test_request_ant_capacity_reached _______________
+tests/test_api_extended.py:88: in test_request_ant_capacity_reached
+    assert response.status_code == 409
+E   assert 422 == 409
+E    +  where 422 = <Response [422 Unprocessable Entity]>.status_code
+__________________ TestQueenAntAPI.test_return_ant_successful __________________
+tests/test_api_extended.py:95: in test_return_ant_successful
+    ant_id = ant_response.json()["ant"]["id"]
+E   KeyError: 'ant'
+_______________ TestQueenAntAPI.test_return_ant_died_in_mission ________________
+tests/test_api_extended.py:115: in test_return_ant_died_in_mission
+    ant_id = ant_response.json()["ant"]["id"]
+E   KeyError: 'ant'
+_________________ TestQueenAntAPI.test_request_emergency_ants __________________
+tests/test_api_extended.py:154: in test_request_emergency_ants
+    assert response.status_code == 200
+E   assert 422 == 200
+E    +  where 422 = <Response [422 Unprocessable Entity]>.status_code
+_______________ TestQueenAntAPI.test_get_ants_filtered_by_state ________________
+tests/test_api_extended.py:198: in test_get_ants_filtered_by_state
+    assert len(assigned_ants) == 1
+E   assert 0 == 1
+E    +  where 0 = len([])
+___________ TestQueenAntAPI.test_configure_colony_invalid_parameters ___________
+tests/test_api_extended.py:220: in test_configure_colony_invalid_parameters
+    assert response.status_code == 400
+E   assert 422 == 400
+E    +  where 422 = <Response [422 Unprocessable Entity]>.status_code
+_________________ TestQueenAntAPI.test_add_invalid_food_amount _________________
+tests/test_api_extended.py:246: in test_add_invalid_food_amount
+    assert response.status_code == 400
+E   assert 422 == 400
+E    +  where 422 = <Response [422 Unprocessable Entity]>.status_code
+_____________ TestQueenAntAPI.test_ant_assignment_priority_system ______________
+tests/test_api_extended.py:292: in test_ant_assignment_priority_system
+    assert defense_response.status_code == 200
+E   assert 422 == 200
+E    +  where 422 = <Response [422 Unprocessable Entity]>.status_code
+_________________ TestQueenAntAPI.test_concurrent_ant_requests _________________
+tests/test_api_extended.py:328: in test_concurrent_ant_requests
+    assert response.status_code == 200
+E   assert 422 == 200
+E    +  where 422 = <Response [422 Unprocessable Entity]>.status_code
+_________ TestQueenAntAPI.test_emergency_mode_activation_deactivation __________
+tests/test_api_extended.py:339: in test_emergency_mode_activation_deactivation
+    assert response.status_code == 200
+E   assert 404 == 200
+E    +  where 404 = <Response [404 Not Found]>.status_code
+_______________ TestQueenAntAPI.test_ant_lifespan_configuration ________________
+tests/test_api_extended.py:378: in test_ant_lifespan_configuration
+    assert "expiry_time" in ant_details
+E   AssertionError: assert 'expiry_time' in {'age_seconds': 0.001563, 'assigned_to': None, 'assignment_time': None, 'birth_time': '2025-11-30T22:44:17.463825', ...}
+___________ TestQueenAntAPI.test_subsystem_priority_during_emergency ___________
+tests/test_api_extended.py:395: in test_subsystem_priority_during_emergency
+    assert response.status_code == 200
+E   assert 422 == 200
+E    +  where 422 = <Response [422 Unprocessable Entity]>.status_code
+_________ TestQueenAntAPI.test_invalid_subsystem_in_emergency_request __________
+tests/test_api_extended.py:410: in test_invalid_subsystem_in_emergency_request
+    assert response.status_code == 400
+E   assert 422 == 400
+E    +  where 422 = <Response [422 Unprocessable Entity]>.status_code
+____________ TestQueenAntAPI.test_return_ant_without_food_no_death _____________
+tests/test_api_extended.py:416: in test_return_ant_without_food_no_death
+    ant_id = ant_response.json()["ant"]["id"]
+E   KeyError: 'ant'
+________________ TestQueenAntAPI.test_get_specific_ant_details _________________
+tests/test_api_extended.py:448: in test_get_specific_ant_details
+    assert "created_at" in ant_data
+E   AssertionError: assert 'created_at' in {'age_seconds': 0.001881, 'assigned_to': None, 'assignment_time': None, 'birth_time': '2025-11-30T22:44:17.540122', ...}
+______________ TestQueenAntAPI.test_subsystem_statistics_endpoint ______________
+tests/test_api_extended.py:463: in test_subsystem_statistics_endpoint
+    assert response.status_code == 200
+E   assert 404 == 200
+E    +  where 404 = <Response [404 Not Found]>.status_code
+___________________ TestQueenAntAPI.test_batch_ant_creation ____________________
+tests/test_api_extended.py:473: in test_batch_ant_creation
+    assert response.status_code == 200
+E   assert 405 == 200
+E    +  where 405 = <Response [405 Method Not Allowed]>.status_code
+___________ TestQueenAntAPI.test_batch_ant_creation_exceeds_capacity ___________
+tests/test_api_extended.py:488: in test_batch_ant_creation_exceeds_capacity
+    assert response.status_code == 409
+E   assert 405 == 409
+E    +  where 405 = <Response [405 Method Not Allowed]>.status_code
+___________ TestQueenAntAPI.test_reassign_ant_to_different_subsystem ___________
+tests/test_api_extended.py:494: in test_reassign_ant_to_different_subsystem
+    ant_id = ant_response.json()["ant"]["id"]
+E   KeyError: 'ant'
+__________________ TestQueenAntAPI.test_colony_reset_endpoint __________________
+tests/test_api_extended.py:514: in test_colony_reset_endpoint
+    assert response.status_code == 200
+E   assert 404 == 200
+E    +  where 404 = <Response [404 Not Found]>.status_code
+_ TestColonyExtended.test_request_emergency_ants_reassigns_from_lower_priority _
+tests/test_colony_extended.py:140: in test_request_emergency_ants_reassigns_from_lower_priority
+    assert emergency_ants[0].assigned_to == SubsystemType.DEFENSE
+E   AssertionError: assert <SubsystemType.COLLECTION: 'collection'> == <SubsystemType.DEFENSE: 'defense'>
+E    +  where <SubsystemType.COLLECTION: 'collection'> = <src.ant.Ant object at 0x106924bf0>.assigned_to
+E    +  and   <SubsystemType.DEFENSE: 'defense'> = SubsystemType.DEFENSE
+____________________ TestColonyExtended.test_get_free_ants _____________________
+tests/test_colony_extended.py:169: in test_get_free_ants
+    assert len(free_ants) == 2
+E   assert 1 == 2
+E    +  where 1 = len([<src.ant.Ant object at 0x106926120>])
+__________________ TestColonyExtended.test_get_assigned_ants ___________________
+tests/test_colony_extended.py:187: in test_get_assigned_ants
+    assert free_ant.id not in assigned_ant_ids
+E   AssertionError: assert '1b71429c-a3b0-4da5-b982-6070bce3235a' not in ['1b71429c-a3b0-4da5-b982-6070bce3235a', 'dba0b8bc-2feb-4129-88ff-811530e487eb']
+E    +  where '1b71429c-a3b0-4da5-b982-6070bce3235a' = <src.ant.Ant object at 0x10692b8f0>.id
+____ TestColonyExtended.test_comprehensive_status_includes_all_information _____
+tests/test_colony_extended.py:211: in test_comprehensive_status_includes_all_information
+    assert status['total_ants'] == 3
+E   assert 2 == 3
+_________ TestColonyEmergencyScenarios.test_emergency_cascade_scenario _________
+tests/test_colony_extended.py:276: in test_emergency_cascade_scenario
+    if ant.state == AntState.ASSIGNED:
+E   AttributeError: 'str' object has no attribute 'state'
+______ TestColonyEmergencyScenarios.test_emergency_with_mixed_ant_states _______
+tests/test_colony_extended.py:302: in test_emergency_with_mixed_ant_states
+    assert len(emergency_ants) == 2
+E   assert 1 == 2
+E    +  where 1 = len([<src.ant.Ant object at 0x1069256a0>])
+____ TestColonyEmergencyScenarios.test_emergency_request_invalid_subsystem _____
+tests/test_colony_extended.py:314: in test_emergency_request_invalid_subsystem
+    assert len(emergency_ants) == 0
+E   assert 1 == 0
+E    +  where 1 = len([<src.ant.Ant object at 0x106924770>])
+______ TestColonyEmergencyScenarios.test_emergency_reassignment_tracking _______
+tests/test_colony_extended.py:431: in test_emergency_reassignment_tracking
+    assert reassigned_ant.assigned_to == SubsystemType.DEFENSE
+E   AssertionError: assert <SubsystemType.COLLECTION: 'collection'> == <SubsystemType.DEFENSE: 'defense'>
+E    +  where <SubsystemType.COLLECTION: 'collection'> = <src.ant.Ant object at 0x106927ad0>.assigned_to
+E    +  and   <SubsystemType.DEFENSE: 'defense'> = SubsystemType.DEFENSE
+________ TestColonyEmergencyScenarios.test_emergency_food_conservation _________
+tests/test_colony_extended.py:450: in test_emergency_food_conservation
+    assert ant3 is None
+E   assert <src.ant.Ant object at 0x1079a6420> is None
+________________ TestSubsystem.test_subsystem_priority_ordering ________________
+tests/test_subsystems.py:44: in test_subsystem_priority_ordering
+    subsystems = Subsystem.get_all_ordered_by_priority()
+E   AttributeError: type object 'Subsystem' has no attribute 'get_all_ordered_by_priority'
+______________ TestSubsystem.test_subsystem_string_representation ______________
+tests/test_subsystems.py:69: in test_subsystem_string_representation
+    assert str(defense) == "Defense (Priority: 1)"
+E   AssertionError: assert 'Subsystem(id...rity_level=1)' == 'Defense (Priority: 1)'
+E     - Defense (Priority: 1)
+E     + Subsystem(id=<SubsystemType.DEFENSE: 'defense'>, name='Defense', priority_level=1)
+_______________ TestSubsystem.test_subsystem_description_exists ________________
+tests/test_subsystems.py:78: in test_subsystem_description_exists
+    assert subsystem.description is not None
+E   AttributeError: 'Subsystem' object has no attribute 'description'
+______________ TestSubsystem.test_get_subsystem_by_priority_level ______________
+tests/test_subsystems.py:82: in test_get_subsystem_by_priority_level
+    highest_priority = Subsystem.get_by_priority(1)
+E   AttributeError: type object 'Subsystem' has no attribute 'get_by_priority'
+_____________ TestSubsystem.test_subsystem_has_required_attributes _____________
+tests/test_subsystems.py:103: in test_subsystem_has_required_attributes
+    assert hasattr(defense, 'description')
+E   AssertionError: assert False
+E    +  where False = hasattr(Subsystem(id=<SubsystemType.DEFENSE: 'defense'>, name='Defense', priority_level=1), 'description')
+________________ TestSubsystem.test_subsystem_is_high_priority _________________
+tests/test_subsystems.py:115: in test_subsystem_is_high_priority
+    assert defense.is_high_priority() is True
+E   AttributeError: 'Subsystem' object has no attribute 'is_high_priority'
+____________________ TestSubsystem.test_get_subsystem_stats ____________________
+tests/test_subsystems.py:135: in test_get_subsystem_stats
+    stats = Subsystem.get_subsystem_stats()
+E   AttributeError: type object 'Subsystem' has no attribute 'get_subsystem_stats'
+______________ TestSubsystem.test_subsystem_comparison_operators _______________
+tests/test_subsystems.py:152: in test_subsystem_comparison_operators
+    assert defense < communication
+E   TypeError: '<' not supported between instances of 'Subsystem' and 'Subsystem'
+________________ TestSubsystem.test_subsystem_hash_consistency _________________
+tests/test_subsystems.py:166: in test_subsystem_hash_consistency
+    assert hash(defense1) == hash(defense2)
+E   TypeError: unhashable type: 'Subsystem'
+_______________ TestSubsystem.test_subsystem_get_by_partial_name _______________
+tests/test_subsystems.py:173: in test_subsystem_get_by_partial_name
+    defense = Subsystem.get_by_partial_name("Def")
+E   AttributeError: type object 'Subsystem' has no attribute 'get_by_partial_name'
+_____________ TestSubsystem.test_get_subsystems_by_priority_range ______________
+tests/test_subsystems.py:200: in test_get_subsystems_by_priority_range
+    high_priority = Subsystem.get_by_priority_range(1, 2)
+E   AttributeError: type object 'Subsystem' has no attribute 'get_by_priority_range'
+=============================== warnings summary ===============================
+../../../../opt/anaconda3/lib/python3.12/site-packages/pydantic/_internal/_config.py:268
+../../../../opt/anaconda3/lib/python3.12/site-packages/pydantic/_internal/_config.py:268
+../../../../opt/anaconda3/lib/python3.12/site-packages/pydantic/_internal/_config.py:268
+../../../../opt/anaconda3/lib/python3.12/site-packages/pydantic/_internal/_config.py:268
+../../../../opt/anaconda3/lib/python3.12/site-packages/pydantic/_internal/_config.py:268
+../../../../opt/anaconda3/lib/python3.12/site-packages/pydantic/_internal/_config.py:268
+../../../../opt/anaconda3/lib/python3.12/site-packages/pydantic/_internal/_config.py:268
+../../../../opt/anaconda3/lib/python3.12/site-packages/pydantic/_internal/_config.py:268
+../../../../opt/anaconda3/lib/python3.12/site-packages/pydantic/_internal/_config.py:268
+  /opt/anaconda3/lib/python3.12/site-packages/pydantic/_internal/_config.py:268: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.5/migration/
+    warnings.warn(DEPRECATION_MESSAGE, DeprecationWarning)
+
+src/main.py:383
+  /Users/javier/Documents/ColoniaHormigasTDD/src/main.py:383: DeprecationWarning: `regex` has been deprecated, please use `pattern` instead
+    state: str = Query(
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/test_ant.py::TestAnt::test_ant_lifespan_is_90_seconds - Attribut...
+FAILED tests/test_ant.py::TestAnt::test_ant_to_dict - AssertionError: assert ...
+FAILED tests/test_api.py::TestAntsAPI::test_root_endpoint - json.decoder.JSON...
+FAILED tests/test_api.py::TestAntsAPI::test_create_ant_at_capacity_fails - At...
+FAILED tests/test_api.py::TestAntsAPI::test_get_nonexistent_ant - AssertionEr...
+FAILED tests/test_api.py::TestAntsAPI::test_configure_colony_max_ants - Asser...
+FAILED tests/test_api.py::TestAntsAPI::test_configure_colony_invalid_max_ants
+FAILED tests/test_api.py::TestAntsAPI::test_ant_lifecycle_integration - Attri...
+FAILED tests/test_api_extended.py::TestQueenAntAPI::test_root_endpoint_shows_queen_ant_info
+FAILED tests/test_api_extended.py::TestQueenAntAPI::test_request_ant_for_valid_subsystem
+FAILED tests/test_api_extended.py::TestQueenAntAPI::test_request_ant_for_invalid_subsystem
+FAILED tests/test_api_extended.py::TestQueenAntAPI::test_request_ant_insufficient_food
+FAILED tests/test_api_extended.py::TestQueenAntAPI::test_request_ant_capacity_reached
+FAILED tests/test_api_extended.py::TestQueenAntAPI::test_return_ant_successful
+FAILED tests/test_api_extended.py::TestQueenAntAPI::test_return_ant_died_in_mission
+FAILED tests/test_api_extended.py::TestQueenAntAPI::test_request_emergency_ants
+FAILED tests/test_api_extended.py::TestQueenAntAPI::test_get_ants_filtered_by_state
+FAILED tests/test_api_extended.py::TestQueenAntAPI::test_configure_colony_invalid_parameters
+FAILED tests/test_api_extended.py::TestQueenAntAPI::test_add_invalid_food_amount
+FAILED tests/test_api_extended.py::TestQueenAntAPI::test_ant_assignment_priority_system
+FAILED tests/test_api_extended.py::TestQueenAntAPI::test_concurrent_ant_requests
+FAILED tests/test_api_extended.py::TestQueenAntAPI::test_emergency_mode_activation_deactivation
+FAILED tests/test_api_extended.py::TestQueenAntAPI::test_ant_lifespan_configuration
+FAILED tests/test_api_extended.py::TestQueenAntAPI::test_subsystem_priority_during_emergency
+FAILED tests/test_api_extended.py::TestQueenAntAPI::test_invalid_subsystem_in_emergency_request
+FAILED tests/test_api_extended.py::TestQueenAntAPI::test_return_ant_without_food_no_death
+FAILED tests/test_api_extended.py::TestQueenAntAPI::test_get_specific_ant_details
+FAILED tests/test_api_extended.py::TestQueenAntAPI::test_subsystem_statistics_endpoint
+FAILED tests/test_api_extended.py::TestQueenAntAPI::test_batch_ant_creation
+FAILED tests/test_api_extended.py::TestQueenAntAPI::test_batch_ant_creation_exceeds_capacity
+FAILED tests/test_api_extended.py::TestQueenAntAPI::test_reassign_ant_to_different_subsystem
+FAILED tests/test_api_extended.py::TestQueenAntAPI::test_colony_reset_endpoint
+FAILED tests/test_colony_extended.py::TestColonyExtended::test_request_emergency_ants_reassigns_from_lower_priority
+FAILED tests/test_colony_extended.py::TestColonyExtended::test_get_free_ants
+FAILED tests/test_colony_extended.py::TestColonyExtended::test_get_assigned_ants
+FAILED tests/test_colony_extended.py::TestColonyExtended::test_comprehensive_status_includes_all_information
+FAILED tests/test_colony_extended.py::TestColonyEmergencyScenarios::test_emergency_cascade_scenario
+FAILED tests/test_colony_extended.py::TestColonyEmergencyScenarios::test_emergency_with_mixed_ant_states
+FAILED tests/test_colony_extended.py::TestColonyEmergencyScenarios::test_emergency_request_invalid_subsystem
+FAILED tests/test_colony_extended.py::TestColonyEmergencyScenarios::test_emergency_reassignment_tracking
+FAILED tests/test_colony_extended.py::TestColonyEmergencyScenarios::test_emergency_food_conservation
+FAILED tests/test_subsystems.py::TestSubsystem::test_subsystem_priority_ordering
+FAILED tests/test_subsystems.py::TestSubsystem::test_subsystem_string_representation
+FAILED tests/test_subsystems.py::TestSubsystem::test_subsystem_description_exists
+FAILED tests/test_subsystems.py::TestSubsystem::test_get_subsystem_by_priority_level
+FAILED tests/test_subsystems.py::TestSubsystem::test_subsystem_has_required_attributes
+FAILED tests/test_subsystems.py::TestSubsystem::test_subsystem_is_high_priority
+FAILED tests/test_subsystems.py::TestSubsystem::test_get_subsystem_stats - At...
+FAILED tests/test_subsystems.py::TestSubsystem::test_subsystem_comparison_operators
+FAILED tests/test_subsystems.py::TestSubsystem::test_subsystem_hash_consistency
+FAILED tests/test_subsystems.py::TestSubsystem::test_subsystem_get_by_partial_name
+FAILED tests/test_subsystems.py::TestSubsystem::test_get_subsystems_by_priority_range
+================== 52 failed, 91 passed, 10 warnings in 5.27s ==================

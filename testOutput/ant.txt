@@ -1,0 +1,456 @@
+CREACION DE HORMIGAS
+Vamos a comenzar con el TDD para las hormigas. Nuestros objetivos para esta sesión son:
+1. Poder crear una hormiga. La hormiga debe tener un id.
+2. Las hormigas tienen un tiempo de vida. Para esto debemos rastrear su fecha de creación
+3. La hormiga se puede asignar a un sistema. 
+4. Al volver puede morir o volver con comida.
+
+def test_ant_creation(self):
+        ant = Ant()
+        assert ant.id is not None
+tests\test_ant.py F                                                      [100%]
+
+================================== FAILURES ===================================
+__________________________ TestAnt.test_ant_creation __________________________
+
+self = <tests.test_ant.TestAnt object at 0x000001FCEB686540>
+
+    def test_ant_creation(self):
+        ant = Ant()
+>       assert ant.id is not None
+               ^^^^^^
+E       AttributeError: 'Ant' object has no attribute 'id'
+
+tests\test_ant.py:9: AttributeError
+=========================== short test summary info ===========================
+FAILED tests/test_ant.py::TestAnt::test_ant_creation - AttributeError: 'Ant' ...
+============================== 1 failed in 0.06s ==============================
+Finished running tests!
+
+Agregamos atributos a la hormiga. El id se genera aleatoriamente.
+
+tests\test_ant.py .                                                      [100%]
+
+============================== 1 passed in 0.02s ==============================
+
+La hormiga debe tener fecha de creacion.
+self = <tests.test_ant.TestAnt object at 0x00000227A0D60860>
+
+    def test_ant_creation(self):
+        ant = Ant()
+        assert ant.id is not None
+>       assert isinstance(ant.birth_time, datetime)
+E       assert False
+E        +  where False = isinstance(0, datetime)
+E        +    where 0 = <src.ant.Ant object at 0x00000227A0F27E90>.birth_time
+
+tests\test_ant.py:10: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/test_ant.py::TestAnt::test_ant_creation - assert False
+
+
+Definimos la fecha de creacion cuando creamos la hormiga
+
+============================== 1 passed in 0.02s ==============================
+Finished running tests!
+
+La hormiga debe tener un tiempo de vida. Comenzamos definiendo ese tiempo. Por ahora manejamos 90s siempre
+================================== FAILURES ===================================
+___________________ TestAnt.test_ant_lifespan_is_90_seconds ___________________
+
+self = <tests.test_ant.TestAnt object at 0x0000026B72455C40>
+
+    def test_ant_lifespan_is_90_seconds(self):
+        ant = Ant()
+>       assert ant.lifespan_seconds == 90
+               ^^^^^^^^^^^^
+E       AttributeError: 'Ant' object has no attribute 'lifespan_seconds'
+
+tests\test_ant.py:15: AttributeError
+=========================== short test summary info ===========================
+FAILED tests/test_ant.py::TestAnt::test_ant_lifespan_is_90_seconds - Attribut...
+========================= 1 failed, 1 passed in 0.06s =========================
+
+Definimos el tiempo de vida. Vamos a tenerlo en minutos y segundos.
+============================== 2 passed in 0.02s ==============================
+
+Manejamos un estado para saber si la hormiga esta viva o muerta. Esperamos que una hormiga recien creada este viva.
+================================== FAILURES ===================================
+__________________________ TestAnt.test_ant_creation __________________________
+
+self = <tests.test_ant.TestAnt object at 0x00000206C8DC5280>
+
+    def test_ant_creation(self):
+        ant = Ant()
+        assert ant.id is not None
+        assert isinstance(ant.birth_time, datetime)
+>       assert ant.is_alive is True
+               ^^^^^^^^^^^^
+E       AttributeError: 'Ant' object has no attribute 'is_alive'
+
+Lo vamos a manejar con una funcion. Inicialmente solo decimos que la hormiga esta viva
+============================== 2 passed in 0.03s ==============================
+
+
+Ahora vamos a ver si podemos saber la edad de la hormiga.
+================================== FAILURES ===================================
+______________________ TestAnt.test_ant_is_5_seconds_old ______________________
+
+self = <tests.test_ant.TestAnt object at 0x00000260F826CD40>
+
+    def test_ant_is_5_seconds_old (self):
+        ant = Ant()
+        # Simulate 5 seconds passing
+        ant.birth_time = datetime.now() - timedelta(seconds=5)
+>       assert ant.age_seconds == 5
+               ^^^^^^^^^^^^^^^
+E       AttributeError: 'Ant' object has no attribute 'age_seconds'
+
+Definimos la funcion
+================================== FAILURES ===================================
+______________________ TestAnt.test_ant_is_5_seconds_old ______________________
+
+self = <tests.test_ant.TestAnt object at 0x000001ACADE95040>
+
+    def test_ant_is_5_seconds_old (self):
+        ant = Ant()
+        # Simulate 5 seconds passing
+        ant.birth_time = datetime.now() - timedelta(seconds=6)
+>       assert ant.age_seconds == 5
+E       assert 6.0 == 5
+E        +  where 6.0 = <src.ant.Ant object at 0x000001ACADE377A0>.age_seconds
+
+tests\test_ant.py:21: AssertionError
+
+Parece que teníamos un error en la definicion de la prueba. COrregimos la espera de 6 a 5s.
+============================== 3 passed in 0.02s ==============================
+
+Esperamos que una hormiga este viva si no han pasado los 90s
+    def test_ant_is_alive_before_90_seconds(self):
+        ant = Ant()
+        # Simulate 89 seconds passing
+        ant.birth_time = datetime.now() - timedelta(seconds=89)
+        assert ant.is_alive is True
+============================== 4 passed in 0.02s ==============================
+
+Esperable ya que por el momento siempre decimos que esta viva. Vamos a probar si la hormiga muere.
+        def test_ant_dies_after_90_seconds(self):
+                ant = Ant()
+                # Simulate 91 seconds passing
+                ant.birth_time = datetime.now() - timedelta(seconds=91)
+                assert ant.is_alive is False
+
+
+    def test_ant_dies_after_90_seconds(self):
+        ant = Ant()
+        # Simulate 91 seconds passing
+        ant.birth_time = datetime.now() - timedelta(seconds=91)
+>       assert ant.is_alive is False
+E       assert True is False
+E        +  where True = <src.ant.Ant object at 0x000002245BE8F2C0>.is_alive
+
+tests\test_ant.py:27: AssertionError
+
+Corregimos la funcion de is_alive para revisar la fecha de nacimiento contra la fecha actual
+============================== 5 passed in 0.03s ==============================
+
+Notamos que la prueba de si la hormiga esta viva antes del tiempo sigue siendo exitosa.
+
+Podria ser importante saber cuanto tiempo de vida le queda a la hormiga. Hacemos esa prueba
+================================== FAILURES ===================================
+__________________ TestAnt.test_ant_lifespan_after_5_seconds __________________
+
+self = <tests.test_ant.TestAnt object at 0x0000020E9288A030>
+
+    def test_ant_lifespan_after_5_seconds (self):
+        ant = Ant()
+        # Simulate 5 seconds passing
+        ant.birth_time = datetime.now() - timedelta(seconds=5)
+>       assert ant.remaining_life_seconds == 85
+E       assert 90 == 85
+E        +  where 90 = <src.ant.Ant object at 0x0000020E910AF1A0>.remaining_life_seconds
+
+tests\test_ant.py:27: AssertionError
+
+Nuestra funcion inicial no realizaba el calculo. Modificamos la funcion.
+============================== 6 passed in 0.03s ==============================
+
+Verificamos que los id de la hormiga sean unicos
+    def test_ant_has_unique_id(self):
+        ant1 = Ant()
+        ant2 = Ant()
+        assert ant1.id != ant2.id
+============================== 7 passed in 0.03s ==============================
+
+Parece que son unicos. Nos queda pendiente expandir la prueba a miles de hormigas.
+
+Queremos poder ver la hormiga. Podemos usar una funcion que la pase a un diccionario.
+    def test_ant_to_dict(self):
+        ant = Ant()
+        result = ant.to_dict()
+        expected_keys = {'id', 'birth_time', 'is_alive', 'age_seconds', 'remaining_life_seconds'}
+        assert set(result.keys()) == expected_keys
+        assert result['id'] == ant.id
+        assert result['is_alive'] == ant.is_alive
+
+
+================================== FAILURES ===================================
+__________________________ TestAnt.test_ant_to_dict ___________________________
+
+self = <tests.test_ant.TestAnt object at 0x000001D0E54AA540>
+
+    def test_ant_to_dict(self):
+        ant = Ant()
+>       result = ant.to_dict()
+                 ^^^^^^^^^^^
+E       AttributeError: 'Ant' object has no attribute 'to_dict'
+
+tests\test_ant.py:48: AttributeError
+
+Creamos la funcion.
+============================== 8 passed in 0.06s ==============================
+
+Por el momento estamos pidiendo 5 atributos. Podria ser importante ir actualizando esta prueba conforme revisamos mas atributos.
+
+Pensando en esa linea podemos querer saber la hora a la que va a morir la hormiga
+================================== FAILURES ===================================
+_________________________ TestAnt.test_ant_death_time _________________________
+
+self = <tests.test_ant.TestAnt object at 0x000001DDF1212E70>
+    def test_ant_death_time (self):
+        ant = Ant()
+>       assert ant.death_time == datetime.now() + timedelta(seconds=90)
+E       assert 90 == (datetime.datetime(2025, 10, 25, 23, 43, 22, 864931) + datetime.timedelta(seconds=90))
+E        +  where 90 = <src.ant.Ant object at 0x000001DDEFA0F2C0>.death_time
+E        +  and   datetime.datetime(2025, 10, 25, 23, 43, 22, 864931) = <built-in method now of type object at 0x00007FF8A7D3C0F0>()
+E        +    where <built-in method now of type object at 0x00007FF8A7D3C0F0> = datetime.now
+E        +  and   datetime.timedelta(seconds=90) = timedelta(seconds=90)
+
+tests\test_ant.py:57: AssertionError
+
+Realizamos el calculo de la hora de muerte
+============================== 9 passed in 0.03s ==============================
+
+Ahora que tenemos la hormiga nos vamos a enfocar en asignarlas a sistemas. Para esto debemos saber el estado de la hormiga
+    def test_ant_is_available (self):
+        ant = Ant()
+        assert ant.is_available_for_assignment == True
+============================== 9 passed in 0.05s ==============================
+
+En nuestra definicion inicial la hormiga siempre esta disponible. Vamos a hacer una prueba si la hormiga muere.
+================================== FAILURES ===================================
+_____________________ TestAnt.test_dead_ant_is_available ______________________
+
+self = <tests.test_ant.TestAnt object at 0x000001FEB1F7F6E0>
+
+    def test_dead_ant_is_available (self):
+        ant = Ant()
+        # Simulate 91 seconds passing
+        ant.birth_time = datetime.now() - timedelta(seconds=91)
+>       assert ant.is_available_for_assignment == False
+E       assert True == False
+E        +  where True = <src.ant.Ant object at 0x000001FEB2503B90>.is_available_for_assignment
+
+tests\test_ant.py:67: AssertionError
+
+Una hormiga muerta no esta disponible. Actualizamos la funcion.
+============================= 11 passed in 0.03s ==============================
+
+Vamos a intentar asignar una hormiga a una tarea.
+def test_assign_ant_to_subsystem (self):
+        ant = Ant()
+        ant.assign_to_subsystem('Test')
+        assert ant.assigned_to == 'Test'
+
+================================== FAILURES ===================================
+____________________ TestAnt.test_assign_ant_to_subsystem _____________________
+
+self = <tests.test_ant.TestAnt object at 0x000001C2C5A77B60>
+
+    def test_assign_ant_to_subsystem (self):
+        ant = Ant()
+>       ant.assign_to_subsystem('Test')
+        ^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'Ant' object has no attribute 'assign_to_subsystem'
+
+tests\test_ant.py:71: AttributeError
+
+Vamos a crear la funcion. Tambien le vamos a agregar el atributo de assigned_to a la hormiga que es lo que va a usar la funcion.
+============================= 12 passed in 0.05s ==============================
+
+Ahora vamos a ver si una hormiga asignada se puede volver a asignar
+
+================================== FAILURES ===================================
+___________________ TestAnt.test_assigned_ant_is_available ____________________
+
+self = <tests.test_ant.TestAnt object at 0x0000018E46B245C0>
+
+    def test_assigned_ant_is_available (self):
+        ant = Ant()
+        ant.assign_to_subsystem('Test')
+>       assert ant.is_available_for_assignment == False
+E       assert True == False
+E        +  where True = <src.ant.Ant object at 0x0000018E46BB3020>.is_available_for_assignment
+
+tests\test_ant.py:77: AssertionError
+
+Vamos a cambiar la funcion que revisa si la hormiga esta disponible. De paso podemos agregar el estado de la hormiga como un atributo para facilitar las cosas.
+============================= 13 passed in 0.04s ==============================
+
+Una hormiga asignada no deberia poder ir a otro sistema (por el momento)
+================================== FAILURES ===================================
+__________________ TestAnt.test_assign_ant_to_two_subsystems __________________
+
+self = <tests.test_ant.TestAnt object at 0x00000130439C6000>
+
+    def test_assign_ant_to_two_subsystems (self):
+        ant = Ant()
+        ant.assign_to_subsystem('Test')
+        ant.assign_to_subsystem('Test2')
+>       assert ant.assigned_to == 'Test'
+E       AssertionError: assert 'Test2' == 'Test'
+E         
+E         - Test
+E         + Test2
+E         ?     +
+
+tests\test_ant.py:83: AssertionError
+
+Revisamos que la hormiga esta disponible antes de asignarla
+============================= 14 passed in 0.04s ==============================
+
+Vamos a simular que la hormiga regresa y queda lista para otra asignacion.
+================================== FAILURES ===================================
+____________ TestAnt.test_assign_ant_to_two_subsystems_with_return ____________
+
+self = <tests.test_ant.TestAnt object at 0x0000022BFF266F90>
+
+    def test_assign_ant_to_two_subsystems_with_return (self):
+        ant = Ant()
+        ant.assign_to_subsystem('Test')
+>       ant.return_from_assignment
+E       AttributeError: 'Ant' object has no attribute 'return_from_assignment'
+
+tests\test_ant.py:88: AttributeError
+
+Creamos la funcion. Por el momento solamente marcamos la hormiga como disponible, sin asignaciones.
+================================== FAILURES ===================================
+____________ TestAnt.test_assign_ant_to_two_subsystems_with_return ____________
+
+self = <tests.test_ant.TestAnt object at 0x000001757C674770>
+
+    def test_assign_ant_to_two_subsystems_with_return (self):
+        ant = Ant()
+        ant.assign_to_subsystem('Test')
+        ant.return_from_assignment
+        ant.assign_to_subsystem('Test2')
+>       assert ant.assigned_to == 'Test2'
+E       AssertionError: assert 'Test' == 'Test2'
+E         
+E         - Test2
+E         ?     -
+E         + Test
+
+tests\test_ant.py:90: AssertionError
+
+Parece que la hormiga no ha podido ir a su nueva mision. Revisamos. No estabamos llamando bien a la funcion de retorno.
+============================= 15 passed in 0.04s ==============================
+
+La hormiga pudo haber muerto al volver. Vamos a simular esa opcion.
+================================== FAILURES ===================================
+_____________________ TestAnt.test_ant_died_on_assignment _____________________
+
+self = <tests.test_ant.TestAnt object at 0x0000026A88AA6900>
+
+    def test_ant_died_on_assignment (self):
+        ant = Ant()
+        ant.assign_to_subsystem('Test')
+        ant.return_from_assignment(True)
+>       assert ant.is_alive == False
+E       assert True == False
+E        +  where True = <src.ant.Ant object at 0x0000026A88B35400>.is_alive
+
+tests\test_ant.py:96: AssertionError
+
+Revisamos la funcion para ver si la hormiga estaba viva o muerta
+============================= 16 passed in 0.06s ==============================
+
+La hormiga tambien puede traer comida. Por el momento no estamos manejando comida. Esa prueba la dejamos para despues.
+
+Es un buen momento para actualizar nuestro diccionario.
+
+    def test_ant_to_dict(self):
+        ant = Ant()
+        result = ant.to_dict()
+        expected_keys = {'id', 'birth_time', 'death_time', 'is_alive', 'age_seconds', 'remaining_life_seconds', 'state', 'assigned_to', 'assignment_time'}
+        assert set(result.keys()) == expected_keys
+        assert result['id'] == ant.id
+        assert result['is_alive'] == ant.is_alive
+
+================================== FAILURES ===================================
+__________________________ TestAnt.test_ant_to_dict ___________________________
+
+self = <tests.test_ant.TestAnt object at 0x000001A1AE8253D0>
+
+    def test_ant_to_dict(self):
+        ant = Ant()
+        result = ant.to_dict()
+        expected_keys = {'id', 'birth_time', 'death_time', 'is_alive', 'age_seconds', 'remaining_life_seconds', 'state', 'assigned_to', 'assignment_time'}
+>       assert set(result.keys()) == expected_keys
+E       AssertionError: assert {'age_seconds...life_seconds'} == {'age_seconds...e', 'id', ...}
+E         
+E         Extra items in the right set:
+E         'state'
+E         'assignment_time'
+E         'death_time'
+E         'assigned_to'
+E         Use -v to get more diff
+
+tests\test_ant.py:50: AssertionError
+
+Actualizamos la funcion.
+============================= 16 passed in 0.05s ==============================
+
+Estamos corriendo las pruebas de nuevo posterior a los cambios de integracion.
+
+================================== FAILURES ===================================
+__________________________ TestAnt.test_ant_to_dict ___________________________
+
+self = <tests.test_ant.TestAnt object at 0x00000252BDF89640>
+
+    def test_ant_to_dict(self):
+        ant = Ant()
+>       result = ant.to_dict()
+                 ^^^^^^^^^^^^^
+
+tests\test_ant.py:48: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <src.ant.Ant object at 0x00000252BDF43B90>
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            'id': self.id,
+            'birth_time': self.birth_time.isoformat(),
+            'death_time': self.death_time.isoformat(),
+            'is_alive': self.is_alive,
+            'age_seconds': self.age_seconds,
+            'remaining_life_seconds': self.remaining_life_seconds,
+            'state': self.state.value,
+>           'assigned_to': self.assigned_to.value if self.assigned_to.value else None,
+                                                     ^^^^^^^^^^^^^^^^^^^^^^
+            'assignment_time': self.assignment_time.isoformat() if self.assignment_time else None,
+            # 'wait_time_seconds': self.wait_time_seconds
+        }
+E       AttributeError: 'NoneType' object has no attribute 'value'
+
+src\ant.py:80: AttributeError
+=========================== short test summary info ===========================
+FAILED tests/test_ant.py::TestAnt::test_ant_to_dict - AttributeError: 'NoneTy...
+======================== 1 failed, 15 passed in 0.14s =========================
+
+Revisamos si la variable existe.
+
+============================= 16 passed in 0.05s ==============================
+
+

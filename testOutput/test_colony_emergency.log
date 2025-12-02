@@ -1,0 +1,78 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.12.7, pytest-7.4.3, pluggy-1.0.0 -- /opt/anaconda3/bin/python
+cachedir: .pytest_cache
+rootdir: /Users/javier/Documents/ColoniaHormigasTDD
+configfile: pytest.ini
+plugins: asyncio-0.21.1, anyio-3.7.1
+asyncio: mode=Mode.STRICT
+collecting ... collected 15 items
+
+tests/test_colony_extended.py::TestColonyEmergencyScenarios::test_emergency_mode_activation FAILED [  6%]
+tests/test_colony_extended.py::TestColonyEmergencyScenarios::test_emergency_mode_deactivation FAILED [ 13%]
+tests/test_colony_extended.py::TestColonyEmergencyScenarios::test_emergency_request_with_no_ants_available PASSED [ 20%]
+tests/test_colony_extended.py::TestColonyEmergencyScenarios::test_emergency_cascade_scenario FAILED [ 26%]
+tests/test_colony_extended.py::TestColonyEmergencyScenarios::test_emergency_with_mixed_ant_states FAILED [ 33%]
+tests/test_colony_extended.py::TestColonyEmergencyScenarios::test_emergency_request_invalid_subsystem FAILED [ 40%]
+tests/test_colony_extended.py::TestColonyEmergencyScenarios::test_emergency_partial_fulfillment PASSED [ 46%]
+tests/test_colony_extended.py::TestColonyEmergencyScenarios::test_emergency_with_dead_ants PASSED [ 53%]
+tests/test_colony_extended.py::TestColonyEmergencyScenarios::test_emergency_priority_preservation PASSED [ 60%]
+tests/test_colony_extended.py::TestColonyEmergencyScenarios::test_emergency_mode_affects_new_ant_creation FAILED [ 66%]
+tests/test_colony_extended.py::TestColonyEmergencyScenarios::test_simultaneous_emergency_requests PASSED [ 73%]
+tests/test_colony_extended.py::TestColonyEmergencyScenarios::test_emergency_with_max_wait_timeout PASSED [ 80%]
+tests/test_colony_extended.py::TestColonyEmergencyScenarios::test_emergency_reassignment_tracking FAILED [ 86%]
+tests/test_colony_extended.py::TestColonyEmergencyScenarios::test_emergency_food_conservation FAILED [ 93%]
+tests/test_colony_extended.py::TestColonyEmergencyScenarios::test_emergency_clear_after_resolution FAILED [100%]
+
+=================================== FAILURES ===================================
+_________ TestColonyEmergencyScenarios.test_emergency_mode_activation __________
+tests/test_colony_extended.py:243: in test_emergency_mode_activation
+    colony.activate_emergency_mode()
+E   AttributeError: 'Colony' object has no attribute 'activate_emergency_mode'
+________ TestColonyEmergencyScenarios.test_emergency_mode_deactivation _________
+tests/test_colony_extended.py:249: in test_emergency_mode_deactivation
+    colony.activate_emergency_mode()
+E   AttributeError: 'Colony' object has no attribute 'activate_emergency_mode'
+_________ TestColonyEmergencyScenarios.test_emergency_cascade_scenario _________
+tests/test_colony_extended.py:276: in test_emergency_cascade_scenario
+    if ant.state == AntState.ASSIGNED:
+E   AttributeError: 'str' object has no attribute 'state'
+______ TestColonyEmergencyScenarios.test_emergency_with_mixed_ant_states _______
+tests/test_colony_extended.py:302: in test_emergency_with_mixed_ant_states
+    assert len(emergency_ants) == 2
+E   assert 1 == 2
+E    +  where 1 = len([<src.ant.Ant object at 0x11118c170>])
+____ TestColonyEmergencyScenarios.test_emergency_request_invalid_subsystem _____
+tests/test_colony_extended.py:314: in test_emergency_request_invalid_subsystem
+    assert len(emergency_ants) == 0
+E   assert 1 == 0
+E    +  where 1 = len([<src.ant.Ant object at 0x11115bd10>])
+__ TestColonyEmergencyScenarios.test_emergency_mode_affects_new_ant_creation ___
+tests/test_colony_extended.py:371: in test_emergency_mode_affects_new_ant_creation
+    colony.activate_emergency_mode()
+E   AttributeError: 'Colony' object has no attribute 'activate_emergency_mode'
+______ TestColonyEmergencyScenarios.test_emergency_reassignment_tracking _______
+tests/test_colony_extended.py:431: in test_emergency_reassignment_tracking
+    assert reassigned_ant.assigned_to == SubsystemType.DEFENSE
+E   AssertionError: assert <SubsystemType.COLLECTION: 'collection'> == <SubsystemType.DEFENSE: 'defense'>
+E    +  where <SubsystemType.COLLECTION: 'collection'> = <src.ant.Ant object at 0x11118c230>.assigned_to
+E    +  and   <SubsystemType.DEFENSE: 'defense'> = SubsystemType.DEFENSE
+________ TestColonyEmergencyScenarios.test_emergency_food_conservation _________
+tests/test_colony_extended.py:438: in test_emergency_food_conservation
+    colony.activate_emergency_mode()
+E   AttributeError: 'Colony' object has no attribute 'activate_emergency_mode'
+______ TestColonyEmergencyScenarios.test_emergency_clear_after_resolution ______
+tests/test_colony_extended.py:458: in test_emergency_clear_after_resolution
+    colony.activate_emergency_mode()
+E   AttributeError: 'Colony' object has no attribute 'activate_emergency_mode'
+- generated xml file: /Users/javier/Documents/ColoniaHormigasTDD/testOutput/test_colony_emergency_results.xml -
+=========================== short test summary info ============================
+FAILED tests/test_colony_extended.py::TestColonyEmergencyScenarios::test_emergency_mode_activation
+FAILED tests/test_colony_extended.py::TestColonyEmergencyScenarios::test_emergency_mode_deactivation
+FAILED tests/test_colony_extended.py::TestColonyEmergencyScenarios::test_emergency_cascade_scenario
+FAILED tests/test_colony_extended.py::TestColonyEmergencyScenarios::test_emergency_with_mixed_ant_states
+FAILED tests/test_colony_extended.py::TestColonyEmergencyScenarios::test_emergency_request_invalid_subsystem
+FAILED tests/test_colony_extended.py::TestColonyEmergencyScenarios::test_emergency_mode_affects_new_ant_creation
+FAILED tests/test_colony_extended.py::TestColonyEmergencyScenarios::test_emergency_reassignment_tracking
+FAILED tests/test_colony_extended.py::TestColonyEmergencyScenarios::test_emergency_food_conservation
+FAILED tests/test_colony_extended.py::TestColonyEmergencyScenarios::test_emergency_clear_after_resolution
+========================= 9 failed, 6 passed in 1.18s ==========================

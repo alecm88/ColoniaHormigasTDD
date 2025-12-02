@@ -1,0 +1,64 @@
+Feature: Queen Ant Subsystem - Ant Assignment and Management
+  Background: 
+
+  Scenario: Assign ant to a known subsystem
+    Given the colony is configured for academic requirements ... passed in 0.000s
+    And the known subsystems are "Communication", "Collection", and "Defense" ... passed in 0.000s
+    And Defense has priority 1, Communication has priority 2, and Collection has priority 3 ... passed in 0.000s
+    Given the colony has sufficient food stock ... passed in 0.000s
+    When I request an ant for "Defense" subsystem ... passed in 0.000s
+    Then an ant should be assigned successfully ... passed in 0.000s
+    And the ant should be marked as assigned to "Defense" ... passed in 0.000s
+    And food should be consumed for ant creation if needed ... passed in 0.000s
+
+  Scenario: Reject assignment to unknown subsystem
+    Given the colony is configured for academic requirements ... passed in 0.000s
+    And the known subsystems are "Communication", "Collection", and "Defense" ... passed in 0.000s
+    And Defense has priority 1, Communication has priority 2, and Collection has priority 3 ... passed in 0.000s
+    Given the colony has sufficient food stock ... passed in 0.000s
+    When I request an ant for "UnknownSystem" subsystem ... passed in 0.000s
+    Then the assignment should fail ... passed in 0.000s
+    And I should receive an error about unknown subsystem ... passed in 0.000s
+
+  Scenario: Cannot assign ant when insufficient food
+    Given the colony is configured for academic requirements ... passed in 0.000s
+    And the known subsystems are "Communication", "Collection", and "Defense" ... passed in 0.000s
+    And Defense has priority 1, Communication has priority 2, and Collection has priority 3 ... passed in 0.000s
+    Given the colony has insufficient food stock ... passed in 0.000s
+    When I request an ant for "Collection" subsystem ... passed in 0.000s
+    Then the assignment should fail ... passed in 0.000s
+    And I should receive an error about insufficient food ... passed in 0.000s
+
+  Scenario: Ant returns successfully with food
+    Given the colony is configured for academic requirements ... passed in 0.000s
+    And the known subsystems are "Communication", "Collection", and "Defense" ... passed in 0.000s
+    And Defense has priority 1, Communication has priority 2, and Collection has priority 3 ... passed in 0.000s
+    Given I have an ant assigned to "Collection" ... passed in 0.000s
+    When the ant returns with food ... passed in 0.000s
+    Then the ant should be marked as free ... passed in 0.000s
+    And the colony food stock should increase ... passed in 0.000s
+    And the ant should be available for new assignments ... passed in 0.000s
+
+  Scenario: Ant dies during mission
+    Given the colony is configured for academic requirements ... passed in 0.000s
+    And the known subsystems are "Communication", "Collection", and "Defense" ... passed in 0.000s
+    And Defense has priority 1, Communication has priority 2, and Collection has priority 3 ... passed in 0.000s
+    Given I have an ant assigned to "Defense" ... passed in 0.000s
+    When the ant dies during the mission ... passed in 0.000s
+    Then the ant should be marked as dead ... passed in 0.000s
+    And the ant should not be available for assignments ... passed in 0.000s
+
+  Scenario: Emergency ant request with available ants
+    Given the colony is configured for academic requirements ... passed in 0.000s
+    And the known subsystems are "Communication", "Collection", and "Defense" ... passed in 0.000s
+    And Defense has priority 1, Communication has priority 2, and Collection has priority 3 ... passed in 0.000s
+    Given the colony has 2 free ants ... passed in 0.000s
+    When "Defense" requests 2 emergency ants ... passed in 0.000s
+    Then 2 ants should be assigned to "Defense" ... passed in 0.000s
+    And the colony should be in emergency mode ... passed in 0.000s
+    And all assigned ants should have "Defense" as their subsystem ... passed in 0.000s
+
+1 feature passed, 0 failed, 0 skipped
+6 scenarios passed, 0 failed, 0 skipped
+45 steps passed, 0 failed, 0 skipped, 0 undefined
+Took 0m0.005s

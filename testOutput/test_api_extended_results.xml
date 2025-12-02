@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites><testsuite name="pytest" errors="0" failures="24" skipped="0" tests="33" time="1.408" timestamp="2025-11-26T18:08:48.960752" hostname="Dev.local"><testcase classname="tests.test_api_extended.TestQueenAntAPI" name="test_root_endpoint_shows_queen_ant_info" time="0.013"><failure message="json.decoder.JSONDecodeError: Expecting value: line 2 column 5 (char 5)">tests/test_api_extended.py:28: in test_root_endpoint_shows_queen_ant_info
+    data = response.json()
+/opt/anaconda3/lib/python3.12/site-packages/httpx/_models.py:761: in json
+    return jsonlib.loads(self.content, **kwargs)
+/opt/anaconda3/lib/python3.12/json/__init__.py:346: in loads
+    return _default_decoder.decode(s)
+/opt/anaconda3/lib/python3.12/json/decoder.py:337: in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+/opt/anaconda3/lib/python3.12/json/decoder.py:355: in raw_decode
+    raise JSONDecodeError("Expecting value", s, err.value) from None
+E   json.decoder.JSONDecodeError: Expecting value: line 2 column 5 (char 5)</failure></testcase><testcase classname="tests.test_api_extended.TestQueenAntAPI" name="test_request_ant_for_valid_subsystem" time="0.003"><failure message="assert 422 == 200&#10; +  where 422 = &lt;Response [422 Unprocessable Entity]&gt;.status_code">tests/test_api_extended.py:43: in test_request_ant_for_valid_subsystem
+    assert response.status_code == 200
+E   assert 422 == 200
+E    +  where 422 = &lt;Response [422 Unprocessable Entity]&gt;.status_code</failure></testcase><testcase classname="tests.test_api_extended.TestQueenAntAPI" name="test_request_ant_for_invalid_subsystem" time="0.003"><failure message="assert 422 == 400&#10; +  where 422 = &lt;Response [422 Unprocessable Entity]&gt;.status_code">tests/test_api_extended.py:59: in test_request_ant_for_invalid_subsystem
+    assert response.status_code == 400
+E   assert 422 == 400
+E    +  where 422 = &lt;Response [422 Unprocessable Entity]&gt;.status_code</failure></testcase><testcase classname="tests.test_api_extended.TestQueenAntAPI" name="test_request_ant_insufficient_food" time="0.005"><failure message="assert 422 == 409&#10; +  where 422 = &lt;Response [422 Unprocessable Entity]&gt;.status_code">tests/test_api_extended.py:73: in test_request_ant_insufficient_food
+    assert response.status_code == 409
+E   assert 422 == 409
+E    +  where 422 = &lt;Response [422 Unprocessable Entity]&gt;.status_code</failure></testcase><testcase classname="tests.test_api_extended.TestQueenAntAPI" name="test_request_ant_capacity_reached" time="0.006"><failure message="assert 422 == 409&#10; +  where 422 = &lt;Response [422 Unprocessable Entity]&gt;.status_code">tests/test_api_extended.py:88: in test_request_ant_capacity_reached
+    assert response.status_code == 409
+E   assert 422 == 409
+E    +  where 422 = &lt;Response [422 Unprocessable Entity]&gt;.status_code</failure></testcase><testcase classname="tests.test_api_extended.TestQueenAntAPI" name="test_return_ant_successful" time="0.003"><failure message="KeyError: 'ant'">tests/test_api_extended.py:95: in test_return_ant_successful
+    ant_id = ant_response.json()["ant"]["id"]
+E   KeyError: 'ant'</failure></testcase><testcase classname="tests.test_api_extended.TestQueenAntAPI" name="test_return_ant_died_in_mission" time="0.003"><failure message="KeyError: 'ant'">tests/test_api_extended.py:115: in test_return_ant_died_in_mission
+    ant_id = ant_response.json()["ant"]["id"]
+E   KeyError: 'ant'</failure></testcase><testcase classname="tests.test_api_extended.TestQueenAntAPI" name="test_return_nonexistent_ant" time="0.003" /><testcase classname="tests.test_api_extended.TestQueenAntAPI" name="test_request_emergency_ants" time="0.006"><failure message="assert 422 == 200&#10; +  where 422 = &lt;Response [422 Unprocessable Entity]&gt;.status_code">tests/test_api_extended.py:154: in test_request_emergency_ants
+    assert response.status_code == 200
+E   assert 422 == 200
+E    +  where 422 = &lt;Response [422 Unprocessable Entity]&gt;.status_code</failure></testcase><testcase classname="tests.test_api_extended.TestQueenAntAPI" name="test_get_comprehensive_colony_status" time="0.006" /><testcase classname="tests.test_api_extended.TestQueenAntAPI" name="test_get_ants_filtered_by_state" time="0.008"><failure message="assert 0 == 1&#10; +  where 0 = len([])">tests/test_api_extended.py:198: in test_get_ants_filtered_by_state
+    assert len(assigned_ants) == 1
+E   assert 0 == 1
+E    +  where 0 = len([])</failure></testcase><testcase classname="tests.test_api_extended.TestQueenAntAPI" name="test_configure_colony_parameters" time="0.002" /><testcase classname="tests.test_api_extended.TestQueenAntAPI" name="test_configure_colony_invalid_parameters" time="0.002"><failure message="assert 422 == 400&#10; +  where 422 = &lt;Response [422 Unprocessable Entity]&gt;.status_code">tests/test_api_extended.py:220: in test_configure_colony_invalid_parameters
+    assert response.status_code == 400
+E   assert 422 == 400
+E    +  where 422 = &lt;Response [422 Unprocessable Entity]&gt;.status_code</failure></testcase><testcase classname="tests.test_api_extended.TestQueenAntAPI" name="test_add_food_to_colony" time="0.004" /><testcase classname="tests.test_api_extended.TestQueenAntAPI" name="test_add_invalid_food_amount" time="0.003"><failure message="assert 422 == 400&#10; +  where 422 = &lt;Response [422 Unprocessable Entity]&gt;.status_code">tests/test_api_extended.py:246: in test_add_invalid_food_amount
+    assert response.status_code == 400
+E   assert 422 == 400
+E    +  where 422 = &lt;Response [422 Unprocessable Entity]&gt;.status_code</failure></testcase><testcase classname="tests.test_api_extended.TestQueenAntAPI" name="test_get_available_subsystems" time="0.003" /><testcase classname="tests.test_api_extended.TestQueenAntAPI" name="test_cleanup_dead_ants_endpoint" time="0.004" /><testcase classname="tests.test_api_extended.TestQueenAntAPI" name="test_ant_assignment_priority_system" time="0.007"><failure message="assert 422 == 200&#10; +  where 422 = &lt;Response [422 Unprocessable Entity]&gt;.status_code">tests/test_api_extended.py:292: in test_ant_assignment_priority_system
+    assert defense_response.status_code == 200
+E   assert 422 == 200
+E    +  where 422 = &lt;Response [422 Unprocessable Entity]&gt;.status_code</failure></testcase><testcase classname="tests.test_api_extended.TestQueenAntAPI" name="test_backward_compatibility_endpoints" time="0.003" /><testcase classname="tests.test_api_extended.TestQueenAntAPI" name="test_concurrent_ant_requests" time="0.007"><failure message="assert 422 == 200&#10; +  where 422 = &lt;Response [422 Unprocessable Entity]&gt;.status_code">tests/test_api_extended.py:328: in test_concurrent_ant_requests
+    assert response.status_code == 200
+E   assert 422 == 200
+E    +  where 422 = &lt;Response [422 Unprocessable Entity]&gt;.status_code</failure></testcase><testcase classname="tests.test_api_extended.TestQueenAntAPI" name="test_emergency_mode_activation_deactivation" time="0.003"><failure message="assert 404 == 200&#10; +  where 404 = &lt;Response [404 Not Found]&gt;.status_code">tests/test_api_extended.py:339: in test_emergency_mode_activation_deactivation
+    assert response.status_code == 200
+E   assert 404 == 200
+E    +  where 404 = &lt;Response [404 Not Found]&gt;.status_code</failure></testcase><testcase classname="tests.test_api_extended.TestQueenAntAPI" name="test_food_consumption_during_ant_creation" time="0.006" /><testcase classname="tests.test_api_extended.TestQueenAntAPI" name="test_ant_lifespan_configuration" time="0.006"><failure message="AssertionError: assert 'expiry_time' in {'age_seconds': 0.001676, 'assigned_to': None, 'assignment_time': None, 'birth_time': '2025-11-26T18:08:50.237711', ...}">tests/test_api_extended.py:378: in test_ant_lifespan_configuration
+    assert "expiry_time" in ant_details
+E   AssertionError: assert 'expiry_time' in {'age_seconds': 0.001676, 'assigned_to': None, 'assignment_time': None, 'birth_time': '2025-11-26T18:08:50.237711', ...}</failure></testcase><testcase classname="tests.test_api_extended.TestQueenAntAPI" name="test_subsystem_priority_during_emergency" time="0.010"><failure message="assert 422 == 200&#10; +  where 422 = &lt;Response [422 Unprocessable Entity]&gt;.status_code">tests/test_api_extended.py:395: in test_subsystem_priority_during_emergency
+    assert response.status_code == 200
+E   assert 422 == 200
+E    +  where 422 = &lt;Response [422 Unprocessable Entity]&gt;.status_code</failure></testcase><testcase classname="tests.test_api_extended.TestQueenAntAPI" name="test_invalid_subsystem_in_emergency_request" time="0.003"><failure message="assert 422 == 400&#10; +  where 422 = &lt;Response [422 Unprocessable Entity]&gt;.status_code">tests/test_api_extended.py:410: in test_invalid_subsystem_in_emergency_request
+    assert response.status_code == 400
+E   assert 422 == 400
+E    +  where 422 = &lt;Response [422 Unprocessable Entity]&gt;.status_code</failure></testcase><testcase classname="tests.test_api_extended.TestQueenAntAPI" name="test_return_ant_without_food_no_death" time="0.003"><failure message="KeyError: 'ant'">tests/test_api_extended.py:416: in test_return_ant_without_food_no_death
+    ant_id = ant_response.json()["ant"]["id"]
+E   KeyError: 'ant'</failure></testcase><testcase classname="tests.test_api_extended.TestQueenAntAPI" name="test_get_specific_ant_details" time="0.004"><failure message="AssertionError: assert 'created_at' in {'age_seconds': 0.001759, 'assigned_to': None, 'assignment_time': None, 'birth_time': '2025-11-26T18:08:50.289799', ...}">tests/test_api_extended.py:448: in test_get_specific_ant_details
+    assert "created_at" in ant_data
+E   AssertionError: assert 'created_at' in {'age_seconds': 0.001759, 'assigned_to': None, 'assignment_time': None, 'birth_time': '2025-11-26T18:08:50.289799', ...}</failure></testcase><testcase classname="tests.test_api_extended.TestQueenAntAPI" name="test_get_nonexistent_ant" time="0.002" /><testcase classname="tests.test_api_extended.TestQueenAntAPI" name="test_subsystem_statistics_endpoint" time="0.008"><failure message="assert 404 == 200&#10; +  where 404 = &lt;Response [404 Not Found]&gt;.status_code">tests/test_api_extended.py:463: in test_subsystem_statistics_endpoint
+    assert response.status_code == 200
+E   assert 404 == 200
+E    +  where 404 = &lt;Response [404 Not Found]&gt;.status_code</failure></testcase><testcase classname="tests.test_api_extended.TestQueenAntAPI" name="test_batch_ant_creation" time="0.003"><failure message="assert 405 == 200&#10; +  where 405 = &lt;Response [405 Method Not Allowed]&gt;.status_code">tests/test_api_extended.py:473: in test_batch_ant_creation
+    assert response.status_code == 200
+E   assert 405 == 200
+E    +  where 405 = &lt;Response [405 Method Not Allowed]&gt;.status_code</failure></testcase><testcase classname="tests.test_api_extended.TestQueenAntAPI" name="test_batch_ant_creation_exceeds_capacity" time="0.004"><failure message="assert 405 == 409&#10; +  where 405 = &lt;Response [405 Method Not Allowed]&gt;.status_code">tests/test_api_extended.py:488: in test_batch_ant_creation_exceeds_capacity
+    assert response.status_code == 409
+E   assert 405 == 409
+E    +  where 405 = &lt;Response [405 Method Not Allowed]&gt;.status_code</failure></testcase><testcase classname="tests.test_api_extended.TestQueenAntAPI" name="test_reassign_ant_to_different_subsystem" time="0.002"><failure message="KeyError: 'ant'">tests/test_api_extended.py:494: in test_reassign_ant_to_different_subsystem
+    ant_id = ant_response.json()["ant"]["id"]
+E   KeyError: 'ant'</failure></testcase><testcase classname="tests.test_api_extended.TestQueenAntAPI" name="test_colony_reset_endpoint" time="0.006"><failure message="assert 404 == 200&#10; +  where 404 = &lt;Response [404 Not Found]&gt;.status_code">tests/test_api_extended.py:514: in test_colony_reset_endpoint
+    assert response.status_code == 200
+E   assert 404 == 200
+E    +  where 404 = &lt;Response [404 Not Found]&gt;.status_code</failure></testcase></testsuite></testsuites>
