@@ -416,7 +416,7 @@ def step_assignment_cleared(context):
     assert context.ant.assignment_time is None
 
 
-@then('the assignment should fail')
+@then('the assignment should fail due to insufficient life')
 def step_assignment_fails(context):
     assert context.assignment_result is False
 
