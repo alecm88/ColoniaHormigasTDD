@@ -6,7 +6,7 @@ from src.subsystems import Subsystem, SubsystemType
 COMMURL = "https://communicationservice-production.up.railway.app"
 
 class Service:
-    def __init__(self, interval: int = 5, run_for_minutes: int = 10, colony: Colony = Colony(max_ants=100, initial_food_stock=1000, ant_lifespan_minutes=1.5)):
+    def __init__(self, interval: int = 5, run_for_minutes: int = 10, colony: Colony = Colony(max_ants=100, initial_food_stock=20, ant_lifespan_minutes=1.5)):
         self.interval = interval
         self.run_for_minutes = run_for_minutes
         self.calls = 0
@@ -41,6 +41,9 @@ class Service:
         
         # Recalculate end_time relative to when start is called
         self.end_time = time.time() + (60 * self.run_for_minutes)
+
+        #Reset colony
+        self.colony.reset_colony()
         
         # Start the background thread
         # self._run_loop() # for debuggin
@@ -98,6 +101,8 @@ class Service:
                 
                 if subsystem and subsystem.name == SubsystemType.DEFENSE.value:
                     self._handle_defense_logic(tipo, contenido)
+                elif subsystem and subsystem.name == SubsystemType.COLLECTION.value:
+                    self._handle_collection_logic(tipo, contenido)
                     
             except Exception as e:
                 print(f"Error processing individual message: {e}")
@@ -143,3 +148,47 @@ class Service:
             survivors = datos["survivors"]
             for ant in survivors:
                 self.colony.return_ant(ant["id"])
+
+                
+    def _handle_collection_logic(self, tipo, contenido):
+        """Logic specific to the Defense subsystem."""
+        if tipo == "solicitud_hormigas":
+            datos = contenido["contenido"]
+            request_ref = datos["request_ref"]
+            tarea_id = datos["tarea_id"]
+            ants_needed = datos["ants_needed"]
+
+            ant_response = self.colony.request_ants(
+                subsystem_name=SubsystemType.COLLECTION.value, 
+                quantity=ants_needed
+            )
+
+            package = {
+                "emisor": "S03_REI",
+                "receptor": f"{SubsystemType.COLLECTION.value}",
+                "mensaje": {
+                    "tipo": "asignacion_hormigas" if ant_response["success"] else "rechazo_hormigas",
+                    "contenido": {
+                        "request_ref": request_ref,
+                        "assignment_successful": ant_response["success"]
+                    }
+                }
+            }
+
+            if ant_response["success"]:
+                ants = []
+                for ant in ant_response["ants"]:
+                    ants.append(ant.to_dict())
+                package["mensaje"]["contenido"]["ants"] = ants
+            else:
+                package["mensaje"]["contenido"]["motivo"] = "insuficientes"
+
+            requests.post(COMMURL + "/api/mensaje", json=package)
+
+        elif tipo == "resultado_recoleccion":
+            datos = contenido["contenido"]
+            survivors = datos["survivors"]
+            alimentos = datos["alimentos"]
+            for ant in survivors:
+                self.colony.return_ant(ant["id"])
+            self.colony.add_food(alimentos)

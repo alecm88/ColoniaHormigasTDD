@@ -64,7 +64,7 @@ class TestAntsAPI:
         
     def test_create_ant_whitout_food_fails(self, client):
         # Configure colony to little food
-        client.put("/colony/config?food_stock=10")
+        client.put("/colony/config?food_stock=10&food_per_ant=10")
 
         # Create first ant (should succeed)
         response1 = client.post("/ants")

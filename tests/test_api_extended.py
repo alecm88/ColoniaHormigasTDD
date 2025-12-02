@@ -17,6 +17,7 @@ def reset_colony():
     colony.max_ants = 100
     colony.food_stock = 1000
     colony.ant_lifespan_minutes = 1.5
+    colony.food_per_ant = 1
     colony.emergency_mode = False
     yield
 
@@ -324,7 +325,7 @@ class TestQueenAntAPI:
 
         # Check that food was consumed
         final_status = client.get("/colony/status/comprehensive").json()
-        assert final_status["food_stock"] == initial_food - 10
+        assert final_status["food_stock"] == initial_food - 1
 
     def test_ant_lifespan_configuration(self, client):
         # Set a specific lifespan

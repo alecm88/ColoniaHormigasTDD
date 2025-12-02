@@ -5,8 +5,8 @@ from src.subsystems import SubsystemType, Subsystem
 
 
 class Colony:
-    def __init__(self, max_ants: int = 100, initial_food_stock: int = 1000,
-                 ant_lifespan_minutes: float = 1.5, food_per_ant: int = 10):
+    def __init__(self, max_ants: int = 100, initial_food_stock: int = 20,
+                 ant_lifespan_minutes: float = 1.5, food_per_ant: int = 1):
         self.max_ants = max_ants
         self.ant_lifespan_minutes = ant_lifespan_minutes
         self.ants: Dict[str, Ant] = {}
@@ -14,6 +14,7 @@ class Colony:
         self.food_per_ant = food_per_ant  # Food units required to create an ant
         self.emergency_mode = False
         self.subsystems = Subsystem.get_known_subsystems()
+        self.initial_food_stock = initial_food_stock
 
     def create_ant(self) -> Optional[Ant]: 
         self.cleanup_dead_ants()
@@ -370,3 +371,9 @@ class Colony:
             'max_ants': self.max_ants,
             'food_stock': self.food_stock,
         }
+    
+    def reset_colony(self):
+        """Reset colony to initial state"""
+        self.ants.clear()
+        self.food_stock = self.initial_food_stock
+        self.emergency_mode = False

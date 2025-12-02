@@ -42,7 +42,7 @@ class TestColonyExtended:
         assert len(colony.ants) == initial_ant_count + 1
 
     def test_request_ant_without_resources(self):
-        colony = Colony(initial_food_stock=5)
+        colony = Colony(initial_food_stock=5, food_per_ant=10)  # Not enough food
         initial_ant_count = len(colony.ants)
 
         ant = colony.request_ant(SubsystemType.COMMUNICATION.value)
@@ -175,17 +175,17 @@ class TestColonyExtended:
 
     def test_can_create_more_considers_food_and_capacity(self):
         # Test with sufficient food and capacity
-        colony1 = Colony(max_ants=10, initial_food_stock=100)
+        colony1 = Colony(max_ants=10, initial_food_stock=100, food_per_ant=10)
         status1 = colony1.get_comprehensive_status()
         assert status1['can_create_more'] is True
 
         # Test with insufficient food
-        colony2 = Colony(max_ants=10, initial_food_stock=5)  # Less than food_per_ant
+        colony2 = Colony(max_ants=10, initial_food_stock=5, food_per_ant=10)  # Less than food_per_ant
         status2 = colony2.get_comprehensive_status()
         assert status2['can_create_more'] is False
 
         # Test with insufficient capacity
-        colony3 = Colony(max_ants=1, initial_food_stock=100)
+        colony3 = Colony(max_ants=1, initial_food_stock=100, food_per_ant=10)
         colony3.create_ant()  # Fill capacity
         status3 = colony3.get_comprehensive_status()
         assert status3['can_create_more'] is False
@@ -354,7 +354,7 @@ class TestColonyEmergencyScenarios:
 
     def test_emergency_food_conservation(self):
         """Test that emergency mode might affect food consumption"""
-        colony = Colony(initial_food_stock=25)  # Limited food
+        colony = Colony(initial_food_stock=25, food_per_ant=10)  # Limited food
 
         colony.activate_emergency_mode()
 

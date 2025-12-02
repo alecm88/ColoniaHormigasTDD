@@ -21,7 +21,7 @@ class TestColony:
         assert colony.food_stock == (currentFood - colony.food_per_ant)
 
     def test_cannot_create_ant_without_food(self):
-        colony = Colony(max_ants=2, initial_food_stock=5)
+        colony = Colony(max_ants=2, initial_food_stock=5, food_per_ant=10)
         ant = colony.create_ant()
         assert ant is None
         assert len(colony.ants) == 0
@@ -84,7 +84,7 @@ class TestColony:
         assert len(free_ants) == 2
 
     def test_get_colony_status(self):
-        colony = Colony(max_ants=5, initial_food_stock=100)
+        colony = Colony(max_ants=5, initial_food_stock=100, food_per_ant=10)
         colony.create_ant()
         colony.create_ant()
         assignedAnt = colony.create_ant()
@@ -125,3 +125,13 @@ class TestColony:
         assert len(colony.ants) == 1
         assert ant.id in colony.ants
         assert ant2 is None
+
+    def test_colony_reset(self):
+        colony = Colony(max_ants=3, initial_food_stock=100)
+        colony.create_ant()
+        colony.create_ant()
+
+        colony.reset_colony()
+
+        assert len(colony.ants) == 0
+        assert colony.food_stock == 100

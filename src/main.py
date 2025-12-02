@@ -22,8 +22,7 @@ from src.models import (
 import requests, time
 
 # Global colony instance - configuración según requisitos académicos
-colony = Colony(max_ants=100, initial_food_stock=1000, ant_lifespan_minutes=1.5)
-
+colony = Colony(max_ants=100, initial_food_stock=20, ant_lifespan_minutes=1.5, food_per_ant=1)
 # Global service instance in charge of message queue
 globalService = Service(interval=5, run_for_minutes=0.1, colony=colony)
 
@@ -865,6 +864,7 @@ async def create_ant_directly():
 async def configure_colony(
     max_ants: int = Query(None, description="Capacidad máxima de hormigas", ge=1, examples=[100, 150, 200]),
     food_stock: int = Query(None, description="Stock actual de comida", ge=0, examples=[1000, 500, 2000]),
+    food_per_ant: int = Query(None, description="Comida consumida por hormiga", ge=1, examples=[1, 20, 30]),
     ant_lifespan_minutes: float = Query(None, description="Tiempo de vida en minutos", gt=0, examples=[1.5, 2.0, 3.0])
 ):
     config_changes = {}
@@ -886,6 +886,12 @@ async def configure_colony(
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="ant_lifespan_minutes must be positive")
         colony.ant_lifespan_minutes = ant_lifespan_minutes
         config_changes["ant_lifespan_minutes"] = ant_lifespan_minutes
+
+    if food_per_ant is not None:
+        if food_per_ant < 1:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="food_per_ant must be at least 1")
+        colony.food_per_ant = food_per_ant
+        config_changes["food_per_ant"] = food_per_ant
 
     return {
         "message": "Colony configuration updated",
