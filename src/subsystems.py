@@ -12,6 +12,7 @@ class SubsystemType(Enum):
 
 
 @dataclass
+## Definimos un subsistema con su prioridad
 class Subsystem:
     id: SubsystemType
     name: str
@@ -40,9 +41,11 @@ class Subsystem:
         known = cls.get_known_subsystems()
         return known.get(subsystem_id)
     
+    #Definimos como se debe ver el subsistema
     def __str__(self):
         return f"{self.name} (Priority: {self.priority_level})"
     
+    #Metodos de comparacion por prioridad
     def __eq__(self, other):
         return self.priority_level == other.priority_level
 

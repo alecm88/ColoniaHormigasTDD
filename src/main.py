@@ -35,6 +35,7 @@ tags_metadata = [
     {
         "name": "🐜 Gestión de Hormigas",
         "description": "**Endpoints principales para requisitos académicos:**\n\n"
+                      "- **Servicio**: Integracion con comunicacion para manejo de cola de mensajes\n"
                       "- **R1**: Dar Hormiga - Asignación a subsistemas\n"
                       "- **R2**: Devolver Hormiga - Retorno con estado\n"
                       "- **R3**: Emergencia - Reasignación por prioridades",
@@ -65,24 +66,24 @@ app = FastAPI(
 Este subsistema es responsable de la **gestión, asignación y control de hormigas**
 para otros subsistemas del ecosistema de la colonia:
 
-- **🛡️ Defense** (Prioridad 1) - Defensa de la colonia
-- **📡 Communication** (Prioridad 2) - Gestión de mensajes
-- **🌾 Collection** (Prioridad 3) - Recolección de recursos
+- **🛡️ Defensa** (Prioridad 1) - Defensa de la colonia
+- **🌾 Recolección** (Prioridad 3) - Recolección de recursos
 
 ### ✅ Requisitos Académicos Implementados
+- **Servicio**: Integracion con comunicacion para manejo de cola de mensajes
 - **R1 - Dar Hormiga**: Asignación con validación de prioridades y recursos
 - **R2 - Devolver Hormiga**: Retorno con estado (exitosa/muerta, con/sin comida)
 - **R3 - Emergencia**: Reasignación automática basada en jerarquía de prioridades
 
 ### 🧪 Metodología TDD + BDD
-- **68+ Tests Unitarios** con cobertura ≥ 80%
+- **130+ Tests Unitarios** con cobertura ≥ 90%
 - **6 Scenarios BDD** validando comportamientos de negocio
 - **Ciclo Red-Green-Refactor** aplicado consistentemente
 
 ### 🐜 Características de las Hormigas
 - **Tiempo de vida**: 1.5 minutos (configurable)
 - **Estados**: FREE → ASSIGNED → DEAD
-- **Recursos**: 10 unidades comida/hormiga, +20 por misión exitosa
+- **Recursos**: 1 unidad comida/hormiga (configurable)
 - **Capacidad**: Máximo 100 hormigas simultáneas (configurable)
 
 ### 🚀 Interfaces Disponibles
@@ -257,13 +258,6 @@ async def get_messages(subsystem_id: str):
     return data
 
 
-
-# @app.get("/", include_in_schema=False)
-# async def redirect_to_docs():
-#     """Redirige automáticamente a la documentación Swagger"""
-#     return RedirectResponse(url="/docs")
-
-
 @app.get(
     "/info",
     response_model=RootResponse,
@@ -302,10 +296,10 @@ async def get_system_info():
     **Funcionalidad principal** para asignar hormigas a subsistemas solicitantes.
 
     ### 🔍 Validaciones Implementadas:
-    - ✅ **Subsistema conocido**: Solo acepta Defense, Communication, Collection
+    - ✅ **Subsistema conocido**: Solo acepta Defense, Comunicacion, Recolección
     - ✅ **Recursos suficientes**: Verifica stock de comida y capacidad
     - ✅ **Vida restante**: La hormiga debe poder completar la tarea
-    - ✅ **Prioridades**: Respeta jerarquía Defense > Communication > Collection
+    - ✅ **Prioridades**: Respeta jerarquía Defense > Comunicacion > Recolección
 
     ### 🏗️ Comportamiento:
     1. Busca hormiga libre con vida suficiente
@@ -512,24 +506,6 @@ async def request_ant(request: AntRequest):
 
     **Vida útil de hormigas**: Por defecto, las hormigas viven 90 segundos (1.5 minutos).
 
-    ### 📐 Fórmula de Cálculo:
-    ```
-    estimated_duration_seconds + 10s_tiempo_espera ≤ 90s_vida_útil
-    ```
-
-    **Tiempo de espera fijo**: Cada hormiga requiere **10 segundos adicionales** de tiempo de espera.
-
-    ### ✅ Ejemplos válidos:
-    - `estimated_duration_seconds: 40` → 40s + 10s = 50s ≤ 90s ✅
-    - `estimated_duration_seconds: 70` → 70s + 10s = 80s ≤ 90s ✅
-    - `estimated_duration_seconds: 79` → 79s + 10s = 89s ≤ 90s ✅
-
-    ### ❌ Ejemplos inválidos:
-    - `estimated_duration_seconds: 80` → 80s + 10s = 90s ≥ 90s ❌ (margen muy estrecho)
-    - `estimated_duration_seconds: 85` → 85s + 10s = 95s > 90s ❌
-
-    **Recomendación**: Use máximo 79 segundos para tener margen de seguridad.
-
     Para tareas más largas, configure primero la colonia con `POST /colony/configure` aumentando `ant_lifespan_minutes`.
 
     ## 💡 Ejemplo de Uso
@@ -645,7 +621,7 @@ async def request_multiple_ants(request: MultipleAntsRequest):
 
     ### 🎯 Casos de Uso:
     - ✅ **Misión exitosa**: Hormiga regresa sana, posiblemente con comida
-    - ✅ **Misión exitosa con comida**: +20 unidades al stock de la colonia
+    - ✅ **Misión exitosa con comida**: Se agregan las unidades de comida al stock de la colonia
     - ❌ **Muerte en misión**: Hormiga marcada como muerta
     - 🔄 **Reasignación**: Hormiga libre queda disponible para nuevas misiones
 
@@ -703,21 +679,15 @@ async def return_ant(return_data: AntReturn):
     **Endpoint crítico** para manejo de crisis que requieren reasignación de hormigas basada en prioridades.
 
     ### 🎯 Jerarquía de Prioridades (Reasignación):
-    - **🛡️ Defense (1)** puede tomar hormigas de Communication y Collection
-    - **📡 Communication (2)** puede tomar hormigas de Collection
-    - **🌾 Collection (3)** no puede tomar hormigas de otros subsistemas
+    - **🛡️ Defense (1)** puede tomar hormigas de Comunicacion y Recolección
+    - **🌾 Recolección (3)** no puede tomar hormigas de otros subsistemas
 
     ### 🏗️ Algoritmo de Emergencia:
     1. **Paso 1**: Busca hormigas libres disponibles
     2. **Paso 2**: Si insuficientes, identifica hormigas reasignables:
        - Solo de subsistemas con menor prioridad
-       - Que hayan esperado al menos `max_wait_seconds`
     3. **Paso 3**: Reasigna hormigas al subsistema solicitante
     4. **Paso 4**: Activa modo emergencia en la colonia
-
-    ### ⏰ Tiempo de Gracia:
-    - Mínimo **10 segundos** de espera antes de reasignar
-    - Configurable con parámetro `max_wait_seconds`
 
     ### 📊 Respuesta:
     Retorna lista de hormigas asignadas con metadatos de reasignación
@@ -804,7 +774,7 @@ async def service(
 
     ### 🏗️ Comportamiento:
     - Crea una hormiga en estado FREE
-    - Consume 10 unidades de comida del stock
+    - Consume 1 unidades de comida del stock (variable de la colonia)
     - Valida recursos y capacidad disponible
     - Útil para testing de otros endpoints
 
@@ -844,11 +814,13 @@ async def create_ant_directly():
     ### 🔧 Parámetros Configurables:
     - **`max_ants`**: Capacidad máxima de hormigas simultáneas
     - **`food_stock`**: Stock actual de comida disponible
+    - **`food_per_ant`**: Comida consumida por hormiga
     - **`ant_lifespan_minutes`**: Tiempo de vida de nuevas hormigas
 
     ### 📊 Validaciones:
     - `max_ants` ≥ 1
     - `food_stock` ≥ 0
+    - `food_per_ant` ≥ 1
     - `ant_lifespan_minutes` > 0
 
     ### 🎯 Casos de Uso:
