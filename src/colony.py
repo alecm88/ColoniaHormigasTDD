@@ -5,6 +5,7 @@ from src.subsystems import SubsystemType, Subsystem
 
 
 class Colony:
+    # Parametros iniciales de la colonia segun el enunciado
     def __init__(self, max_ants: int = 100, initial_food_stock: int = 20,
                  ant_lifespan_minutes: float = 1.5, food_per_ant: int = 1):
         self.max_ants = max_ants
@@ -14,8 +15,9 @@ class Colony:
         self.food_per_ant = food_per_ant  # Food units required to create an ant
         self.emergency_mode = False
         self.subsystems = Subsystem.get_known_subsystems()
-        self.initial_food_stock = initial_food_stock
+        self.initial_food_stock = initial_food_stock # Se guarda el stock inicial de comida en caso de resetear colonia
 
+    # Crear una nueva hormiga si hay capacidad y comida
     def create_ant(self) -> Optional[Ant]: 
         self.cleanup_dead_ants()
 
@@ -34,12 +36,10 @@ class Colony:
         self.food_stock -= self.food_per_ant
         return ant
 
-    # def create_ant(self, force_creation: bool = False) -> Optional[Ant]:
-    #     """Create an ant if resources and capacity allow"""
-    #     # First update all ant states and cleanup dead ants
-    #     self.update_all_ant_states()
-    #     return ant
-
+    # Solicitar una hormiga para asignacion a un subsistema
+    # Validamos si hay hormigas disponibles o creamos una nueva si es posible
+    # El subsistema debe ser valido
+    # Se retorna la mejor hormiga disponible o None
     def request_ant(self, subsystem_name: str, priority: int = 1,
                    estimated_duration_seconds: float = 60) -> Optional[Ant]:
         """Request an ant for assignment to a subsystem"""
@@ -207,6 +207,10 @@ class Colony:
 
         return result
 
+    # Retornar una hormiga de una asignación
+    # Si tiene comida se agrega a la colonia
+    # Si muere en la mision se marca como muerta
+    # El servicio de mensajes maneja la comida se maneja por aparte porque las hormigas vuelven en grupo
     def return_ant(self, ant_id: str, returned_with_food: int = 0,
                   died_in_mission: bool = False) -> bool:
         """Return an ant from assignment"""
@@ -221,14 +225,18 @@ class Colony:
 
         return True
 
+    # Activar modo de emergencia
     def activate_emergency_mode(self) -> None:
         self.emergency_mode = True
         return
     
+    # Desactivar modo de emergencia
     def deactivate_emergency_mode(self) -> None:
         self.emergency_mode = False
         return
 
+    # Solicitar hormigas en modo de emergencia
+    # Este metodo quedó en desarrollo, falta implementarlo a nivel de servicio de mensajes
     def request_emergency_ants(self, requesting_subsystem: str,
                              number_needed: int) -> List[Ant]:
         
@@ -288,7 +296,7 @@ class Colony:
 
         return reassignable
 
-
+    # Limpiar hormigas muertas de la colonia
     def cleanup_dead_ants(self) -> int:
         """Remove dead ants from the colony"""
         dead_ant_ids = [ant_id for ant_id, ant in self.ants.items() if not ant.is_alive]
@@ -296,6 +304,7 @@ class Colony:
             del self.ants[ant_id]
         return len(dead_ant_ids)
 
+    # Metodos para obtener listas de hormigas segun su estado
     def get_alive_ants(self) -> List[Ant]:
         """Get all living ants"""
         return [ant for ant in self.ants.values() if ant.is_alive]
@@ -315,18 +324,12 @@ class Colony:
             return ant
         return None
 
+    # Agregar comida a la colonia
     def add_food(self, amount: int):
         """Add food to the colony stock"""
         self.food_stock += amount
 
-    def activate_emergency_mode(self):
-        """Activate emergency mode for the colony"""
-        self.emergency_mode = True
-
-    def deactivate_emergency_mode(self):
-        """Deactivate emergency mode for the colony"""
-        self.emergency_mode = False
-
+    # Obtener estado completo de la colonia
     def get_comprehensive_status(self) -> Dict[str, Any]:
         """Get detailed colony status"""
         # self.update_all_ant_states()
@@ -370,6 +373,7 @@ class Colony:
             'food_stock': self.food_stock,
         }
     
+    # Resetear colonia al estado inicial
     def reset_colony(self):
         """Reset colony to initial state"""
         self.ants.clear()

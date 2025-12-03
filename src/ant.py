@@ -12,6 +12,7 @@ class AntState(Enum):
 
 
 class Ant:
+    #Parametros iniciales de la hormiga
     def __init__(self, lifespan_minutes: float = 1.5):
         self.id = str(uuid.uuid4())
         self.birth_time = datetime.now()
@@ -45,6 +46,8 @@ class Ant:
     def is_available_for_assignment(self) -> bool:
         return self.is_alive and self.state == AntState.FREE
 
+    #Asignar hormiga a un subsistema
+    #Las validaciones se hacen en la colonia
     def assign_to_subsystem(self, subsystem: SubsystemType, emergency: bool = False) -> bool:
         """Assign ant to a subsystem if available"""
         if not self.is_available_for_assignment and not emergency:
@@ -55,6 +58,8 @@ class Ant:
         self.assignment_time = datetime.now()
         return True
 
+    # Retornar hormiga de una asignación
+    # Se puede marcar como muerta o regresar libre
     def return_from_assignment(self, died_in_mission: bool = False, returned_with_food: int = 0):
         """Return ant from assignment, potentially with food or as dead"""
         if died_in_mission:
@@ -66,7 +71,7 @@ class Ant:
         self.assignment_time = None
         return returned_with_food
 
-
+    #Imprimimos la hormiga en formato diccionario para respuestas API
     def to_dict(self) -> Dict[str, Any]:
         return {
             'id': self.id,
