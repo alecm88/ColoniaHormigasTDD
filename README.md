@@ -69,11 +69,12 @@ ColoniaHormigasTDD/
 #### Iniciar servicio de revisión de mensajes (Requiere servicio de comunicación)
 ```http
 POST /service?interval=5&run_for_minutes=5&activate=true
+```
 
 #### Detener servicio de revisión de mensajes (Requiere servicio de comunicación)
 ```http
 POST /service?activate=false
-
+```
 
 #### R1: Dar Hormiga
 ```http
