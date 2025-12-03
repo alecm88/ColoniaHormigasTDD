@@ -69,6 +69,16 @@ class TestColony:
         assert len(alive_ants) == 1
         assert alive_ants[0].id == ant3.id
 
+    def test_assign_ant(self):
+        colony = Colony(max_ants=3)
+        ant1 = colony.create_ant()
+
+        # Send ant on a mission
+        colony.ants[ant1.id].assign_to_subsystem('Test')
+
+        assert ant1.assigned_to == 'Test'
+        assert ant1.state.value == 'assigned'
+
     def test_get_assigned_and_free_ants(self):
         colony = Colony(max_ants=3)
         ant1 = colony.create_ant()

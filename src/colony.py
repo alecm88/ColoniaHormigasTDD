@@ -43,8 +43,6 @@ class Colony:
     def request_ant(self, subsystem_name: str, priority: int = 1,
                    estimated_duration_seconds: float = 60) -> Optional[Ant]:
         """Request an ant for assignment to a subsystem"""
-        # Update states first
-        # self.update_all_ant_states()
 
         # Validate subsystem
         subsystem = Subsystem.get_by_name(subsystem_name)

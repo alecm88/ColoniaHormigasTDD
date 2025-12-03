@@ -13,7 +13,7 @@ def client():
 class TestIntegrationAPI:
     def test_request_ant_for_valid_subsystem_comm(self, client):
         request_data = {
-            "subsystem_name": "S05_DEF",
+            "subsystem_name": SubsystemType.DEFENSE.value,
             "priority": 1,
             "estimated_duration_seconds": 30
         }
@@ -23,12 +23,12 @@ class TestIntegrationAPI:
         data = response.json()
         assert "timestamp" in data
         assert "id" in data
-        assert "S05_DEF" in data["receptor"]
-        assert "S03_REI" in data["emisor"]
+        assert SubsystemType.DEFENSE.value in data["receptor"]
+        assert SubsystemType.QUEEN.value in data["emisor"]
         assert "mensaje" in data
         assert data["mensaje"]["assignment_successful"] is True
         assert data["mensaje"]["ant"]["state"] == "assigned"
-        assert data["mensaje"]["ant"]["assigned_to"] == "S05_DEF"
+        assert data["mensaje"]["ant"]["assigned_to"] == SubsystemType.DEFENSE.value
 
     def test_get_ant_for_valid_subsystem_comm(self, client):
         #Assign the ant first
