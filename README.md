@@ -23,9 +23,10 @@ Este proyecto implementa el **Subsistema de Hormiga Reina** como parte de un sis
 
 - **Ciclo de Vida**: Hormigas con tiempo de vida configurable (default: 1.5 minutos)
 - **Estados**: FREE → ASSIGNED → DEAD/FREE
-- **Recursos**: Stock de comida (10 unidades/hormiga, +20 por misión exitosa)
+- **Recursos**: Stock de comida configurable (default: 1 unidad/hormiga) 
 - **Capacidad**: Máximo configurable de hormigas simultáneas (default: 100)
-- **Testing**: Comprehensive TDD + BDD coverage (68+ tests, 6 scenarios)
+- **Tiempo de vida**: Tiempo de vida configurable por hormiga (default: 1.5min)
+- **Testing**: Comprehensive TDD + BDD coverage (140+ tests, 6 scenarios)
 
 ## Estructura del Proyecto
 
@@ -35,7 +36,9 @@ ColoniaHormigasTDD/
 │   ├── __init__.py
 │   ├── ant.py              # Modelo de hormiga con estados y ciclo de vida
 │   ├── colony.py           # Gestión de colonia con asignaciones y emergencias
+│   ├── service.py          # Servicio de manejo de mensajes (Integracion con Comunicacion)
 │   ├── subsystems.py       # Definición de subsistemas externos
+│   ├── models.py           # Definición de modelos Pydantic para el API
 │   └── main.py             # API FastAPI del Subsistema Hormiga Reina
 ├── tests/
 │   ├── __init__.py
@@ -45,6 +48,7 @@ ColoniaHormigasTDD/
 │   ├── test_colony_extended.py # Tests unitarios gestión avanzada
 │   ├── test_subsystems.py      # Tests unitarios subsistemas
 │   ├── test_api.py             # Tests integración API base
+│   ├── test_api_integration.py # Tests integración API comunicación
 │   └── test_api_extended.py    # Tests integración API completa
 ├── features/
 │   ├── ant_colony.feature      # Especificaciones BDD - Escenarios académicos
@@ -62,13 +66,22 @@ ColoniaHormigasTDD/
 
 ### 🐜 Endpoints Principales (Requisitos Académicos)
 
+#### Iniciar servicio de revisión de mensajes (Requiere servicio de comunicación)
+```http
+POST /service?interval=5&run_for_minutes=5&activate=true
+
+#### Detener servicio de revisión de mensajes (Requiere servicio de comunicación)
+```http
+POST /service?activate=false
+
+
 #### R1: Dar Hormiga
 ```http
 POST /ants/request
 Content-Type: application/json
 
 {
-  "subsystem_name": "Defense",
+  "subsystem_name": "S05_DEF",
   "priority": 1,
   "estimated_duration_seconds": 60
 }
@@ -92,7 +105,7 @@ POST /ants/emergency
 Content-Type: application/json
 
 {
-  "requesting_subsystem": "Defense",
+  "requesting_subsystem": "S05_DEF",
   "number_needed": 5,
   "max_wait_seconds": 30
 }
@@ -137,10 +150,10 @@ La documentación incluye:
 **Valores de subsistemas (case-sensitive):**
 ```json
 {
-  "subsystem_name": "defense"      // ✅ Correcto
-  "subsystem_name": "Defense"      // ❌ Error 422
-  "subsystem_name": "communication" // ✅ Correcto
-  "subsystem_name": "collection"    // ✅ Correcto
+  "subsystem_name": "S05_DEF"      // ✅ Correcto
+  "subsystem_name": "Test"      // ❌ Error 422
+  "subsystem_name": "S01_COM" // ✅ Correcto
+  "subsystem_name": "S02_REC"    // ✅ Correcto
 }
 ```
 
@@ -166,13 +179,18 @@ La documentación incluye:
    ```bash
    pytest tests/ -v
    ```
+   
+3. **Run coverage tests:**
+   ```bash
+   pytest --cov=. tests/
+   ```
 
-3. **Run BDD tests:**
+4. **Run BDD tests:**
    ```bash
    behave features/
    ```
 
-4. **Start the development server:**
+5. **Start the development server:**
    ```bash
    uvicorn src.main:app --reload --host 0.0.0.0 --port 8000
    ```
