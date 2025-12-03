@@ -25,7 +25,7 @@ Este proyecto implementa el **Subsistema de Hormiga Reina** como parte de un sis
 - **Estados**: FREE → ASSIGNED → DEAD/FREE
 - **Recursos**: Stock de comida (10 unidades/hormiga, +20 por misión exitosa)
 - **Capacidad**: Máximo configurable de hormigas simultáneas (default: 100)
-- **Testing**: Comprehensive TDD + BDD coverage (68+ tests, 12 scenarios)
+- **Testing**: Comprehensive TDD + BDD coverage (68+ tests, 6 scenarios)
 
 ## Estructura del Proyecto
 
@@ -342,7 +342,7 @@ pytest tests/test_api_extended.py -v        # API del Subsistema Hormiga Reina
 - **Gestión de Colonia**: Asignaciones, emergencias, reasignación, stock de comida
 - **APIs**: Endpoints académicos, validaciones, manejo de errores, integración
 
-### 🎭 Tests BDD (Comportamiento) - 12 Scenarios
+### 🎭 Tests BDD (Comportamiento) - 6 Scenarios
 ```bash
 # Ejecutar escenarios BDD
 behave features/
@@ -351,16 +351,10 @@ behave features/
 **Escenarios Académicos Implementados:**
 1. **Asignación exitosa** a subsistemas conocidos con validación de recursos
 2. **Rechazo de subsistemas desconocidos** con mensajes de error apropiados
-3. **Gestión de recursos insuficientes** (comida/capacidad)
-4. **Retorno de hormigas** exitoso con incremento de comida
+3. **Gestión de recursos insuficientes** (comida insuficiente)
+4. **Retorno de hormigas exitoso** con incremento de comida
 5. **Muerte en misión** y marcado apropiado de estado
-6. **Solicitudes de emergencia** con reasignación automática
-7. **Priorización jerárquica** durante crisis (Defense > Communication > Collection)
-8. **Reportes comprehensive** de estado del hormiguero
-9. **Gestión de tiempo de vida** y muerte automática
-10. **Validación de duración de tareas** vs vida restante
-11. **Gestión de stock de comida** con creación/retorno
-12. **Limpieza automática** de hormigas muertas
+6. **Solicitudes de emergencia** con asignación automática de hormigas disponibles
 
 ### 📊 Cobertura y Calidad
 

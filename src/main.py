@@ -76,7 +76,7 @@ para otros subsistemas del ecosistema de la colonia:
 
 ### 🧪 Metodología TDD + BDD
 - **68+ Tests Unitarios** con cobertura ≥ 80%
-- **12 Scenarios BDD** validando comportamientos de negocio
+- **6 Scenarios BDD** validando comportamientos de negocio
 - **Ciclo Red-Green-Refactor** aplicado consistentemente
 
 ### 🐜 Características de las Hormigas
