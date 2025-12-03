@@ -9,13 +9,14 @@ class AntStateEnum(str, Enum):
     FREE = "free"
     ASSIGNED = "assigned"
     DEAD = "dead"
-
-
+    
 class SubsystemEnum(str, Enum):
     """Subsistemas disponibles en la colonia"""
-    COMMUNICATION = "communication"
-    COLLECTION = "collection"
-    DEFENSE = "defense"
+    COMMUNICATION = "S01_COM"
+    COLLECTION = "S02_REC"
+    QUEEN = "S03_REI"
+    HABITAT = "S04_ENT" #Environment could be reserved keyword
+    DEFENSE = "S05_DEF"
 
 
 # === REQUEST MODELS ===
@@ -43,7 +44,7 @@ class AntRequest(BaseModel):
         description="Duración estimada de la tarea en segundos"
     )
 
-    class Config:
+    class ConfigDict:
         json_schema_extra = {
             "example": {
                 "subsystem_name": "Defense",
@@ -72,7 +73,7 @@ class AntReturn(BaseModel):
         description="Si la hormiga murió durante la misión"
     )
 
-    class Config:
+    class ConfigDict:
         json_schema_extra = {
             "example": {
                 "ant_id": "550e8400-e29b-41d4-a716-446655440000",
@@ -110,7 +111,7 @@ class MultipleAntsRequest(BaseModel):
         description="Duración estimada de la tarea en segundos. NOTA: Se añaden 10s de tiempo de espera automáticamente. Máximo recomendado: 79s (79+10=89 ≤ 90s vida útil)"
     )
 
-    class Config:
+    class ConfigDict:
         json_schema_extra = {
             "example": {
                 "subsystem_name": "Defense",
@@ -136,18 +137,12 @@ class EmergencyRequest(BaseModel):
         gt=0,
         description="Número de hormigas necesarias"
     )
-    max_wait_seconds: float = Field(
-        default=30,
-        gt=0,
-        description="Tiempo máximo a esperar antes de reasignar hormigas"
-    )
 
-    class Config:
+    class ConfigDict:
         json_schema_extra = {
             "example": {
-                "requesting_subsystem": "Defense",
-                "number_needed": 3,
-                "max_wait_seconds": 30
+                "requesting_subsystem": "S05_DEF",
+                "number_needed": 3
             }
         }
 
@@ -165,9 +160,8 @@ class AntResponse(BaseModel):
     state: AntStateEnum = Field(description="Estado actual de la hormiga")
     assigned_to: Optional[SubsystemEnum] = Field(description="Subsistema asignado (si aplica)")
     assignment_time: Optional[str] = Field(description="Tiempo de asignación (ISO format)")
-    wait_time_seconds: int = Field(description="Tiempo de espera estándar en segundos")
 
-    class Config:
+    class ConfigDict:
         json_schema_extra = {
             "example": {
                 "id": "550e8400-e29b-41d4-a716-446655440000",
@@ -178,30 +172,135 @@ class AntResponse(BaseModel):
                 "remaining_life_seconds": 74.5,
                 "state": "assigned",
                 "assigned_to": "defense",
-                "assignment_time": "2024-01-15T10:30:15.500000",
-                "wait_time_seconds": 10
+                "assignment_time": "2024-01-15T10:30:15.500000"
             }
         }
 
+class MessageResponse(BaseModel):
+    """Formato de mensajes de Comunicacion"""
+    id: str = Field(description="id de parte de comunicacion")
+    timestamp: str = Field(description="fecha y hora recibida")
+    emisor: str = Field(description="Subsistema emisor (S03_REI)")
+    receptor: str = Field(description="Subsistema receptor")
+    mensaje: dict = Field(description="Contenido del mensaje")
 
-class AntAssignmentResponse(BaseModel):
-    """Respuesta para asignación exitosa de hormiga"""
+    class ConfigDict:
+        json_schema_extra = {
+            "example": {
+                "id":"f71860a5-a0ea-40c8-ab6e-ec0b94209139",
+                "emisor": "S03_REI",
+                "receptor": "S05_DEF",
+                "timestamp":"2025-11-22T20:44:10.039359218Z",
+                "mensaje": {
+                    "message": "Ant assigned to Defense",
+                    "assignment_successful": True,
+                    "ant": {
+                        "id": "550e8400-e29b-41d4-a716-446655440000",
+                        "state": "assigned",
+                        "assigned_to": "defense"
+                    }
+                }
+            }
+        }
+
+class ServiceStatus(BaseModel):
+    """Formato de estado del servicio"""
+    interval: int = Field(description="Intervalo de tiempo en segundos")
+    run_for_minutes: float = Field(description="Tiempo en minutos configurado para correr el servicio")
+    end_time: str = Field(description="fecha y hora de finalización (ISO format)")
+    messages_pending: int = Field(description="Numero de mensajes pendientes de procesar")
+    calls: int = Field(description="Numero de llamadas realizadas")
+    is_running: bool = Field(description="Indica si el servicio está en ejecución")
+
+    class ConfigDict:
+        json_schema_extra = {
+            "example": {
+                "interval": 5,
+                "run_for_minutes": 0.1,
+                "end_time": "2025-11-22T20:44:10.039359218Z",
+                "messages_pending": "[]",
+                "calls": 10,
+                "is_running": True
+            }
+        }
+
+# class CommunicationResponse(BaseModel):
+#     """Respuesta de comunicacion al recibir mensajes"""
+#     mensajes: Dict[int, MessageResponse] = Field(description="Lista de mensajes")
+
+#     class ConfigDict:
+#         json_schema_extra = {
+#             "example": [
+#                 {
+#                     "id":"f71860a5-a0ea-40c8-ab6e-ec0b94209139",
+#                     "emisor": "S03_REI",
+#                     "receptor": "S05_DEF",
+#                     "timestamp":"2025-11-22T20:44:10.039359218Z",
+#                     "mensaje": {
+#                         "message": "Ant assigned to Defense",
+#                         "assignment_successful": True,
+#                         "ant": {
+#                             "id": "550e8400-e29b-41d4-a716-446655440000",
+#                             "state": "assigned",
+#                             "assigned_to": "defense"
+#                         }
+#                     }
+#                 }
+#             ]
+#         }
+
+class ContenidoResponse(BaseModel):
     message: str = Field(description="Mensaje de confirmación")
     assignment_successful: bool = Field(description="Si la asignación fue exitosa")
     ant: AntResponse = Field(description="Información de la hormiga asignada")
 
-    class Config:
+class AntAssignmentResponse(BaseModel):
+    """Respuesta para asignación exitosa de hormiga"""
+    id: str = Field(description="id de parte de comunicacion")
+    timestamp: str = Field(description="fecha y hora recibida")
+    emisor: str = Field(description="Subsistema emisor (S03_REI)")
+    receptor: str = Field(description="Subsistema receptor")
+    mensaje: ContenidoResponse = Field(description="Información de la hormiga asignada")
+
+    class ConfigDict:
         json_schema_extra = {
             "example": {
-                "message": "Ant assigned to Defense",
-                "assignment_successful": True,
-                "ant": {
-                    "id": "550e8400-e29b-41d4-a716-446655440000",
-                    "state": "assigned",
-                    "assigned_to": "defense"
+                "id":"f71860a5-a0ea-40c8-ab6e-ec0b94209139",
+                "emisor": "S03_REI",
+                "receptor": "S05_DEF",
+                "timestamp":"2025-11-22T20:44:10.039359218Z",
+                "mensaje": {
+                    "message": "Ant assigned to Defense",
+                    "assignment_successful": True,
+                    "ant": {
+                        "id": "550e8400-e29b-41d4-a716-446655440000",
+                        "state": "assigned",
+                        "assigned_to": "defense"
+                    }
                 }
             }
         }
+
+
+# Esta clase utilizaba los sistema antiguos.
+# class AntAssignmentResponse(BaseModel):
+#     """Respuesta para asignación exitosa de hormiga"""
+#     message: str = Field(description="Mensaje de confirmación")
+#     assignment_successful: bool = Field(description="Si la asignación fue exitosa")
+#     ant: AntResponse = Field(description="Información de la hormiga asignada")
+
+#     class ConfigDict:
+#         json_schema_extra = {
+#             "example": {
+#                 "message": "Ant assigned to Defense",
+#                 "assignment_successful": True,
+#                 "ant": {
+#                     "id": "550e8400-e29b-41d4-a716-446655440000",
+#                     "state": "assigned",
+#                     "assigned_to": "defense"
+#                 }
+#             }
+#         }
 
 
 class AntReturnResponse(BaseModel):
@@ -210,7 +309,7 @@ class AntReturnResponse(BaseModel):
     food_gained: bool = Field(description="Si se ganó comida de la misión")
     ant_died: bool = Field(description="Si la hormiga murió")
 
-    class Config:
+    class ConfigDict:
         json_schema_extra = {
             "example": {
                 "message": "Ant 550e8400-e29b-41d4-a716-446655440000 returned with food",
@@ -231,7 +330,7 @@ class MultipleAntsResponse(BaseModel):
     can_create: int = Field(description="Número de hormigas que se podían crear")
     requested: int = Field(description="Número de hormigas solicitadas")
 
-    class Config:
+    class ConfigDict:
         json_schema_extra = {
             "example": {
                 "success": True,
@@ -257,10 +356,11 @@ class ColonyStatus(BaseModel):
     """Estado básico de la colonia (compatibilidad)"""
     total_ants: int = Field(description="Total de hormigas en la colonia")
     alive_ants: int = Field(description="Hormigas vivas")
+    free_ants: int = Field(description="Hormigas libres (no asignadas)")
+    assigned_ants: int = Field(description="Hormigas asignadas")
     dead_ants: int = Field(description="Hormigas muertas")
     max_ants: int = Field(description="Capacidad máxima de hormigas")
-    can_create_more: bool = Field(description="Si se pueden crear más hormigas")
-
+    food_stock: int = Field(description="Stock actual de comida")
 
 class ComprehensiveColonyStatus(BaseModel):
     """Estado detallado de la colonia"""
@@ -276,7 +376,7 @@ class ComprehensiveColonyStatus(BaseModel):
     ants_by_subsystem: Dict[str, int] = Field(description="Distribución de hormigas por subsistema")
     ant_lifespan_minutes: float = Field(description="Tiempo de vida de hormigas en minutos")
 
-    class Config:
+    class ConfigDict:
         json_schema_extra = {
             "example": {
                 "total_ants": 15,
@@ -317,6 +417,12 @@ class ConfigurationResponse(BaseModel):
     changes: Dict[str, Any] = Field(description="Cambios aplicados")
     current_status: ComprehensiveColonyStatus = Field(description="Estado actual después de cambios")
 
+class ServiceResponse(BaseModel):
+    """Respuesta para cambios de servicio"""
+    message: str = Field(description="Mensaje de confirmación")
+    changes: Dict[str, Any] = Field(description="Cambios aplicados")
+    current_status: ServiceStatus = Field(description="Estado servicio")
+
 
 class FoodResponse(BaseModel):
     """Respuesta para operaciones de comida"""
@@ -334,7 +440,7 @@ class ErrorResponse(BaseModel):
     """Modelo estándar para respuestas de error"""
     detail: str = Field(description="Descripción del error")
 
-    class Config:
+    class ConfigDict:
         json_schema_extra = {
             "example": {
                 "detail": "Unknown subsystem: InvalidSystem. Valid options: communication, collection, defense"
@@ -349,7 +455,7 @@ class RootResponse(BaseModel):
     subsystem: str = Field(description="Nombre del subsistema")
     available_subsystems: List[str] = Field(description="Subsistemas disponibles")
 
-    class Config:
+    class ConfigDict:
         json_schema_extra = {
             "example": {
                 "message": "Queen Ant Subsystem - Ant Colony Management System",

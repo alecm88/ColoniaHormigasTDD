@@ -6,37 +6,20 @@ from src.subsystems import SubsystemType
 
 
 class TestColonyExtended:
-    def test_colony_creation_with_academic_requirements(self):
-        colony = Colony(max_ants=100, initial_food_stock=1000, ant_lifespan_minutes=1.5)
+    def test_colony_creation_with_requirements(self):
+        colony = Colony(max_ants=100, initial_food_stock=1000, ant_lifespan_minutes=1.5, food_per_ant=5)
 
         assert colony.max_ants == 100
         assert colony.food_stock == 1000
         assert colony.ant_lifespan_minutes == 1.5
-        assert colony.food_per_ant == 10
+        assert colony.food_per_ant == 5
         assert colony.emergency_mode is False
-        assert len(colony.subsystems) == 3
-
-    def test_create_ant_consumes_food(self):
-        colony = Colony(initial_food_stock=100)
-        initial_food = colony.food_stock
-
-        ant = colony.create_ant()
-
-        assert ant is not None
-        assert colony.food_stock == initial_food - colony.food_per_ant
-
-    def test_cannot_create_ant_without_sufficient_food(self):
-        colony = Colony(initial_food_stock=5)  # Less than food_per_ant (10)
-
-        ant = colony.create_ant()
-
-        assert ant is None
-        assert colony.food_stock == 5  # Unchanged
 
     def test_request_ant_for_known_subsystem(self):
         colony = Colony()
+        ant1 = colony.create_ant()
 
-        ant = colony.request_ant("Defense", priority=1, estimated_duration_seconds=30)
+        ant = colony.request_ant("S05_DEF", priority=1, estimated_duration_seconds=30)
 
         assert ant is not None
         assert ant.state == AntState.ASSIGNED
@@ -53,44 +36,26 @@ class TestColonyExtended:
         colony = Colony()
         initial_ant_count = len(colony.ants)
 
-        ant = colony.request_ant("Communication")
+        ant = colony.request_ant(SubsystemType.COMMUNICATION.value)
 
         assert ant is not None
         assert len(colony.ants) == initial_ant_count + 1
 
-    def test_request_ant_uses_existing_ant_with_most_remaining_life(self):
-        colony = Colony()
+    def test_request_ant_without_resources(self):
+        colony = Colony(initial_food_stock=5, food_per_ant=10)  # Not enough food
+        initial_ant_count = len(colony.ants)
 
-        # Create two ants with different ages
-        ant1 = colony.create_ant()
-        import time
-        time.sleep(0.1)  # Make ant1 slightly older
-        ant2 = colony.create_ant()
+        ant = colony.request_ant(SubsystemType.COMMUNICATION.value)
 
-        # Request ant - should get the newer one (ant2) with more remaining life
-        assigned_ant = colony.request_ant("Defense")
-
-        assert assigned_ant.id == ant2.id
-
-    def test_request_ant_fails_when_insufficient_remaining_life(self):
-        colony = Colony(ant_lifespan_minutes=0.02)  # Very short lifespan
-        ant = colony.create_ant()
-
-        # Wait for ant to have very little life left
-        import time
-        time.sleep(1)
-
-        # Request ant for long task - should fail
-        assigned_ant = colony.request_ant("Defense", estimated_duration_seconds=30)
-
-        assert assigned_ant is None
+        assert ant is None
+        assert len(colony.ants) == initial_ant_count
 
     def test_return_ant_successful_with_food(self):
         colony = Colony()
-        ant = colony.request_ant("Collection")
+        ant = colony.request_ant(SubsystemType.COLLECTION.value)
         initial_food = colony.food_stock
 
-        success = colony.return_ant(ant.id, returned_with_food=True)
+        success = colony.return_ant(ant.id, returned_with_food=20)
 
         assert success is True
         assert ant.state == AntState.FREE
@@ -98,7 +63,7 @@ class TestColonyExtended:
 
     def test_return_ant_died_in_mission(self):
         colony = Colony()
-        ant = colony.request_ant("Defense")
+        ant = colony.request_ant(SubsystemType.DEFENSE.value)
 
         success = colony.return_ant(ant.id, died_in_mission=True)
 
@@ -107,9 +72,7 @@ class TestColonyExtended:
 
     def test_return_ant_nonexistent_ant_fails(self):
         colony = Colony()
-
         success = colony.return_ant("nonexistent-id")
-
         assert success is False
 
     def test_request_emergency_ants_gets_available_ants_first(self):
@@ -118,7 +81,7 @@ class TestColonyExtended:
         colony.create_ant()
         colony.create_ant()
 
-        emergency_ants = colony.request_emergency_ants("Defense", number_needed=2)
+        emergency_ants = colony.request_emergency_ants("S05_DEF", number_needed=2)
 
         assert len(emergency_ants) == 2
         assert all(ant.assigned_to == SubsystemType.DEFENSE for ant in emergency_ants)
@@ -126,14 +89,15 @@ class TestColonyExtended:
 
     def test_request_emergency_ants_reassigns_from_lower_priority(self):
         colony = Colony()
+        colony.max_ants = 1
 
         # Assign ant to Collection (lowest priority)
-        collection_ant = colony.request_ant("Collection")
-        # Make the assignment old enough to be reassignable
+        collection_ant = colony.request_ant("S02_REC")
+        # Make the assignment older
         collection_ant.assignment_time = datetime.now() - timedelta(seconds=15)
 
         # Request emergency ant for Defense (highest priority)
-        emergency_ants = colony.request_emergency_ants("Defense", number_needed=1)
+        emergency_ants = colony.request_emergency_ants("S05_DEF", number_needed=1)
 
         assert len(emergency_ants) == 1
         assert emergency_ants[0].id == collection_ant.id
@@ -143,16 +107,15 @@ class TestColonyExtended:
         colony = Colony()
 
         # Assign ants to different subsystems
-        defense_ant = colony.request_ant("Defense")  # Priority 1
-        comm_ant = colony.request_ant("Communication")  # Priority 2
-        collection_ant = colony.request_ant("Collection")  # Priority 3
+        defense_ant = colony.request_ant("S05_DEF")  # Priority 1
+        collection_ant = colony.request_ant("S02_REC")  # Priority 3
 
         # Make assignments old enough
-        for ant in [defense_ant, comm_ant, collection_ant]:
+        for ant in [defense_ant, collection_ant]:
             ant.assignment_time = datetime.now() - timedelta(seconds=15)
 
         # Communication requests emergency ant - should only take from Collection
-        emergency_ants = colony.request_emergency_ants("Communication", number_needed=1)
+        emergency_ants = colony.request_emergency_ants("S05_DEF", number_needed=1)
 
         # Should get the Collection ant, not Defense ant
         assert len(emergency_ants) == 1
@@ -160,23 +123,22 @@ class TestColonyExtended:
 
     def test_get_free_ants(self):
         colony = Colony()
+        colony.create_ant()
+        assigned_ant = colony.request_ant(SubsystemType.DEFENSE.value)
         free_ant1 = colony.create_ant()
-        assigned_ant = colony.request_ant("Defense")
-        free_ant2 = colony.create_ant()
 
         free_ants = colony.get_free_ants()
 
-        assert len(free_ants) == 2
+        assert len(free_ants) == 1
         free_ant_ids = [ant.id for ant in free_ants]
         assert free_ant1.id in free_ant_ids
-        assert free_ant2.id in free_ant_ids
         assert assigned_ant.id not in free_ant_ids
 
     def test_get_assigned_ants(self):
         colony = Colony()
+        assigned_ant1 = colony.request_ant(SubsystemType.DEFENSE.value)
+        assigned_ant2 = colony.request_ant(SubsystemType.COLLECTION.value)
         free_ant = colony.create_ant()
-        assigned_ant1 = colony.request_ant("Defense")
-        assigned_ant2 = colony.request_ant("Communication")
 
         assigned_ants = colony.get_assigned_ants()
 
@@ -186,18 +148,12 @@ class TestColonyExtended:
         assert assigned_ant2.id in assigned_ant_ids
         assert free_ant.id not in assigned_ant_ids
 
-    def test_add_food(self):
-        colony = Colony(initial_food_stock=100)
-
-        colony.add_food(50)
-
-        assert colony.food_stock == 150
 
     def test_comprehensive_status_includes_all_information(self):
         colony = Colony()
+        colony.request_ant(SubsystemType.DEFENSE.value)  # Assigned ant
+        colony.request_ant(SubsystemType.COLLECTION.value)  # Another assigned ant
         colony.create_ant()  # Free ant
-        colony.request_ant("Defense")  # Assigned ant
-        colony.request_ant("Communication")  # Another assigned ant
 
         status = colony.get_comprehensive_status()
 
@@ -213,23 +169,23 @@ class TestColonyExtended:
         assert status['free_ants'] == 1
         assert status['assigned_ants'] == 2
         assert status['dead_ants'] == 0
-        assert status['ants_by_subsystem']['defense'] == 1
-        assert status['ants_by_subsystem']['communication'] == 1
-        assert status['ants_by_subsystem']['collection'] == 0
+        assert status['ants_by_subsystem'][SubsystemType.DEFENSE.value] == 1
+        assert status['ants_by_subsystem'][SubsystemType.COLLECTION.value] == 1
+        assert status['ants_by_subsystem'][SubsystemType.COMMUNICATION.value] == 0
 
     def test_can_create_more_considers_food_and_capacity(self):
         # Test with sufficient food and capacity
-        colony1 = Colony(max_ants=10, initial_food_stock=100)
+        colony1 = Colony(max_ants=10, initial_food_stock=100, food_per_ant=10)
         status1 = colony1.get_comprehensive_status()
         assert status1['can_create_more'] is True
 
         # Test with insufficient food
-        colony2 = Colony(max_ants=10, initial_food_stock=5)  # Less than food_per_ant
+        colony2 = Colony(max_ants=10, initial_food_stock=5, food_per_ant=10)  # Less than food_per_ant
         status2 = colony2.get_comprehensive_status()
         assert status2['can_create_more'] is False
 
         # Test with insufficient capacity
-        colony3 = Colony(max_ants=1, initial_food_stock=100)
+        colony3 = Colony(max_ants=1, initial_food_stock=100, food_per_ant=10)
         colony3.create_ant()  # Fill capacity
         status3 = colony3.get_comprehensive_status()
         assert status3['can_create_more'] is False
@@ -256,7 +212,7 @@ class TestColonyEmergencyScenarios:
     def test_emergency_request_with_no_ants_available(self):
         colony = Colony(initial_food_stock=5)  # Insufficient food to create ants
 
-        emergency_ants = colony.request_emergency_ants("Defense", number_needed=3)
+        emergency_ants = colony.request_emergency_ants("S05_DEF", number_needed=3)
 
         assert len(emergency_ants) == 0
         assert colony.emergency_mode is True
@@ -267,43 +223,25 @@ class TestColonyEmergencyScenarios:
 
         # Create and assign ants to all subsystems
         for _ in range(2):
-            colony.request_ant("Collection")  # Lowest priority
+            colony.request_ant("S02_REC")  # Lowest priority
         for _ in range(2):
-            colony.request_ant("Communication")  # Medium priority
+            colony.request_ant("S01_COM")  # Medium priority
 
         # Make assignments old enough
-        for ant in colony.ants:
+        for ant in colony.ants.values():
             if ant.state == AntState.ASSIGNED:
                 ant.assignment_time = datetime.now() - timedelta(seconds=20)
 
         # Defense requests emergency ants (should get from Collection and Communication)
-        defense_emergency = colony.request_emergency_ants("Defense", number_needed=3)
+        defense_emergency = colony.request_emergency_ants("S05_DEF", number_needed=3)
 
         assert len(defense_emergency) >= 2  # Should get at least the Collection ants
         assert colony.emergency_mode is True
 
         # Verify Collection ants were reassigned first
-        collection_count = sum(1 for ant in colony.ants
+        collection_count = sum(1 for ant in colony.ants.values()
                                if ant.assigned_to == SubsystemType.COLLECTION)
         assert collection_count == 0  # All Collection ants should be reassigned
-
-    def test_emergency_with_mixed_ant_states(self):
-        colony = Colony()
-
-        # Create ants in various states
-        free_ant = colony.create_ant()
-        fresh_assigned = colony.request_ant("Collection")
-        old_assigned = colony.request_ant("Communication")
-        old_assigned.assignment_time = datetime.now() - timedelta(seconds=30)
-
-        emergency_ants = colony.request_emergency_ants("Defense", number_needed=2)
-
-        # Should get free ant first, then old assigned ant
-        assert len(emergency_ants) == 2
-        ant_ids = [ant.id for ant in emergency_ants]
-        assert free_ant.id in ant_ids
-        assert old_assigned.id in ant_ids
-        assert fresh_assigned.id not in ant_ids  # Too new to reassign
 
     def test_emergency_request_invalid_subsystem(self):
         colony = Colony()
@@ -311,7 +249,7 @@ class TestColonyEmergencyScenarios:
 
         emergency_ants = colony.request_emergency_ants("InvalidSubsystem", number_needed=1)
 
-        assert len(emergency_ants) == 0
+        assert emergency_ants is None
         assert colony.emergency_mode is False  # Should not activate for invalid request
 
     def test_emergency_partial_fulfillment(self):
@@ -323,7 +261,7 @@ class TestColonyEmergencyScenarios:
         colony.create_ant()
 
         # Request 5 emergency ants
-        emergency_ants = colony.request_emergency_ants("Defense", number_needed=5)
+        emergency_ants = colony.request_emergency_ants("S05_DEF", number_needed=5)
 
         assert len(emergency_ants) == 2  # Only 2 available
         assert all(ant.assigned_to == SubsystemType.DEFENSE for ant in emergency_ants)
@@ -342,7 +280,7 @@ class TestColonyEmergencyScenarios:
         colony.cleanup_dead_ants()
 
         # Try to request emergency ants
-        emergency_ants = colony.request_emergency_ants("Defense", number_needed=2)
+        emergency_ants = colony.request_emergency_ants("S05_DEF", number_needed=2)
 
         assert len(emergency_ants) == 0  # No living ants available
         assert colony.emergency_mode is True
@@ -352,11 +290,11 @@ class TestColonyEmergencyScenarios:
         colony = Colony()
 
         # Assign ant to Defense (highest priority)
-        defense_ant = colony.request_ant("Defense")
+        defense_ant = colony.request_ant("S05_DEF")
         defense_ant.assignment_time = datetime.now() - timedelta(seconds=30)
 
         # Collection tries to request emergency ant
-        emergency_ants = colony.request_emergency_ants("Collection", number_needed=1)
+        emergency_ants = colony.request_emergency_ants("S02_REC", number_needed=1)
 
         assert len(emergency_ants) == 0  # Cannot take from higher priority
         assert defense_ant.assigned_to == SubsystemType.DEFENSE  # Still assigned to Defense
@@ -384,8 +322,8 @@ class TestColonyEmergencyScenarios:
             colony.create_ant()
 
         # Multiple emergency requests
-        defense_ants = colony.request_emergency_ants("Defense", number_needed=2)
-        comm_ants = colony.request_emergency_ants("Communication", number_needed=2)
+        defense_ants = colony.request_emergency_ants("S05_DEF", number_needed=2)
+        comm_ants = colony.request_emergency_ants("S01_COM", number_needed=2)
 
         assert len(defense_ants) == 2
         assert len(comm_ants) == 2
@@ -396,34 +334,17 @@ class TestColonyEmergencyScenarios:
         ant_ids = [ant.id for ant in all_emergency_ants]
         assert len(ant_ids) == len(set(ant_ids))  # All IDs are unique
 
-    def test_emergency_with_max_wait_timeout(self):
-        """Test emergency request with max wait timeout"""
-        colony = Colony()
-
-        # Assign ant to Collection with very recent assignment
-        ant = colony.request_ant("Collection")
-        ant.assignment_time = datetime.now()  # Just assigned
-
-        # Request emergency with short max_wait
-        emergency_ants = colony.request_emergency_ants(
-            "Defense",
-            number_needed=1,
-            max_wait_seconds=5  # Ant was assigned less than 5 seconds ago
-        )
-
-        assert len(emergency_ants) == 0  # Cannot reassign yet
-
     def test_emergency_reassignment_tracking(self):
         """Test that emergency reassignments are properly tracked"""
         colony = Colony()
 
         # Create and assign ant
-        ant = colony.request_ant("Collection")
+        ant = colony.request_ant("S02_REC")
         original_assignment = ant.assigned_to
         ant.assignment_time = datetime.now() - timedelta(seconds=20)
 
         # Track reassignment
-        emergency_ants = colony.request_emergency_ants("Defense", number_needed=1)
+        emergency_ants = colony.request_emergency_ants("S05_DEF", number_needed=1)
 
         assert len(emergency_ants) == 1
         reassigned_ant = emergency_ants[0]
@@ -433,7 +354,7 @@ class TestColonyEmergencyScenarios:
 
     def test_emergency_food_conservation(self):
         """Test that emergency mode might affect food consumption"""
-        colony = Colony(initial_food_stock=30)  # Limited food
+        colony = Colony(initial_food_stock=25, food_per_ant=10)  # Limited food
 
         colony.activate_emergency_mode()
 
@@ -443,12 +364,12 @@ class TestColonyEmergencyScenarios:
 
         assert ant1 is not None
         assert ant2 is not None
-        assert colony.food_stock == 10  # 30 - 20 (2 ants * 10 food each)
+        assert colony.food_stock == 5  # 30 - 20 (2 ants * 10 food each)
 
         # Try to create third ant with insufficient food
         ant3 = colony.create_ant()
         assert ant3 is None
-        assert colony.food_stock == 10  # Unchanged
+        assert colony.food_stock == 5  # Unchanged
 
     def test_emergency_clear_after_resolution(self):
         """Test clearing emergency mode after crisis resolution"""
@@ -468,3 +389,23 @@ class TestColonyEmergencyScenarios:
         assert colony.emergency_mode is False
         assert colony.food_stock > 0
         assert len(colony.get_free_ants()) > 0
+
+    def test_request_multiple_ants_creates_new_ant_if_needed(self):
+        colony = Colony()
+        initial_ant_count = len(colony.ants)
+
+        result = colony.request_ants(SubsystemType.COMMUNICATION.value, 5)
+        ants = result["ants"]
+
+        assert result["success"] is True
+        assert len(ants) == 5
+        assert len(colony.ants) == initial_ant_count + 5
+
+    def test_request_multiple_ants_incomplete_block_fails(self):
+        colony = Colony(max_ants = 3)
+        initial_ant_count = len(colony.ants)
+
+        result = colony.request_ants(SubsystemType.COMMUNICATION.value, 5)
+
+        assert result["success"] is False
+        assert len(colony.ants) == initial_ant_count

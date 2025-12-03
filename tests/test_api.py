@@ -2,18 +2,18 @@ import pytest
 from fastapi.testclient import TestClient
 from datetime import datetime, timedelta
 from src.main import app, colony
-
+from src.ant import Ant
 
 @pytest.fixture
 def client():
     return TestClient(app)
 
-
 @pytest.fixture(autouse=True)
 def reset_colony():
     # Reset colony before each test
     colony.ants.clear()
-    colony.max_ants = 10
+    colony.max_ants = 100
+    colony.food_stock = 1000
     yield
 
 
@@ -21,7 +21,23 @@ class TestAntsAPI:
     def test_root_endpoint(self, client):
         response = client.get("/")
         assert response.status_code == 200
-        assert response.json() == {"message": "Ant Colony Management System"}
+        assert response.json() == {"message": "Sistema de Hormiga Reina"}
+        
+    def test_get_colony_status(self, client):
+        response = client.get("/colony/status")
+        assert response.status_code == 200
+        data = response.json()
+
+        expected_keys = {'total_ants', 'alive_ants', 'free_ants', 'assigned_ants', 'dead_ants', 'max_ants', 'food_stock'}
+        assert set(data.keys()) == expected_keys
+        assert data['total_ants'] == 0
+        assert data['alive_ants'] == 0
+        assert data['free_ants'] == 0
+        assert data['assigned_ants'] == 0
+        assert data['dead_ants'] == 0
+        assert data['max_ants'] == 100
+        assert data['food_stock'] == 1000
+    #     assert data["can_create_more"] is True
 
     def test_create_ant_success(self, client):
         response = client.post("/ants")
@@ -29,6 +45,7 @@ class TestAntsAPI:
         data = response.json()
         assert "id" in data
         assert "birth_time" in data
+        assert "death_time" in data
         assert data["is_alive"] is True
         assert data["age_seconds"] < 1
 
@@ -43,12 +60,30 @@ class TestAntsAPI:
         # Try to create second ant (should fail)
         response2 = client.post("/ants")
         assert response2.status_code == 409
-        assert "maximum capacity" in response2.json()["detail"]
+        assert "Sin capacidad" in response2.json()["detail"]
+        
+    def test_create_ant_whitout_food_fails(self, client):
+        # Configure colony to little food
+        client.put("/colony/config?food_stock=10&food_per_ant=10")
+
+        # Create first ant (should succeed)
+        response1 = client.post("/ants")
+        assert response1.status_code == 200
+
+        # Try to create second ant (should fail)
+        response2 = client.post("/ants")
+        assert response2.status_code == 409
+        assert "Sin recursos" in response2.json()["detail"]
 
     def test_get_all_ants(self, client):
         # Create two ants
         client.post("/ants")
         client.post("/ants")
+        create_response = client.post("/ants")
+        ant_id = create_response.json()["id"]
+
+        # Make one ant die by accessing colony directly
+        colony.ants[ant_id].birth_time = datetime.now() - timedelta(seconds=91)
 
         response = client.get("/ants")
         assert response.status_code == 200
@@ -57,6 +92,24 @@ class TestAntsAPI:
         for ant in data:
             assert "id" in ant
             assert ant["is_alive"] is True
+
+    def test_get_dead_ants(self, client):
+        # Create two ants
+        client.post("/ants")
+        client.post("/ants")
+        create_response = client.post("/ants")
+        ant_id = create_response.json()["id"]
+
+        # Make one ant die by accessing colony directly
+        colony.ants[ant_id].birth_time = datetime.now() - timedelta(seconds=91)
+
+        response = client.get("/ants?state=dead")
+        assert response.status_code == 200
+        data = response.json()
+        assert len(data) == 1
+        for ant in data:
+            assert "id" in ant
+            assert ant["is_alive"] is False
 
     def test_get_ant_by_id(self, client):
         # Create an ant
@@ -73,24 +126,7 @@ class TestAntsAPI:
     def test_get_nonexistent_ant(self, client):
         response = client.get("/ants/nonexistent-id")
         assert response.status_code == 404
-        assert "not found or dead" in response.json()["detail"]
-
-    def test_get_colony_status(self, client):
-        # Create some ants
-        client.post("/ants")
-        client.post("/ants")
-
-        response = client.get("/colony/status")
-        assert response.status_code == 200
-        data = response.json()
-
-        expected_keys = {'total_ants', 'alive_ants', 'dead_ants', 'max_ants', 'can_create_more'}
-        assert set(data.keys()) == expected_keys
-        assert data["alive_ants"] == 2
-        assert data["total_ants"] == 2
-        assert data["dead_ants"] == 0
-        assert data["max_ants"] == 10
-        assert data["can_create_more"] is True
+        assert "Hormiga no encontrada" in response.json()["detail"]
 
     def test_cleanup_dead_ants(self, client):
         # Create an ant
@@ -112,7 +148,6 @@ class TestAntsAPI:
     def test_configure_colony_max_ants(self, client):
         response = client.put("/colony/config?max_ants=5")
         assert response.status_code == 200
-        assert "maximum 5 ants" in response.json()["message"]
 
         # Verify the configuration
         status_response = client.get("/colony/status")
@@ -120,8 +155,7 @@ class TestAntsAPI:
 
     def test_configure_colony_invalid_max_ants(self, client):
         response = client.put("/colony/config?max_ants=0")
-        assert response.status_code == 400
-        assert "must be at least 1" in response.json()["detail"]
+        assert response.status_code == 422
 
     def test_ant_lifecycle_integration(self, client):
         # Configure small colony

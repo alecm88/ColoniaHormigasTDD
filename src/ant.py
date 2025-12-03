@@ -19,7 +19,7 @@ class Ant:
         self.state = AntState.FREE
         self.assigned_to: Optional[SubsystemType] = None
         self.assignment_time: Optional[datetime] = None
-        self.wait_time_seconds = 10  # 10 seconds wait time as specified
+        # self.wait_time_seconds = 10  # 10 seconds wait time as specified
 
     @property
     def is_alive(self) -> bool:
@@ -45,15 +45,9 @@ class Ant:
     def is_available_for_assignment(self) -> bool:
         return self.is_alive and self.state == AntState.FREE
 
-    def can_handle_task(self, estimated_duration_seconds: float) -> bool:
-        """Check if ant has enough remaining life to complete a task"""
-        if not self.is_alive:
-            return False
-        return self.remaining_life_seconds >= (estimated_duration_seconds + self.wait_time_seconds)
-
-    def assign_to_subsystem(self, subsystem: SubsystemType) -> bool:
+    def assign_to_subsystem(self, subsystem: SubsystemType, emergency: bool = False) -> bool:
         """Assign ant to a subsystem if available"""
-        if not self.is_available_for_assignment:
+        if not self.is_available_for_assignment and not emergency:
             return False
 
         self.state = AntState.ASSIGNED
@@ -61,7 +55,7 @@ class Ant:
         self.assignment_time = datetime.now()
         return True
 
-    def return_from_assignment(self, returned_with_food: bool = False, died_in_mission: bool = False):
+    def return_from_assignment(self, died_in_mission: bool = False, returned_with_food: int = 0):
         """Return ant from assignment, potentially with food or as dead"""
         if died_in_mission:
             self.state = AntState.DEAD
@@ -72,13 +66,6 @@ class Ant:
         self.assignment_time = None
         return returned_with_food
 
-    def update_state(self):
-        """Update ant state based on current conditions"""
-        if not self.is_alive:
-            self.state = AntState.DEAD
-            if self.assigned_to:
-                self.assigned_to = None
-                self.assignment_time = None
 
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -89,7 +76,7 @@ class Ant:
             'age_seconds': self.age_seconds,
             'remaining_life_seconds': self.remaining_life_seconds,
             'state': self.state.value,
-            'assigned_to': self.assigned_to.value if self.assigned_to else None,
+            'assigned_to': self.assigned_to.value if self.assigned_to and self.assigned_to.value else None,
             'assignment_time': self.assignment_time.isoformat() if self.assignment_time else None,
-            'wait_time_seconds': self.wait_time_seconds
+            # 'wait_time_seconds': self.wait_time_seconds
         }

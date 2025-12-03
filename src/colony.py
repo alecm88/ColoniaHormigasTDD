@@ -5,42 +5,44 @@ from src.subsystems import SubsystemType, Subsystem
 
 
 class Colony:
-    def __init__(self, max_ants: int = 100, initial_food_stock: int = 1000,
-                 ant_lifespan_minutes: float = 1.5):
+    def __init__(self, max_ants: int = 100, initial_food_stock: int = 20,
+                 ant_lifespan_minutes: float = 1.5, food_per_ant: int = 1):
         self.max_ants = max_ants
         self.ant_lifespan_minutes = ant_lifespan_minutes
         self.ants: Dict[str, Ant] = {}
         self.food_stock = initial_food_stock
-        self.food_per_ant = 10  # Food units required to create an ant
+        self.food_per_ant = food_per_ant  # Food units required to create an ant
         self.emergency_mode = False
         self.subsystems = Subsystem.get_known_subsystems()
+        self.initial_food_stock = initial_food_stock
 
-    def create_ant(self, force_creation: bool = False) -> Optional[Ant]:
-        """Create an ant if resources and capacity allow"""
-        # First update all ant states and cleanup dead ants
-        self.update_all_ant_states()
+    def create_ant(self) -> Optional[Ant]: 
         self.cleanup_dead_ants()
-
-        # Check capacity
-        alive_count = len([ant for ant in self.ants.values() if ant.is_alive])
-        if not force_creation and alive_count >= self.max_ants:
-            return None
 
         # Check food availability
         if self.food_stock < self.food_per_ant:
             return None
+    
+        # Check capacity
+        alive_count = len([ant for ant in self.ants.values() if ant.is_alive])
+        if alive_count >= self.max_ants:
+            return None
 
         # Create ant and consume food
-        ant = Ant(lifespan_minutes=self.ant_lifespan_minutes)
+        ant = Ant(self.ant_lifespan_minutes)
         self.ants[ant.id] = ant
         self.food_stock -= self.food_per_ant
         return ant
 
+    # def create_ant(self, force_creation: bool = False) -> Optional[Ant]:
+    #     """Create an ant if resources and capacity allow"""
+    #     # First update all ant states and cleanup dead ants
+    #     self.update_all_ant_states()
+    #     return ant
+
     def request_ant(self, subsystem_name: str, priority: int = 1,
                    estimated_duration_seconds: float = 60) -> Optional[Ant]:
         """Request an ant for assignment to a subsystem"""
-        # Update states first
-        self.update_all_ant_states()
 
         # Validate subsystem
         subsystem = Subsystem.get_by_name(subsystem_name)
@@ -50,13 +52,13 @@ class Colony:
         # Get available ants that can handle the task
         available_ants = [
             ant for ant in self.ants.values()
-            if ant.is_available_for_assignment and ant.can_handle_task(estimated_duration_seconds)
+            if ant.is_available_for_assignment
         ]
 
         if not available_ants:
             # Try to create a new ant if we have capacity and food
             new_ant = self.create_ant()
-            if new_ant and new_ant.can_handle_task(estimated_duration_seconds):
+            if new_ant:
                 available_ants = [new_ant]
 
         if not available_ants:
@@ -119,7 +121,6 @@ class Colony:
             return result
 
         # Update states first
-        self.update_all_ant_states()
         self.cleanup_dead_ants()
 
         # Validate subsystem
@@ -131,7 +132,7 @@ class Colony:
         # Get available ants that can handle the task
         available_ants = [
             ant for ant in self.ants.values()
-            if ant.is_available_for_assignment and ant.can_handle_task(estimated_duration_seconds)
+            if ant.is_available_for_assignment
         ]
         result['available'] = len(available_ants)
 
@@ -172,7 +173,7 @@ class Colony:
             # Create the ants
             for _ in range(ants_needed):
                 new_ant = self.create_ant()
-                if new_ant and new_ant.can_handle_task(estimated_duration_seconds):
+                if new_ant:
                     ants_to_create.append(new_ant)
                 else:
                     # Rollback: Return created ants to free state
@@ -206,7 +207,7 @@ class Colony:
 
         return result
 
-    def return_ant(self, ant_id: str, returned_with_food: bool = False,
+    def return_ant(self, ant_id: str, returned_with_food: int = 0,
                   died_in_mission: bool = False) -> bool:
         """Return an ant from assignment"""
         ant = self.ants.get(ant_id)
@@ -214,14 +215,28 @@ class Colony:
             return False
 
         # Add food if ant returned with food
-        food_gained = ant.return_from_assignment(returned_with_food, died_in_mission)
+        food_gained = ant.return_from_assignment(died_in_mission, returned_with_food)
         if food_gained:
-            self.food_stock += 20  # Food gained from successful collection
+            self.food_stock += food_gained   # Food gained from successful collection
 
         return True
 
+    def activate_emergency_mode(self) -> None:
+        self.emergency_mode = True
+        return
+    
+    def deactivate_emergency_mode(self) -> None:
+        self.emergency_mode = False
+        return
+
     def request_emergency_ants(self, requesting_subsystem: str,
-                             number_needed: int, max_wait_seconds: float = 30) -> List[Ant]:
+                             number_needed: int) -> List[Ant]:
+        
+        # Validate subsystem
+        subsystem = Subsystem.get_by_name(requesting_subsystem)
+        if not subsystem:
+            return None
+        
         """Handle emergency ant requests with reassignment from lower priority tasks"""
         self.emergency_mode = True
         emergency_ants = []
@@ -235,7 +250,7 @@ class Colony:
 
         # If we need more ants, reassign from lower priority subsystems
         if len(emergency_ants) < number_needed:
-            reassignable_ants = self._get_reassignable_ants(requesting_subsystem, max_wait_seconds)
+            reassignable_ants = self._get_reassignable_ants(requesting_subsystem)
             needed = number_needed - len(emergency_ants)
             emergency_ants.extend(reassignable_ants[:needed])
 
@@ -248,11 +263,11 @@ class Colony:
 
         if requesting_subsystem_enum:
             for ant in emergency_ants:
-                ant.assign_to_subsystem(requesting_subsystem_enum)
+                ant.assign_to_subsystem(requesting_subsystem_enum, True)
 
         return emergency_ants
 
-    def _get_reassignable_ants(self, requesting_subsystem: str, max_wait_seconds: float) -> List[Ant]:
+    def _get_reassignable_ants(self, requesting_subsystem: str) -> List[Ant]:
         """Get ants that can be reassigned based on priority"""
         requesting_priority = 3  # Default to lowest priority
         for subsystem in self.subsystems.values():
@@ -269,17 +284,10 @@ class Colony:
                 if (assigned_subsystem and
                     assigned_subsystem.priority_level > requesting_priority):
 
-                    # Check if ant has been waiting long enough
-                    wait_time = (datetime.now() - ant.assignment_time).total_seconds()
-                    if wait_time >= min(max_wait_seconds, ant.wait_time_seconds):
-                        reassignable.append(ant)
+                    reassignable.append(ant)
 
         return reassignable
 
-    def update_all_ant_states(self):
-        """Update the state of all ants"""
-        for ant in self.ants.values():
-            ant.update_state()
 
     def cleanup_dead_ants(self) -> int:
         """Remove dead ants from the colony"""
@@ -297,7 +305,7 @@ class Colony:
         return [ant for ant in self.ants.values() if ant.is_available_for_assignment]
 
     def get_assigned_ants(self) -> List[Ant]:
-        """Get all assigned living ants"""
+        """Get all assigned ants"""
         return [ant for ant in self.ants.values() if ant.state == AntState.ASSIGNED and ant.is_alive]
 
     def get_ant_by_id(self, ant_id: str) -> Optional[Ant]:
@@ -321,7 +329,7 @@ class Colony:
 
     def get_comprehensive_status(self) -> Dict[str, Any]:
         """Get detailed colony status"""
-        self.update_all_ant_states()
+        # self.update_all_ant_states()
 
         alive_ants = self.get_alive_ants()
         free_ants = self.get_free_ants()
@@ -348,12 +356,22 @@ class Colony:
         }
 
     def get_status(self) -> Dict[str, Any]:
-        """Get basic colony status for backward compatibility"""
-        status = self.get_comprehensive_status()
+        alive_ants = self.get_alive_ants()
+        free_ants = self.get_free_ants()
+        assigned_ants = self.get_assigned_ants()
+
         return {
-            'total_ants': status['total_ants'],
-            'alive_ants': status['alive_ants'],
-            'dead_ants': status['dead_ants'],
-            'max_ants': status['max_ants'],
-            'can_create_more': status['can_create_more']
+            'total_ants': len(self.ants),
+            'alive_ants': len(alive_ants),
+            'free_ants': len(free_ants),
+            'assigned_ants': len(assigned_ants),
+            'dead_ants': len(self.ants) - len(alive_ants),
+            'max_ants': self.max_ants,
+            'food_stock': self.food_stock,
         }
+    
+    def reset_colony(self):
+        """Reset colony to initial state"""
+        self.ants.clear()
+        self.food_stock = self.initial_food_stock
+        self.emergency_mode = False
